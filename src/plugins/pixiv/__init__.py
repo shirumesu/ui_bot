@@ -220,7 +220,7 @@ async def remove_pixivison(session: CommandSession):
 
 
 @on_command('pixiv作品')
-async def pixiv_image(session: CommandSession):
+async def pixiv_illuster(session: CommandSession):
     """获取pixiv作品的主函数
 
     Args:
@@ -441,7 +441,7 @@ async def sche_check_pixivison():
         await pixivison.update_cacha(subcribe, subcribe_path)
         logger.info('没有发现任何订阅信息,检查结束')
         return
-    subcribes, new_list = await pixivison.update_cacha(subcribe, subcribe_path)
+    new_list = await pixivison.update_cacha(subcribe, subcribe_path)
     for vison_item in new_list:
         msg = (f"检查到pixivison更新\n"
                f"标题: {vison_item['vison_title']}\n"
@@ -465,6 +465,7 @@ async def sche_check_pixivison():
 )
 async def sche_check_pixiv():
     logger.info('开始检查pixiv画师更新')
+    error = 0
     if not subcribe['pixivison']['group'] and not subcribe['pixivison']['user']:
         logger.info('没有发现任何订阅信息,检查结束')
         return
@@ -472,6 +473,7 @@ async def sche_check_pixiv():
     res = await asyncio.gather(*pid, return_exceptions=True)
     for illust_list, illuster in zip(res, subcribe['pixiv'].values()):
         if isinstance(illust_list, Exception):
+            error += 1
             continue
         new_illust_list = [int(x) for x in illust_list['illust_id'] if int(
             x) > illuster['illust_cacha']]
@@ -480,10 +482,13 @@ async def sche_check_pixiv():
         if not new_illust_list and not new_manga_list:
             continue
         new_list = new_illust_list + new_manga_list
+        logger.info(f"检查到pixiv画师{illuster['name']}的更新{len(new_list)}条")
         coros = [pixiv.get_image(str(x)) for x in new_list]
         res = await asyncio.gather(*coros, return_exceptions=True)
         for index, i in enumerate(res):
             if isinstance(i, Exception):
+                error += 1
+                logger.error(f"pixiv检查失败,错误信息:" + i)
                 for gid in illuster['group']:
                     await bot.send_group_msg(group_id=gid, message=f"检测到{illuster['name']}(id: {i['user_id']})更新\n图片获取失败,id: {new_list[index]}")
                     logger.error(
@@ -500,8 +505,10 @@ async def sche_check_pixiv():
                 await bot.send_group_msg(group_id=gid, message=msg)
             for uid in illuster['user']:
                 await bot.send_private_msg(user_id=uid, message=msg)
-        illuster['illust_cacha'] = max(new_illust_list)
-        illuster['manga_cacha'] = max(new_manga_list)
+        if new_illust_list:
+            illuster['illust_cacha'] = max(new_illust_list)
+        if new_manga_list:
+            illuster['manga_cacha'] = max(new_manga_list)
     with open(subcribe_path, 'w', encoding='utf-8') as f:
         ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
-    logger.info('检查完毕')
+    logger.info('检查完毕,失败次数:' + str(error))

@@ -253,4 +253,4 @@ async def update_cacha(subcribe: dict, path: str) -> Tuple[dict, dict]:
                 res = MessageSegment.image(r'file:///' + res)
                 new_list[index]['vison_seq'] = res
 
-    return subcribe, new_list
+    return new_list
