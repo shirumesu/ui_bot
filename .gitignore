@@ -114,3 +114,6 @@ dmypy.json
 .pyre/
 config.py
 src/plugins/yobot/
+res/cacha
+sv_config.json
+subcribe.json
