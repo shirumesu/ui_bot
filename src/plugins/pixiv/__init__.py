@@ -220,7 +220,7 @@ async def remove_pixivison(session: CommandSession):
 
 
 @on_command('pixiv作品')
-async def pixiv_illuster(session: CommandSession):
+async def pixiv_image(session: CommandSession):
     """获取pixiv作品的主函数
 
     Args:

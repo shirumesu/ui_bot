@@ -216,7 +216,7 @@ async def del_rss(session: CommandSession):
 
 
 @on_command('设置rss')
-async def check_subc(session: CommandSession):
+async def set_subc(session: CommandSession):
     """设置rss的主函数
 
     Args:
