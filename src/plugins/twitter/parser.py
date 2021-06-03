@@ -53,7 +53,7 @@ async def sendmsg(msg: dict) -> dict:
         try:
             if user_name == "访问失败":
                 data["replyuser"] = msg["in_reply_to_screen_name"]
-        except:
+        except Exception:
             pass
         data["replyuser"] = user_name["name"]
         data["text"] = msg["full_text"]

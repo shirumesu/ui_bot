@@ -27,7 +27,7 @@ fd = os.path.dirname(__file__)
 try:
     with open(os.path.join(fd, 'rsdata.json'), 'r+') as f:
         data = json.load(f)
-except:
+except Exception:
     data = {}
 try:
     with open(os.path.join(fd, 'rsplayer.json'), 'r+') as f:
@@ -97,7 +97,7 @@ async def spin(session: CommandSession):
                     await session.send("感谢各位的参与，来看一下游戏结算吧:")
                     await sleep(1)
                     msg = ''
-                    for k, i in player[group].items():
+                    for i in player[group].values():
                         msg += ("%s:  胜利: %s   死亡: %s\n" %
                                 (i['nickname'], i['win'], i['death']))
 

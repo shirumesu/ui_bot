@@ -20,7 +20,7 @@ async def text(image_data: dict) -> str:
     """
     try:
         seq = await dl_image(image_data['url_for_dl'])
-    except RuntimeError as e:
+    except RuntimeError:
         seq = None
     except:
         seq = None

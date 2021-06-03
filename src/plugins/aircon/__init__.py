@@ -1,7 +1,4 @@
-import json
-from loguru import logger
-
-from nonebot import command, on_command, get_bot, CommandSession
+from nonebot import on_command, get_bot, CommandSession
 
 from .airconutils import get_group_aircon, write_group_aircon, update_aircon, new_aircon, print_aircon
 from src.Services import Service, Service_Master, GROUP_ADMIN, perm
@@ -85,7 +82,7 @@ async def check_range(bot: bot, event: CommandSession, low: int, high: int, erro
 
     try:
         val = int(msg[0])
-    except:
+    except Exception:
         await event.send(f"⚠️输入有误！只能输入{low}至{high}的整数")
         return None
 

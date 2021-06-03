@@ -51,7 +51,7 @@ async def usage(session: CommandSession):
         msg = plugin.usage
     else:
         found = False
-        for x, y in svm.sv_list.items():
+        for y in svm.sv_list.values():
             if com in y.plugin_name:
                 msg = y.usage
                 found = True

@@ -131,7 +131,7 @@ async def subcribe_twitter(session: CommandSession):
         uid = session.event['user_id']
     try:
         user_info = await get_user(tw_id)
-    except:
+    except Exception:
         logger.error(f'请求推特用户id{tw_id}失败')
         await session.finish('获取该用户失败,请检查是否存在该id')
 
@@ -1017,7 +1017,7 @@ async def check_user_update(data: dict) -> bool:
 @scheduler.scheduled_job(
     'interval',
     minutes=1,
-    #seconds=10,
+    # seconds=10,
 )
 async def check_multi_update():
     """定时任务: 检查推特的更新"""
@@ -1034,7 +1034,7 @@ async def check_multi_update():
                 try:
                     if isinstance(i[1], int):
                         subcribe[i[0]]['last_id'] = i[1]
-                except Exception as e:
+                except Exception:
                     logger.error(
                         f"获取{subcribe[i[0]]['name']}(id:{subcribe[i[0]]['id']})失败,自动跳过推文")
                     continue

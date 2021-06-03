@@ -1,14 +1,10 @@
 import httpx
-import lxml
 from retrying import retry
 from bs4 import BeautifulSoup
-from loguru import logger
 
 from nonebot import MessageSegment
-from six import with_metaclass
 
 import config
-from src.plugins.search_image import saucenao_config as sauce
 
 
 @retry(stop_max_attempt_number=5)

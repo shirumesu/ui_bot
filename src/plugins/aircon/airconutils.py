@@ -1,7 +1,6 @@
 import datetime
 import os
 import json
-from loguru import logger
 
 R = 8.314  # 理想气体常数
 i = 6  # 多分子气体自由度
@@ -54,7 +53,7 @@ def get_group_aircon(builtin_path):
 
             return aircons
 
-    except Exception as e:
+    except Exception:
         return {}
 
 

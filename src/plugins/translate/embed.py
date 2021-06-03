@@ -1,9 +1,7 @@
-from functools import cache
 import textwrap
 from PIL import Image, ImageDraw, ImageFont
 import os
 import math
-import copy
 
 from src.plugins.translate import baidu
 
@@ -22,7 +20,6 @@ async def process_photo(words: dict, size: tuple, image_path: str, vertical: boo
     Returns:
         str: 保存的路径
     """
-    left, height = size[0], size[1]
     data_list = []
     for word in words:
         word_data = {
@@ -107,7 +104,7 @@ async def draw_white(image: Image.open, position_data: dict) -> Image.open:
         for x in range(position_data['top'][0], position_data['down'][0]):
             try:
                 image.putpixel((x, y), (255, 255, 255))
-            except:
+            except Exception:
                 continue
     return image
 

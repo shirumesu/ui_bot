@@ -81,16 +81,16 @@ async def get_pixivion_index(return_photo: bool = True) -> list[dict]:
             try:
                 url = re.findall(r'(https://i.pximg.net/imgaz/upload[\/\d\.\w]*)',
                                  i)[0].replace('i.pximg.net', 'i.pixiv.cat')
-            except:
+            except Exception:
                 url = '无法获取'
         if url:
             image_url.append(url)
 
     # 封装字典
     vison_data = []
-    for type, url, title, tag, date, image_link in zip(types, urls, titles, tags, dates, image_url):
+    for vison_type, url, title, tag, date, image_link in zip(types, urls, titles, tags, dates, image_url):
         vison_data.append({
-            'type': type,
+            'type': vison_type,
             'vison_url': url,
             'vison_title': title,
             'tags': '，'.join(tag),

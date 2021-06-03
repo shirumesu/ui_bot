@@ -56,7 +56,7 @@ async def plugin_list(session: CommandSession):
     """
     try:
         stat = await svm.check_permission('plugin_manager', session.event, GROUP_MEMBER)
-    except:
+    except Exception:
         stat = [True, '', '', '']
     if not stat[0]:
         if stat[3]:
@@ -69,7 +69,7 @@ async def plugin_list(session: CommandSession):
         for i in plugins_namelist:
             msg += f"{i[1]}({i[0]})\n"
     elif session.event['message_type'] == 'group':
-        for x, y in svm.sv_list.items():
+        for y in svm.sv_list.values():
             if not y.visible:
                 continue
             perm = await svm.check_permission(y.plugin_name[0], session.event, disable_superuser=True)

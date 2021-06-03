@@ -153,14 +153,13 @@ def get_img_id(results):
             try:
                 data["url"] = results['results'][0]['data']['ext_urls'][0]
             except:
-                pass
+                data["url"] = results['results'][0]['header']["thumbnail"]
             try:
                 data["memid"] = results['results'][0]['data']['member_id']
             except:
                 data["memid"] = "未知"
             return data
 
-        except:
+        except Exception:
             data["sim"] = results['results'][0]['header']['similarity']
-            data["url"] = results['results'][0]['header']["thumbnail"]
             return data

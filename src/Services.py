@@ -3,7 +3,6 @@ import json
 from loguru import logger
 
 import nonebot
-from nonebot.plugin import PluginManager
 from aiocqhttp import Event
 
 import config
@@ -214,7 +213,7 @@ class Service_Master:
         """
         try:
             sv = self.sv_list[plugin_name]
-        except:
+        except Exception:
             return [False, 0, 0, '没有找到该插件！']
 
         if isinstance(perm, str):
@@ -311,7 +310,7 @@ class Service:
     """
 
     def __init__(self,
-                 plugin_name: list[str, str],
+                 plugin_name: list[str],
                  plugin_usage: str = "",
                  use_folder: bool = False,
                  use_cacha_folder: bool = False,

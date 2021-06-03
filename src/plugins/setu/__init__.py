@@ -111,7 +111,7 @@ async def get_setu(session):
 
     try:
         result = await get_api(session, keyword, r18, num)
-    except RuntimeError as e:
+    except RuntimeError:
         session.finish("涩图获取失败惹……")
         logger.info("获取色图失败")
 
@@ -223,7 +223,7 @@ async def get_api(session: CommandSession, keyword: str, r18: int, num: int) -> 
             raise RuntimeError("请求结果不正确")
         result = res.json()
         if result['msg'] == "没有符合条件的色图":
-            respon = await session.finish("没有符合条件的涩图", at_sender=True)
+            await session.finish("没有符合条件的涩图", at_sender=True)
         return result
 
 
@@ -273,5 +273,5 @@ async def _(session: CommandSession):
 
     try:
         session.state['keyword'] = com[0]
-    except:
+    except Exception:
         session.state['keyword'] = ''
