@@ -1,3 +1,4 @@
+import datetime
 # 超级用户(主人)的qq号
 SUPERUSERS = {}
 # 触发的指令前缀
@@ -6,6 +7,8 @@ COMMAND_START = {'', '/', '!', '#', '！'}
 # 否则容易不停刷屏
 # 判定规则为A有指令在运行的时候B使用指令不会触发但A使用会触发,发送此消息
 SESSION_RUNNING_EXPRESSION = ""
+# 一个命令运行的最长时间
+SESSION_RUN_TIMEOUT = datetime.timedelta(minutes=2)
 # 机器人昵称,替代@xxx,否则使用指令必须@
 # 空('')=匹配所有指令
 NICKNAME = {''}
