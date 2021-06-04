@@ -9,6 +9,8 @@ COMMAND_START = {'', '/', '!', '#', '！'}
 SESSION_RUNNING_EXPRESSION = ""
 # 一个命令运行的最长时间
 SESSION_RUN_TIMEOUT = datetime.timedelta(minutes=2)
+# 等待用户回复的最长时间
+SESSION_EXPIRE_TIMEOUT = datetime.timedelta(seconds=30)
 # 机器人昵称,替代@xxx,否则使用指令必须@
 # 空('')=匹配所有指令
 NICKNAME = {''}
