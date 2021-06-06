@@ -3,12 +3,13 @@ import datetime
 SUPERUSERS = {}
 # 触发的指令前缀
 COMMAND_START = {'', '/', '!', '#', '！'}
-# 当有指令在运行时再次触发指令说的话(建议为空)
-# 否则容易不停刷屏
+# 当有指令在运行时再次触发指令说的话(建议为空),否则容易不停刷屏
 # 判定规则为A有指令在运行的时候B使用指令不会触发但A使用会触发,发送此消息
+# 如果上面设置为空,则匹配所有人说的话,因此指令运行时,同一人说的任何一句话都会触发
 SESSION_RUNNING_EXPRESSION = ""
 # 一个命令运行的最长时间
-SESSION_RUN_TIMEOUT = datetime.timedelta(minutes=2)
+# 如果网络较差请尽量长一点,涉及到拿图的请求如果时间到了会直接断掉
+SESSION_RUN_TIMEOUT = datetime.timedelta(minutes=5)
 # 等待用户回复的最长时间
 SESSION_EXPIRE_TIMEOUT = datetime.timedelta(seconds=30)
 # 机器人昵称,替代@xxx,否则使用指令必须@
