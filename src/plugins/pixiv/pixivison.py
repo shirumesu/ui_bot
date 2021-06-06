@@ -1,4 +1,5 @@
 import re
+from aiocqhttp.exceptions import Error
 import ujson
 import httpx
 import asyncio
@@ -208,7 +209,7 @@ async def get_page_pixivison(url: str) -> Tuple[dict, dict]:
     coros = [utils.dl_image(x) for x in image_urls]
     thum = await asyncio.gather(*coros, return_exceptions=True)
     for index, res in enumerate(thum):
-        if isinstance(res, Exception):
+        if isinstance(res, (Error, Exception)):
             vison_data[index]['vison_seq'] = vison_data[index]['image_url']
         else:
             res = MessageSegment.image(r'file:///' + res)

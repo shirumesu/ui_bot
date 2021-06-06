@@ -1,3 +1,4 @@
+from aiocqhttp.exceptions import Error
 import httpx
 import time
 import asyncio
@@ -97,7 +98,7 @@ async def get_image(pid: str) -> dict:
     res = await asyncio.gather(*coros, return_exceptions=True)
     seq_list = []
     for i in res:
-        if isinstance(res, Exception):
+        if isinstance(res, (Error, Exception)):
             seq_list.append('图片获取失败')
             continue
         path = MessageSegment.image(r'file:///' + i)
@@ -115,7 +116,7 @@ async def get_image(pid: str) -> dict:
     return data
 
 
-@retry()
+@ retry()
 async def check_illust_list(uid: str) -> dict:
     """检查单个用户的画作list
 
@@ -155,7 +156,7 @@ async def check_illust_list(uid: str) -> dict:
     }
 
 
-@retry()
+@ retry()
 async def get_pick_up(uid: str) -> list[dict]:
     """获取画师封面的pick_up(精选)图片
 
