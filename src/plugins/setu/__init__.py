@@ -2,6 +2,7 @@ import asyncio
 import os
 import httpx
 import json
+import re
 from retrying import retry
 from loguru import logger
 
@@ -14,8 +15,9 @@ import config as cfg
 
 sv_help = """搞的很快的插件！ | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
-[色图(0-10|一~十份) (关键字) (r18)] -> 获取色图，默认一份，输入小括号内可选的文字获取色图
+[色图(1~100)份 (关键字) (r18)] -> 获取色图，默认一份，输入小括号内可选的文字获取色图
     参数详解:
+        数量 -> 限定为1-100,太多非常容易风控且获取速度很慢,请控制在最大十几张以内,乱来的话bot不会响应
         关键字 -> 仅限一个词语,并且与pixiv标签对应(中文日文均可)
         r18 -> 是否获取r18色图,此选项并非混杂,而是纯r18 or 一个不带
     特别注意:
@@ -27,7 +29,7 @@ sv_help = """搞的很快的插件！ | 使用帮助
     使用示例:
         色图 -> 获取一份色图
         色图十份 碧蓝航线 -> 获取十份碧蓝航线的色图！
-        色图3份 羽衣 r18 -> 获得3份羽衣酱的r18色图！(当然这是禁止的！禁止获取羽衣酱的任何色图！)
+        色图30份 羽衣 r18 -> 获得3份羽衣酱的r18色图！(当然这是禁止的！禁止获取羽衣酱的任何色图！)
 [(开启|关闭)原图] -> 顾名思义：开启后会发送原图,各个群/私聊独立设置
     特别注意:
         原图问题 -> 由于有些图片可能超过10MB 20MB 下载速度会非常慢 可能很久才发的出来
@@ -45,10 +47,8 @@ if os.path.exists(os.path.join(os.getcwd(), 'src', 'plugins', 'setu', 'config.js
 else:
     with open(os.path.join(os.getcwd(), 'src', 'plugins', 'setu', 'config.json'), 'w', encoding='utf-8') as f:
         self_config = {
-            'original': {
-                'group': {},
-                'private': {}
-            }
+            'group': {},
+            'private': {}
         }
         json.dump(self_config, f, indent=4, ensure_ascii=False)
 
@@ -57,7 +57,7 @@ else:
 async def set_original(session):
     """开关原图
 
-    self_config['original']中分别装着group跟private
+    self_config中分别装着group跟private
     其中键为群号或qq号
     True为开启原图
 
@@ -77,20 +77,20 @@ async def set_original(session):
     uid = str(session.event['user_id'])
     if '开启' in session.event['raw_message']:
         if gid:
-            self_config['original']['group'][gid] = True
+            self_config['group'][gid] = True
         else:
-            self_config['original']['private'][uid] = True
+            self_config['private'][uid] = True
     else:
         if gid:
-            self_config['original']['group'][gid] = False
+            self_config['group'][gid] = False
         else:
-            self_config['original']['private'][uid] = False
+            self_config['private'][uid] = False
     with open(os.path.join(os.getcwd(), 'src', 'plugins', 'setu', 'config.json'), 'w', encoding='utf-8') as f:
         json.dump(self_config, f, ensure_ascii=False, indent=4)
     await session.send(session.event['raw_message'][:2]+'成功')
 
 
-@on_command("色图", patterns=r"^[色|涩]图([1-9]|10|一|两|二|三|四|五|六|七|八|九|十)([份|张])", privileged=True)
+@on_command("色图", patterns=r"^[色|涩]图([1-9][0-9]{0,1}|100)([份|张])", privileged=True)
 async def get_setu(session):
     """获取色图
 
@@ -99,10 +99,7 @@ async def get_setu(session):
     """
     stat = await Service_Master().check_permission('setu', session.event)
     if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-        else:
-            await session.finish(f'你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}')
+        await session.finish(stat[3])
 
     num = session.get("num")
     keyword = session.get("keyword")
@@ -120,11 +117,10 @@ async def get_setu(session):
         gid = session.event['user_id'] if session.event.detail_type == 'private' else session.event['group_id']
         coro.append(process(result['data'][i],
                     session.event.detail_type == 'private', gid))
-    quota = result['quota']
     img_data = await asyncio.gather(*coro, return_exceptions=True)
     img_data = [x for x in img_data if isinstance(x, str)]
-    msg = f'\n剩余额度:{quota}(一定时间后会自动增加)\n' + '\n'.join(img_data)
-    await session.send(msg, at_sender=True)
+    msg = '\n'.join(img_data)
+    await session.send(msg.strip(), at_sender=True)
 
 
 async def process(result: dict, to_me: bool, gid: int) -> str:
@@ -165,12 +161,12 @@ async def get_image(url: str, to_me: bool, gid: int) -> str:
     gid = str(gid)
     original = False
     if to_me:
-        if gid in self_config['original']['private']:
-            if self_config['original']['private'][gid]:
+        if gid in self_config['private']:
+            if self_config['private'][gid]:
                 original = True
     else:
-        if gid in self_config['original']['group']:
-            if self_config['original']['group'][gid]:
+        if gid in self_config['group']:
+            if self_config['group'][gid]:
                 original = True
     if not original:
         url = url.replace("img-original", "c/480x960/img-master")
@@ -210,9 +206,8 @@ async def get_api(session: CommandSession, keyword: str, r18: int, num: int) -> 
     Return:
         返回图片的json字典
     """
-    urls = "https://api.lolicon.app/setu/"
+    urls = "https://api.lolicon.app/setu/v1"
     data = {
-        'apikey': cfg.lolicon_api,
         'keyword': keyword,
         'r18': r18,
         'num': int(num)
@@ -227,51 +222,30 @@ async def get_api(session: CommandSession, keyword: str, r18: int, num: int) -> 
         return result
 
 
-@ get_setu.args_parser
+@get_setu.args_parser
 async def _(session: CommandSession):
     """解析传入的指令与参数"""
-    num_dict = {
-        "一": "1",
-        "二": "2",
-        "三": "3",
-        "四": "4",
-        "五": "5",
-        "六": "6",
-        "七": "7",
-        "八": "8",
-        "九": "9",
-        "十": "10",
-        "两": "2",
-    }
-    com = session.ctx.raw_message.split(' ')
-    if len(com[0]) == 2:
-        session.state['num'] = 1
-    elif len(com[0]) == 5:
-        session.state['num'] = 10
-    else:
-        if '10' in com[0]:
-            session.state['num'] = 10
-        else:
-            found = False
-            for x, y in num_dict.items():
-                if x in com[0] or y in com[0]:
-                    session.state['num'] = int(y)
-                    found = True
-                    break
-            if not found:
-                session.state['num'] = 1
+    com = session.ctx.raw_message.strip().split(' ')
+
+    num = re.findall(r'[色|涩]图([0-9]\d{0,1})(?:[份|张])', com[0])
+    if not num:
+        num = [1]
+    session.state['num'] = num[0]
     com.pop(0)
 
-    if 'r18' in com or 'R18' in com:
-        try:
-            com.remove('r18')
-        except ValueError:
-            com.remove('R18')
-        session.state['r18'] = 1
-    else:
-        session.state['r18'] = 0
+    session.state['r18'] = 0
+    for i in com:
+        if i == 'R18' or i == 'r18':
+            session.state['r18'] = 1
+            try:
+                com.remove('r18')
+            except ValueError:
+                com.remove('R18')
+            break
 
-    try:
+    if not com:
+        session.state['keyword'] = ''
+    elif len(com) == 1:
         session.state['keyword'] = com[0]
-    except Exception:
+    else:
         session.state['keyword'] = ''

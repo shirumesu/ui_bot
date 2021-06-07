@@ -110,10 +110,6 @@ sauceNAO_api = ''
 sim_to_ascii2d = 70     # **注意: 不要带% 否则会报错**
 
 
-# setu模块用到的api
-# 需要去lolicon.app中申请
-lolicon_api = ''
-
 # 短链用到的apikey
 # 目前仅适配了Polr的api,也就是我自建的api,欢迎使用,也可以自己自建,并不难,都是跟着教程一步步走(前提是有个服务器)
 # https://short.uisbox.com
