@@ -84,7 +84,7 @@ async def parser(html: str) -> list:
         if index == 0:
             continue
         elif index > 3:
-            continue
+            break
         imdata = {
             'type': item.find('div', class_=re.compile(r'cn ct\d')).string,
             'title': item.find('div', class_='glink').string,
