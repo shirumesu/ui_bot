@@ -143,7 +143,7 @@ async def process(result: dict, to_me: bool, gid: int) -> str:
     return msg
 
 
-@retry(stop_max_attempt_number=5)
+@retry(stop_max_attempt_number=3)
 async def get_image(url: str, to_me: bool, gid: int) -> str:
     """处理涩图
 
@@ -225,7 +225,7 @@ async def _(session: CommandSession):
     """解析传入的指令与参数"""
     com = session.ctx.raw_message.strip().split(' ')
 
-    num = re.findall(r'[色|涩]图([0-9]\d{0,1})(?:[份|张])', com[0])
+    num = re.findall(r'[色|涩]图([1-9][0-9]{0,1}|100)(?:[份|张])', com[0])
     if not num:
         num = [1]
     session.state['num'] = num[0]
