@@ -176,8 +176,6 @@ async def get_image(url: str, to_me: bool, gid: int) -> str:
 
     async with httpx.AsyncClient(timeout=30, proxies=cfg.proxies_for_all, verify=False) as s:
         res = await s.get(url)
-    if res.status_code != 200:
-        raise RuntimeError("获取色图失败")
     content = res.content
     if "_master1200.jpg" in url:
         url = url.replace("_master1200.jpg", '')
