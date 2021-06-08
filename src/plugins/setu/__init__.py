@@ -173,8 +173,13 @@ async def get_image(url: str, to_me: bool, gid: int) -> str:
         if '.jpg' in url:
             url = url.replace(".jpg", "_master1200.jpg")
         url = url.replace(".png", "_master1200.jpg")
+    if cfg.proxy_pixiv:
+        url = url.replace('i.pixiv.cat', 'i.pximg.net')
 
-    async with httpx.AsyncClient(timeout=30, proxies=cfg.proxies_for_all, verify=False) as s:
+    header = {
+        'referer': 'https://www.pixiv.net/'
+    }
+    async with httpx.AsyncClient(timeout=30, proxies=cfg.proxies_for_all, headers=header, verify=False) as s:
         res = await s.get(url)
     content = res.content
     if "_master1200.jpg" in url:

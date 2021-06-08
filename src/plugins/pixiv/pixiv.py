@@ -36,6 +36,10 @@ async def get_rank(mode: str, num: int) -> list[dict]:
     im_data = []
     for index, x in enumerate(js['contents']):
         if index < num:
+            urls = x['url'].replace(
+                '/c/240x480/img-master', '/img-original').replace('_master1200', '')
+            if config.proxy_pixiv:
+                urls = urls.replace('i.pximg.net', 'i.pixiv.cat')
             im_data.append({
                 'rank': x['rank'],
                 'date': x['date'],
@@ -44,9 +48,10 @@ async def get_rank(mode: str, num: int) -> list[dict]:
                 'user_name': x['user_name'],
                 'user_id': x['user_id'],
                 'tags': '，'.join(x['tags']),
-                'url': x['url'].replace('i.pximg.net/c/240x480/img-master', 'i.pixiv.cat/img-original').replace('_master1200', ''),
+                'url': urls,
                 'seq': ''
             })
+
         else:
             break
 
@@ -89,7 +94,8 @@ async def get_image(pid: str) -> dict:
     date = js['createDate'][:-6]
     date = time.strptime(date, r"%Y-%m-%dT%H:%M:%S")
     date = time.strftime(r'%Y-%m-%d  %H:%M:%S', date)
-    url = [js['urls']['original'].replace('i.pximg.net', 'i.pixiv.cat')]
+    url = [js['urls']['original'].replace(
+        'i.pximg.net', 'i.pixiv.cat') if config.proxy_pixiv else js['urls']['original']]
     if count != 1:
         for i in range(1, count):
             urlp = url[0].replace('_p0', f'_p{i}')

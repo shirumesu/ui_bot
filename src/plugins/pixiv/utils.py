@@ -17,12 +17,15 @@ async def dl_image(url: str) -> list:
     Returns:
         list: 保存路径
     """
-    async with httpx.AsyncClient(proxies=config.proxies, timeout=30) as s:
+    header = {
+        'referer': 'https://www.pixiv.net/'
+    }
+    async with httpx.AsyncClient(proxies=config.proxies, headers=header, timeout=30) as s:
         res = await s.get(url)
         if res.status_code == 404:
             url = url.replace(
                 'jpg', 'png') if '.jpg' in url else url.replace('png', 'jpg')
-            async with httpx.AsyncClient(proxies=config.proxies, timeout=30) as s:
+            async with httpx.AsyncClient(proxies=config.proxies, headers=header, timeout=30) as s:
                 res = await s.get(url)
                 if res.status_code != 200:
                     raise RuntimeError

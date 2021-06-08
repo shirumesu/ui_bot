@@ -80,8 +80,10 @@ async def get_pixivion_index(return_photo: bool = True) -> list[dict]:
                 url[0].replace('_master1200', '')
         else:
             try:
-                url = re.findall(r'(https://i.pximg.net/imgaz/upload[\/\d\.\w]*)',
-                                 i)[0].replace('i.pximg.net', 'i.pixiv.cat')
+                url = re.findall(
+                    r'(https://i.pximg.net/imgaz/upload[\/\d\.\w]*)', i)[0]
+                if config.proxy_pixiv:
+                    url = url.replace('i.pximg.net', 'i.pixiv.cat')
             except Exception:
                 url = '无法获取'
         if url:
@@ -148,9 +150,12 @@ async def get_page_pixivison(url: str) -> Tuple[dict, dict]:
         'seq': ''
     }
     try:
-        url = 'https://i.pixiv.cat' + \
-            re.findall(r'(/img-master/img/.*)',
-                       banner_url)[0].replace('_master1200', '')
+        url = re.findall(r'(/img-master/img/.*)',
+                         banner_url)[0].replace('_master1200', '')
+        if config.proxy_pixiv:
+            url = 'https://i.pixiv.cat' + url
+        else:
+            url = 'https://i.pximg.net' = url
         path = await utils.dl_image(banner_url)
         path = str(MessageSegment.image(r'file:///' + path))
         vison_header['seq'] = path
@@ -184,7 +189,9 @@ async def get_page_pixivison(url: str) -> Tuple[dict, dict]:
                         except:
                             image_url = '无法获取原图链接'
         image_url = image_url.replace(
-            'i.pximg.net/c/768x1200_80/img-master', 'i.pixiv.cat/img-original').replace('_master1200', '')
+            '/c/768x1200_80/img-master', '/img-original').replace('_master1200', '')
+        if config.proxy_pixiv:
+            image_url = image_url.replace('i.pximg.net', 'i.pixiv.cat')
         image_urls.append(image_url)
         image_ids.append(re.findall(
             r'(\d+)', item.contents[0].contents[0].contents[0].contents[0].next_element.contents[0].contents[0].attrs['href'])[0])

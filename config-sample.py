@@ -84,6 +84,10 @@ proxies_for_all = {
 }
 # 推特模块封装api使用的代理
 proxy = None    # 填写示例: 127.0.0.1:8080
+# 获取pixiv的图时是否使用代理i.pixiv.cat
+# False则直连i.pximg.net获取图片
+# 可以单独打开test-speed.py测试哪个更快,国内请False掉,除非你有梯子
+proxy_pixiv = True
 
 # 自定义回复开关(有些时候会太吵了)
 reply_switch = True
