@@ -155,7 +155,7 @@ async def get_page_pixivison(url: str) -> Tuple[dict, dict]:
         if config.proxy_pixiv:
             url = 'https://i.pixiv.cat' + url
         else:
-            url = 'https://i.pximg.net' = url
+            url = 'https://i.pximg.net' + url
         path = await utils.dl_image(banner_url)
         path = str(MessageSegment.image(r'file:///' + path))
         vison_header['seq'] = path
