@@ -173,7 +173,7 @@ async def get_image(url: str, to_me: bool, gid: int) -> str:
         if '.jpg' in url:
             url = url.replace(".jpg", "_master1200.jpg")
         url = url.replace(".png", "_master1200.jpg")
-    if cfg.proxy_pixiv:
+    if not cfg.proxy_pixiv:
         url = url.replace('i.pixiv.cat', 'i.pximg.net')
 
     header = {
