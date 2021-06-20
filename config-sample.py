@@ -19,10 +19,7 @@ NICKNAME = {''}
 # 可以无视这设置…实际使用中用其他方法替代了
 COMMAND_SEP = {' '}
 # APScheduler的配置,不明白的话默认即可
-APSCHEDULER_CONFIG = {
-    'coalesce': True,
-    'max_instances': 1024
-}
+APSCHEDULER_CONFIG = {'coalesce': True, 'max_instances': 1024}
 # 运行端口,默认即可
 HOST = '127.0.0.1'
 PORT = 19198
@@ -46,17 +43,16 @@ plugins = {
     'mkmeme': '表情制作',
     'rsshub': '订阅RssHub',
     "yobot": "yobot",
-    'twitter': '推特订阅',        # 没有梯子(下面proxies没有填)的请不要开启,会无法获取
-    "pixiv": "pixiv相关",         # 同上
-    'translate': '翻译漫画',      # 需要百度翻译以及百度ocr API 否则无法使用
-    'search_image': '以图搜图',   # 需要sauceNao API
+    'twitter': '推特订阅',  # 没有梯子(下面proxies没有填)的请不要开启,会无法获取
+    "pixiv": "pixiv相关",  # 同上
+    'translate': '翻译漫画',  # 需要百度翻译以及百度ocr API 否则无法使用
+    'search_image': '以图搜图',  # 需要sauceNao API
 
     # **请绝对不要关闭这几个插件！**
     # file_manager 可选关闭,所有获取的图片都会保存下来,不开启的话res文件夹大小会飞涨,想获取色图的话可以选择注释关一段时间,然后去res/cacha/setu查看
     'file_manager': '文件清理',
     'usage': '使用帮助',
     'plugin_manager': '插件管理器',
-
 
     # TODO(shiying): 待制作插件
     # 鬼知道为什么我要放进github里···
@@ -73,20 +69,14 @@ plugins = {
 #   'http': 'http://127.0.0.1:8080',
 #   'https': 'http://127.0.0.1:8080'    # 注意: https的值依然为http://xxx
 # }
-proxies = {
-    "http": None,
-    "https": None
-}
+proxies = {"http": None, "https": None}
 # 所有插件访问国内网站时使用的代理(特定梯子会需要填写,否则国内的也无法访问,如果你一切顺利的话,无视即可)
-proxies_for_all = {
-    "http": None,
-    "https": None
-}
+proxies_for_all = {"http": None, "https": None}
 # 推特模块封装api使用的代理
-proxy = None    # 填写示例: 127.0.0.1:8080
+proxy = None  # 填写示例: 127.0.0.1:8080
 # 获取pixiv的图时是否使用代理i.pixiv.cat
 # False则直连i.pximg.net获取图片
-# 可以单独打开test-speed.py测试哪个更快,国内请False掉,除非你有梯子
+# 一般来说建议开启(不知道为何就算服务器在日本也会连代理快点…)
 proxy_pixiv = True
 
 # 自定义回复开关(有些时候会太吵了)
@@ -111,14 +101,12 @@ baidu_translate_secret_key = ''
 # 搜图模块用到的api
 sauceNAO_api = ''
 # sauce搜图相似度低于X%时候使用ascii2d (范围0-100,记得不要带%) (推荐60-70)
-sim_to_ascii2d = 70     # **注意: 不要带% 否则会报错**
-
+sim_to_ascii2d = 70  # **注意: 不要带% 否则会报错**
 
 # 短链用到的apikey
 # 目前仅适配了Polr的api,也就是我自建的api,欢迎使用,也可以自己自建,并不难,都是跟着教程一步步走(前提是有个服务器)
 # https://short.uisbox.com
 short_url_apikey = ''
-
 
 # 自建Rss
 use_self_Rss = False
