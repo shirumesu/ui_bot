@@ -10,7 +10,6 @@ from src.Services import Service, Service_Master, GROUP_ADMIN, SUPERUSER
 from src.plugins.pixiv import pixiv, pixivison
 from src.ui_exception import Pixiv_api_Connect_Error
 
-
 sv_help = """pixiv相关 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
 前言: 所有功能获取的图片均为原图,由于qq的一些机制可能会没有下载原图选项,但确实是原图,请放心保存库哒赛！
@@ -75,29 +74,35 @@ Q. Pixivison是什么?
 A.官方解释:pixivision是将以漫画，小说，音乐为主的由创意而生的作品以及御宅文化向全世界推广的,每天都不会无聊的创作系媒体。
 个人通俗解释:有人整理各种专题(例如打伞美少女,吸血鬼帅哥,穿雨衣,蛋糕甜食)等主题的推荐分享,以及一些采访等,几乎可等同于每天都能刷到的‘xxx插画推荐,快点进来看看吧’ 
 """
-sv = Service(['pixiv', 'pixiv相关'], sv_help,
-             use_cacha_folder=True, permission_change=GROUP_ADMIN)
-
+sv = Service(['pixiv', 'pixiv相关'],
+             sv_help,
+             use_cacha_folder=True,
+             permission_change=GROUP_ADMIN)
 
 bot = get_bot()
 
-subcribe_path = os.path.join(
-    os.getcwd(), 'src', 'plugins', 'pixiv', 'subcribe.json')
+subcribe_path = os.path.join(os.getcwd(), 'src', 'plugins', 'pixiv',
+                             'subcribe.json')
 try:
     with open(subcribe_path, 'r', encoding='utf-8') as f:
         subcribe = ujson.load(f)
 except FileNotFoundError:
-    subcribe = {'pixiv': {}, 'pixivison': {
-        'group': [], 'user': [], 'cacha': []}}
+    subcribe = {
+        'pixiv': {},
+        'pixivison': {
+            'group': [],
+            'user': [],
+            'cacha': []
+        }
+    }
     with open(subcribe_path, 'w', encoding='utf-8') as f:
         ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
-
 
 check_subscribe = True
 using_pixiv = False
 
 
-@on_command('p站日榜', patterns=r'^pixiv[日周月]榜 ([1-5]\d?)$')
+@on_command('p站日榜', patterns=r'^pixiv[日周月]榜 ([0-9]|[1-4]\d?|50)$')
 async def pixiv_rank(session: CommandSession):
     """获取pixiv日榜的主函数,同时处理日月周榜
 
@@ -115,13 +120,16 @@ async def pixiv_rank(session: CommandSession):
     else:
         mode = 'monthly'
 
-    num = [int(x) for x in re.findall(
-        r'\d+', session.current_arg_text.strip())][0]
+    num = [
+        int(x) for x in re.findall(r'\d+', session.current_arg_text.strip())
+    ][0]
 
     try:
         im_data = await pixiv.get_rank(mode, num)
     except Pixiv_api_Connect_Error:
-        await session.finish('Pixiv返回结果有误,可能原因:\n1.网太差,连接超时了\n2.pixiv反爬机制更新无法访问\n如果多次出现此错误请联系主人')
+        await session.finish(
+            'Pixiv返回结果有误,可能原因:\n1.网太差,连接超时了\n2.pixiv反爬机制更新无法访问\n如果多次出现此错误请联系主人'
+        )
     msg = ''
     for i in im_data:
         msg += (f"{i['seq']}\n"
@@ -241,7 +249,9 @@ async def pixiv_illuster(session: CommandSession):
     except:
         await session.finish('未知原因导致请求错误(可能是网速太慢了.jpg')
     if not data:
-        await session.finish('你输入的id不存在!作品可能已被删除或是你的输入有误！\n(p站上似乎有不少盗图的,一张图可能有好几个id,都被删除了,最后只有一个是真的原画师发的)')
+        await session.finish(
+            '你输入的id不存在!作品可能已被删除或是你的输入有误！\n(p站上似乎有不少盗图的,一张图可能有好几个id,都被删除了,最后只有一个是真的原画师发的)'
+        )
 
     im_msg = ''
     for x, y in zip(data['url'], data['image_seq']):
@@ -305,11 +315,13 @@ async def subc_illuster(session: CommandSession):
 
     if session.event.detail_type == 'group':
         gid = str(session.event.group_id)
-        if pid in subcribe['pixiv'] and int(gid) in subcribe['pixiv'][pid]['group']:
+        if pid in subcribe['pixiv'] and int(
+                gid) in subcribe['pixiv'][pid]['group']:
             await session.finish('本群已经订阅过该画师了！')
     else:
         uid = str(session.event.user_id)
-        if pid in subcribe['pixiv'] and int(uid) in subcribe['pixiv'][pid]['user']:
+        if pid in subcribe['pixiv'] and int(
+                uid) in subcribe['pixiv'][pid]['user']:
             await session.finish('你已经订阅过该画师了！')
 
     try:
@@ -327,7 +339,8 @@ async def subc_illuster(session: CommandSession):
                 'name': res['name'],
                 'group': [session.event.group_id],
                 'user': [],
-                'illust_cacha': max(res['illust_id']) if res['illust_id'] else [],
+                'illust_cacha':
+                max(res['illust_id']) if res['illust_id'] else [],
                 'manga_cacha': max(res['manga_id']) if res['manga_id'] else []
             }
     else:
@@ -363,24 +376,29 @@ async def del_illuster(session: CommandSession):
 
     if session.event.detail_type == 'group':
         gid = str(session.event.group_id)
-        if pid not in subcribe['pixiv'] or int(gid) not in subcribe['pixiv'][pid]['group']:
-            pid = [x for x, y in subcribe['pixiv'].items() if y['name']
-                   == pid][0]
+        if pid not in subcribe['pixiv'] or int(
+                gid) not in subcribe['pixiv'][pid]['group']:
+            pid = [
+                x for x, y in subcribe['pixiv'].items() if y['name'] == pid
+            ][0]
             if not pid:
                 await session.finish('本群还没有订阅过该画师！')
         if pid in subcribe['pixiv']:
             subcribe['pixiv'][pid]['group'].remove(int(gid))
     else:
         uid = str(session.event.user_id)
-        if pid not in subcribe['pixiv'] or int(uid) not in subcribe['pixiv'][uid]['user']:
-            pid = [x for x, y in subcribe['pixiv'].items() if y['name']
-                   == pid][0]
+        if pid not in subcribe['pixiv'] or int(
+                uid) not in subcribe['pixiv'][uid]['user']:
+            pid = [
+                x for x, y in subcribe['pixiv'].items() if y['name'] == pid
+            ][0]
             if not pid:
                 await session.finish('你还没有订阅过该画师！')
         if pid in subcribe['pixiv']:
             subcribe['pixiv'][pid]['user'].remove(int(uid))
 
-    if not subcribe['pixiv'][pid]['group'] and not subcribe['pixiv'][pid]['user']:
+    if not subcribe['pixiv'][pid]['group'] and not subcribe['pixiv'][pid][
+            'user']:
         del subcribe['pixiv'][pid]
 
     with open(subcribe_path, 'w', encoding='utf-8') as f:
@@ -396,14 +414,14 @@ async def check_subcribe_pixiv_list(session: CommandSession):
 
     if session.event.detail_type == 'group':
         gid = str(session.event.group_id)
-        illuster_list = [[x, y] for x, y in subcribe['pixiv'].items(
-        ) if 'group' in y and int(gid) in y['group']]
+        illuster_list = [[x, y] for x, y in subcribe['pixiv'].items()
+                         if 'group' in y and int(gid) in y['group']]
         msg = f'本群一共订阅了{len(illuster_list)}个画师:\n'
 
     else:
         uid = str(session.event.user_id)
-        illuster_list = [[x, y] for x, y in subcribe['pixiv'].items(
-        ) if 'user' in y and int(uid) in y['user']]
+        illuster_list = [[x, y] for x, y in subcribe['pixiv'].items()
+                         if 'user' in y and int(uid) in y['user']]
         msg = f'你一共订阅了{len(illuster_list)}个画师:\n'
 
     for i in illuster_list:
@@ -414,7 +432,8 @@ async def check_subcribe_pixiv_list(session: CommandSession):
 
 @on_command('检查pixivison')
 async def _(session: CommandSession):
-    stat = await Service_Master().check_permission('pixiv', session.event, SUPERUSER)
+    stat = await Service_Master().check_permission('pixiv', session.event,
+                                                   SUPERUSER)
     if not stat[0]:
         await session.finish(stat[3])
 
@@ -423,18 +442,15 @@ async def _(session: CommandSession):
 
 @on_command('检查pixiv')
 async def _check(session: CommandSession):
-    stat = await Service_Master().check_permission('pixiv', session.event, SUPERUSER)
+    stat = await Service_Master().check_permission('pixiv', session.event,
+                                                   SUPERUSER)
     if not stat[0]:
         await session.finish(stat[3])
 
     await sche_check_pixiv()
 
 
-@scheduler.scheduled_job(
-    'cron',
-    hour=13,
-    minute=30
-)
+@scheduler.scheduled_job('cron', hour=13, minute=30)
 async def sche_check_pixivison():
     logger.info('开始检查pixivison更新')
     if not subcribe['pixivison']['group'] and not subcribe['pixivison']['user']:
@@ -443,14 +459,15 @@ async def sche_check_pixivison():
         return
     new_list = await pixivison.update_cacha(subcribe, subcribe_path)
     for vison_item in new_list:
-        msg = (f"检查到pixivison更新\n"
-               f"标题: {vison_item['vison_title']}\n"
-               f"更新日期: {vison_item['vison_date']}\n"
-               f"推荐类型: {vison_item['type']}\n"
-               f"标签: {vison_item['tags']}\n"
-               f"文章链接: https://www.pixivision.net{vison_item['vison_url']}\n"
-               f"{vison_item['vison_seq']}\n"
-               f"感兴趣的话可以发送pixivison (id)获取该页面哦,不知道id是什么请查看使用帮助(发送‘使用帮助 pixiv相关’)")
+        msg = (
+            f"检查到pixivison更新\n"
+            f"标题: {vison_item['vison_title']}\n"
+            f"更新日期: {vison_item['vison_date']}\n"
+            f"推荐类型: {vison_item['type']}\n"
+            f"标签: {vison_item['tags']}\n"
+            f"文章链接: https://www.pixivision.net{vison_item['vison_url']}\n"
+            f"{vison_item['vison_seq']}\n"
+            f"感兴趣的话可以发送pixivison (id)获取该页面哦,不知道id是什么请查看使用帮助(发送‘使用帮助 pixiv相关’)")
         for gid in subcribe['pixivison']['group']:
             await bot.send_group_msg(group_id=gid, message=msg)
         for uid in subcribe['pixivison']['user']:
@@ -458,11 +475,7 @@ async def sche_check_pixivison():
     logger.info('检查结束')
 
 
-@scheduler.scheduled_job(
-    'cron',
-    hour=12,
-    minute=50
-)
+@scheduler.scheduled_job('cron', hour=12, minute=50)
 async def sche_check_pixiv():
     logger.info('开始检查pixiv画师更新')
     error = 0
@@ -475,10 +488,14 @@ async def sche_check_pixiv():
         if isinstance(illust_list, Exception):
             error += 1
             continue
-        new_illust_list = [int(x) for x in illust_list['illust_id'] if int(
-            x) > illuster['illust_cacha']]
-        new_manga_list = [int(x) for x in illust_list['manga_id'] if int(
-            x) > illuster['manga_cacha']]
+        new_illust_list = [
+            int(x) for x in illust_list['illust_id']
+            if int(x) > illuster['illust_cacha']
+        ]
+        new_manga_list = [
+            int(x) for x in illust_list['manga_id']
+            if int(x) > illuster['manga_cacha']
+        ]
         if not new_illust_list and not new_manga_list:
             continue
         new_list = new_illust_list + new_manga_list
@@ -490,9 +507,14 @@ async def sche_check_pixiv():
                 error += 1
                 logger.error(f"pixiv检查失败,错误信息:" + i)
                 for gid in illuster['group']:
-                    await bot.send_group_msg(group_id=gid, message=f"检测到{illuster['name']}(id: {i['user_id']})更新\n图片获取失败,id: {new_list[index]}")
+                    await bot.send_group_msg(
+                        group_id=gid,
+                        message=
+                        f"检测到{illuster['name']}(id: {i['user_id']})更新\n图片获取失败,id: {new_list[index]}"
+                    )
                     logger.error(
-                        f"检查{illuster['name']}(id: {i['user_id']})的更新失败:{str(i)}")
+                        f"检查{illuster['name']}(id: {i['user_id']})的更新失败:{str(i)}"
+                    )
                 continue
             im_data = ''
             for x, y in zip(i['url'], i['image_seq']):
