@@ -64,12 +64,12 @@ plugins = {
 
 # 所有插件请求外网时统一使用的代理
 # 填写示例{
-#   'http': 'http://127.0.0.1:8080',
-#   'https': 'http://127.0.0.1:8080'    # 注意: https的值依然为http://xxx
+#   'http://': 'http://127.0.0.1:8080',
+#   'https://': 'http://127.0.0.1:8080'    # 注意: https的值依然为http://xxx
 # }
-proxies = {"http": None, "https": None}
+proxies = {"http://": None, "https://": None}
 # 所有插件访问国内网站时使用的代理(特定梯子会需要填写,否则国内的也无法访问,如果你一切顺利的话,无视即可)
-proxies_for_all = {"http": None, "https": None}
+proxies_for_all = {"http://": None, "https://": None}
 # 推特模块封装api使用的代理
 proxy = None  # 填写示例: 127.0.0.1:8080
 # 获取pixiv的图时是否使用代理i.pixiv.cat
