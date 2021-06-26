@@ -4,6 +4,7 @@ import httpx
 import base64
 import string
 import hashlib
+import asyncio
 from PIL import Image
 from typing import Tuple
 from retrying import retry
@@ -11,10 +12,11 @@ from loguru import logger
 
 import config
 from src.plugins.translate import embed
+from src.ui_exception import baidu_ocr_get_Error
 
 
-url_high = 'https://aip.baidubce.com/rest/2.0/ocr/v1/accurate'
-url_low = 'https://aip.baidubce.com/rest/2.0/ocr/v1/general'
+url_high = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate"
+url_low = "https://aip.baidubce.com/rest/2.0/ocr/v1/general"
 
 
 async def process(image_url: str, vertical: bool) -> Tuple[dict, str]:
@@ -31,9 +33,12 @@ async def process(image_url: str, vertical: bool) -> Tuple[dict, str]:
     image = Image.open(path)
     size = image.size
     try:
-        word_res = (await baidu_ocr(path))['words_result']
+        word_res = (await baidu_ocr(path))["words_result"]
     except:
-        word_res = (await baidu_ocr(path, False))['word_result']
+        try:
+            word_res = (await baidu_ocr(path, False))["word_result"]
+        except:
+            raise baidu_ocr_get_Error
     words_data, path = await embed.process_photo(word_res, size, path, vertical)
     return words_data, path
 
@@ -52,14 +57,18 @@ async def save_image(url: str) -> str:
         res = await s.get(url)
         if res.status_code != 200:
             raise RuntimeError
-    path = os.path.join(config.res, 'cacha', 'translate', ''.join(
-        random.sample(string.ascii_letters + string.digits, 8)) + '.png')
-    with open(path, 'wb') as f:
+    path = os.path.join(
+        config.res,
+        "cacha",
+        "translate",
+        "".join(random.sample(string.ascii_letters + string.digits, 8)) + ".png",
+    )
+    with open(path, "wb") as f:
         f.write(res.content)
     return path
 
 
-@retry(stop_max_attempt_number=3)
+@retry(stop_max_attempt_number=3, wait_fixed=1000)
 async def baidu_ocr(image_path: str, accuracy_high: bool = True) -> dict:
     """请求百度api
 
@@ -73,28 +82,30 @@ async def baidu_ocr(image_path: str, accuracy_high: bool = True) -> dict:
     Returns:
         dict: api返回的ocr结果
     """
-    url = f'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id={config.baidu_ocr_client_id}&client_secret={config.baidu_ocr_client_secret}'
-    with open(image_path, 'rb') as f:
+    url = f"https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id={config.baidu_ocr_client_id}&client_secret={config.baidu_ocr_client_secret}"
+    with open(image_path, "rb") as f:
         image = base64.b64encode(f.read())
     data = {
-        'image': image,
-        'language_type': 'auto_detect' if accuracy_high else 'JRA',
-        'vertexes_location': 'True'
+        "image": image,
+        "language_type": "auto_detect" if accuracy_high else "JRA",
+        "vertexes_location": "True",
     }
-    header = {
-        'content-type': 'application/x-www-form-urlencoded'
-    }
-    para = {
-        'access_token': None
-    }
+    header = {"content-type": "application/x-www-form-urlencoded"}
+    para = {"access_token": None}
     async with httpx.AsyncClient(proxies=config.proxies_for_all, timeout=15) as s:
         res = await s.get(url)
         if res.status_code != 200:
-            logger.error('请求百度ocr翻译错误,无法获取token')
+            logger.error("请求百度ocr翻译错误,无法获取token")
             raise RuntimeError
         js = res.json()
-        para['access_token'] = js['access_token']
-        response = await s.post(url_high if accuracy_high else url_low, data=data, params=para, headers=header)
+        para["access_token"] = js["access_token"]
+        await asyncio.sleep(1.5)
+        response = await s.post(
+            url_high if accuracy_high else url_low,
+            data=data,
+            params=para,
+            headers=header,
+        )
     return response.json()
 
 
@@ -120,19 +131,20 @@ async def baidu_fanyi(text: str) -> str:
     }
     if not text:
         return
-    sign_text = data["appid"] + data["q"] + \
-        str(data["salt"]) + data["secretKey"]
+    sign_text = data["appid"] + data["q"] + str(data["salt"]) + data["secretKey"]
     data["sign"] = hashlib.md5(sign_text.encode()).hexdigest()
-    async with httpx.AsyncClient(params=data, proxies=config.proxies_for_all, timeout=15) as s:
+    async with httpx.AsyncClient(
+        params=data, proxies=config.proxies_for_all, timeout=15
+    ) as s:
         res = await s.get(url)
         if res.status_code != 200:
-            logger.error('请求百度翻译出现错误,返回码:' + res.status_code)
+            logger.error("请求百度翻译出现错误,返回码:" + res.status_code)
             raise RuntimeError
     res = res.json()
-    if 'error_code' in res:
-        logger.error('请求百度翻译api出现错误' + res['error_code'])
+    if "error_code" in res:
+        logger.error("请求百度翻译api出现错误" + res["error_code"])
         raise RuntimeError
 
-    for i in res['trans_result']:
-        text = text.replace(i['src'], i['dst'])
+    for i in res["trans_result"]:
+        text = text.replace(i["src"], i["dst"])
     return text

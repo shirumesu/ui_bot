@@ -8,3 +8,7 @@ class Pixiv_api_Connect_Error(Exception):
 
 class Pixiv_not_found_Error(Exception):
     pass
+
+
+class baidu_ocr_get_Error(Exception):
+    pass

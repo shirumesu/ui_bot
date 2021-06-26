@@ -2,6 +2,7 @@ from nonebot import on_command, CommandSession, MessageSegment
 
 from src.plugins.translate import baidu, embed
 from src.Services import Service, Service_Master, GROUP_ADMIN
+from src.ui_exception import baidu_ocr_get_Error
 
 
 sv_help = """翻译漫画 | 使用帮助
@@ -26,51 +27,62 @@ sv_help = """翻译漫画 | 使用帮助
     同上,但横版图片ocr结果一般优良一些=翻译质量更高
 """.strip()
 
-sv = Service(['translate', '翻译漫画'], sv_help, use_folder=True,
-             use_cacha_folder=True, permission_change=GROUP_ADMIN)
+sv = Service(
+    ["translate", "翻译漫画"],
+    sv_help,
+    use_folder=True,
+    use_cacha_folder=True,
+    permission_change=GROUP_ADMIN,
+)
 
 
-@on_command('翻译漫画', patterns=r'^翻译漫画')
+@on_command("翻译漫画", patterns=r"^翻译漫画")
 async def translate_manga(session: CommandSession):
     """翻译漫画的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission('translate', session.event)
+    stat = await Service_Master().check_permission("translate", session.event)
     if not stat[0]:
         await session.finish(stat[3])
 
-    urls = session.get('image')
+    urls = session.get("image")
 
     seq = []
     for i in urls:
         url = i
-        words_data, path = await baidu.process(url, vertical=True)
+        try:
+            words_data, path = await baidu.process(url, vertical=True)
+        except baidu_ocr_get_Error:
+            await session.finish("请求翻译api时发生错误,翻译失败")
         path = await embed.process_manga(words_data, path)
-        seq = MessageSegment.image('file:///' + path)
+        seq = MessageSegment.image("file:///" + path)
         await session.send(seq)
 
 
-@on_command('翻译图片', patterns=r'^翻译图片')
+@on_command("翻译图片", patterns=r"^翻译图片")
 async def translate_photo(session: CommandSession):
     """翻译图片的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission('translate', session.event)
+    stat = await Service_Master().check_permission("translate", session.event)
     if not stat[0]:
         await session.finish(stat[3])
 
-    urls = session.get('image')
+    urls = session.get("image")
 
     seq = []
     for i in urls:
         url = i
-        words_data, path = await baidu.process(url, vertical=False)
+        try:
+            words_data, path = await baidu.process(url, vertical=False)
+        except baidu_ocr_get_Error:
+            await session.finish("请求翻译api时发生错误,翻译失败")
         path = await embed.process_manga(words_data, path)
-        seq = MessageSegment.image('file:///' + path)
+        seq = MessageSegment.image("file:///" + path)
         await session.send(seq)
 
 
@@ -86,7 +98,7 @@ async def _(session: CommandSession):
             await session.finish("会话已结束")
 
     if not session.current_arg_images:
-        await session.pause("要翻译的漫画是？\n可以发送\"done\"结束")
+        await session.pause('要翻译的漫画是？\n可以发送"done"结束')
 
 
 @translate_manga.args_parser
@@ -101,4 +113,4 @@ async def _(session: CommandSession):
             await session.finish("会话已结束")
 
     if not session.current_arg_images:
-        await session.pause("要翻译的漫画是？\n可以发送\"done\"结束")
+        await session.pause('要翻译的漫画是？\n可以发送"done"结束')
