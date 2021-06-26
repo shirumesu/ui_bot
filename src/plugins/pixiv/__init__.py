@@ -505,9 +505,7 @@ async def sche_check_pixiv():
             if int(x) > illuster["illust_cacha"]
         ]
         new_manga_list = [
-            int(x) if illuster["manga_cacha"] else illust_list["manga_id"]
-            for x in illust_list["manga_id"]
-            if int(x) > illuster["manga_cacha"]
+            int(x) for x in illust_list["manga_id"] if int(x) > illuster["manga_cacha"]
         ]
         if not new_illust_list and not new_manga_list:
             continue
@@ -518,7 +516,7 @@ async def sche_check_pixiv():
         for index, i in enumerate(res):
             if isinstance(i, Exception):
                 error += 1
-                logger.error(f"pixiv检查失败,错误信息:" + i)
+                logger.error(f"pixiv检查失败,错误信息:" + str(i))
                 for gid in illuster["group"]:
                     await bot.send_group_msg(
                         group_id=gid,
