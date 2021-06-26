@@ -347,8 +347,8 @@ async def subc_illuster(session: CommandSession):
                 "name": res["name"],
                 "group": [session.event.group_id],
                 "user": [],
-                "illust_cacha": max(res["illust_id"]) if res["illust_id"] else [],
-                "manga_cacha": max(res["manga_id"]) if res["manga_id"] else [],
+                "illust_cacha": max(res["illust_id"]) if res["illust_id"] else 0,
+                "manga_cacha": max(res["manga_id"]) if res["manga_id"] else 0,
             }
     else:
         if pid in subcribe["pixiv"]:
@@ -499,41 +499,16 @@ async def sche_check_pixiv():
         if isinstance(illust_list, Exception):
             error += 1
             continue
-        """
-        问题:
-            原本没有缓存报错(只有插画的画师发布了第一个漫画)
-            >>>[int(x) for x in illust_list['illust_id'] if int(x) > illust['illust_cacha']]
-            TypeError: '>' not supported between instances of 'int' and 'list' (此时list为空)
-        
-        解决:
-            使用下列方式,会获取重复(更新数目)次包含(画作id)的列表
-            [
-                [123,345,678],
-                [123,345,678],
-                .
-                .
-                .
-            ]
-            因此set再list去重
-        """
-        new_illust_list = list(
-            set(
-                [
-                    int(x) if illuster["illust_cacha"] else illust_list["illust_id"]
-                    for x in illust_list["illust_id"]
-                    if int(x) > illuster["illust_cacha"]
-                ]
-            )
-        )
-        new_manga_list = list(
-            set(
-                [
-                    int(x) if illuster["manga_cacha"] else illust_list["manga_id"]
-                    for x in illust_list["manga_id"]
-                    if int(x) > illuster["manga_cacha"]
-                ]
-            )
-        )
+        new_illust_list = [
+            int(x)
+            for x in illust_list["illust_id"]
+            if int(x) > illuster["illust_cacha"]
+        ]
+        new_manga_list = [
+            int(x) if illuster["manga_cacha"] else illust_list["manga_id"]
+            for x in illust_list["manga_id"]
+            if int(x) > illuster["manga_cacha"]
+        ]
         if not new_illust_list and not new_manga_list:
             continue
         new_list = new_illust_list + new_manga_list
