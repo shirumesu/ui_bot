@@ -119,3 +119,4 @@ sv_config.json
 subcribe.json
 src/plugins/setu/config.json
 .vscode/launch.json
+.vscode/settings.json
