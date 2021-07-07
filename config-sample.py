@@ -25,7 +25,6 @@ APSCHEDULER_CONFIG = {"coalesce": True, "max_instances": 1024}
 HOST = "127.0.0.1"
 PORT = 19198
 # 是否启用调试模式(更详细的输出)
-# 注意: loguru的logger暂时没有配置日志等级,下面这一条是输出到文件log的
 DEBUG = False
 
 # 图片路径(绝对路径，例如D:\mybot\photo)
