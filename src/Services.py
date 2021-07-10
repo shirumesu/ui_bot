@@ -18,13 +18,7 @@ GROUP_MEMBER = 5
 PRIVATE_USER = 5
 BLOCK_USER = -999
 
-perm = {
-    999: "羽衣酱的管理者",
-    100: "群主",
-    50: "群管理",
-    5: "群员/私聊",
-    -999: "黑名单"
-}
+perm = {999: "羽衣酱的管理者", 100: "群主", 50: "群管理", 5: "群员/私聊", -999: "黑名单"}
 
 
 def init_bot() -> None:
@@ -38,7 +32,7 @@ def init_bot() -> None:
     """
     name_list = [x for x, y in config.plugins.items()]
     for i in name_list:
-        nonebot.load_plugin(f'src.plugins.{i}')
+        nonebot.load_plugin(f"src.plugins.{i}")
 
 
 class Service_Master:
@@ -52,7 +46,9 @@ class Service_Master:
     def __init__(self):
         self.sv_list = ALL_SERVICES
 
-    async def enable_plugin(self, plugin_name: str, state: bool, gid: int = None, uid: int = None) -> bool:
+    async def enable_plugin(
+        self, plugin_name: str, state: bool, gid: int = None, uid: int = None
+    ) -> bool:
         """插件管理器中对某群或某私聊开启/关闭插件
 
         与下面的函数不同,这个插件为加入/移除白名单
@@ -137,21 +133,27 @@ class Service_Master:
             ev: 消息封装的event
             role: 文本例如owner, admin等
         """
-        uid = ev['user_id']
+        uid = ev["user_id"]
         if uid in config.SUPERUSERS:
             return SUPERUSER
-        elif ev.detail_type == 'private':
+        elif ev.detail_type == "private":
             return PRIVATE_USER
-        elif role == 'owner':
+        elif role == "owner":
             return GROUP_OWNER
-        elif role == 'admin':
+        elif role == "admin":
             return GROUP_ADMIN
-        elif role == 'administrator':
+        elif role == "administrator":
             return GROUP_ADMIN
         else:
             return GROUP_MEMBER
 
-    async def check_permission(self, plugin_name, event: Event, perm: int = None, disable_superuser: bool = False) -> list:
+    async def check_permission(
+        self,
+        plugin_name,
+        event: Event,
+        perm: int = None,
+        disable_superuser: bool = False,
+    ) -> list:
         """对插件进行权利检查
 
         是否启用/是否允许私聊使用/是否允许使用
@@ -161,7 +163,7 @@ class Service_Master:
             sv: Service要检查的插件的类
             event: 信息的event, 包含uid等内容
             perm: 需要的权限, 如果传入则单纯判断是否满足权限要求(**仅支持群聊消息使用**)
-            disable_superuser: 是否检查超级用户的权限(false则为~~天子与民同罪~~)
+            disable_superuser: 是否检查超级用户的权限(True则为天子与民同罪)
 
         Return:
             list: list[bool, role, need_role,extra]
@@ -214,60 +216,64 @@ class Service_Master:
         try:
             sv = self.sv_list[plugin_name]
         except Exception:
-            return [False, 0, 0, '没有找到该插件！']
+            return [False, 0, 0, "没有找到该插件！"]
 
         if isinstance(perm, str):
             # ui_plugin_manager
-            if perm == 'upm':
-                if event['user_id'] in config.SUPERUSERS:
-                    return[True, SUPERUSER, sv.permission_change, '']
-                elif event.detail_type == 'group':
-                    user_perm = await self.role_to_perm(event, event['sender']['role'])
+            if perm == "upm":
+                if event["user_id"] in config.SUPERUSERS:
+                    return [True, SUPERUSER, sv.permission_change, ""]
+                elif event.detail_type == "group":
+                    user_perm = await self.role_to_perm(event, event["sender"]["role"])
                 else:
                     user_perm = PRIVATE_USER
                 if user_perm < sv.permission_change:
-                    return [False, user_perm, sv.permission_use, '你的权限不足以修改此插件！']
+                    return [False, user_perm, sv.permission_use, "你的权限不足以修改此插件！"]
                 else:
-                    return [True, user_perm, sv.permission_use, '']
+                    return [True, user_perm, sv.permission_use, ""]
 
         if not sv.is_enable:
-            return [False, -1, sv.permission_use, '插件未启用！']
+            return [False, -1, sv.permission_use, "插件未启用！"]
 
         if not disable_superuser:
-            if event['user_id'] in config.SUPERUSERS:
-                return [True, SUPERUSER, sv.permission_use, '']
+            if event["user_id"] in config.SUPERUSERS:
+                return [True, SUPERUSER, sv.permission_use, ""]
 
-        if event.detail_type == 'group':
-            user_perm = await self.role_to_perm(event, event['sender']['role'])
+        if event.detail_type == "group":
+            user_perm = await self.role_to_perm(event, event["sender"]["role"])
         else:
             user_perm = PRIVATE_USER
 
-        if event.detail_type == 'group':
-            gid = event['group_id']
+        if event.detail_type == "group":
+            gid = event["group_id"]
             if gid in sv.block_group and gid in sv.enable_group:
-                logger.error(
-                    f"插件{sv.plugin_name[0]}中群号{gid}同时存在于黑名单与白名单中！优先处理黑名单")
-                return [False, user_perm, sv.permission_use, '你群在黑名单中！不能使用该功能哦']
+                logger.error(f"插件{sv.plugin_name[0]}中群号{gid}同时存在于黑名单与白名单中！优先处理黑名单")
+                return [False, user_perm, sv.permission_use, "你群在黑名单中！不能使用该功能哦"]
             elif gid in sv.block_group:
-                return [False, user_perm, sv.permission_use, '你群在黑名单中!不能使用该功能哦']
+                return [False, user_perm, sv.permission_use, "你群在黑名单中!不能使用该功能哦"]
             elif sv.enable_group and gid not in sv.enable_group:
-                return [False, user_perm, sv.permission_use, '你群不在白名单中！请通知有权限的管理开启！(一般为管理员或以上)']
+                return [
+                    False,
+                    user_perm,
+                    sv.permission_use,
+                    "你群不在白名单中！请通知有权限的管理开启！(一般为管理员或以上)",
+                ]
 
-        elif event.detail_type == 'private':
-            uid = event['user_id']
+        elif event.detail_type == "private":
+            uid = event["user_id"]
             if not sv.priv_use:
-                return [False, user_perm, sv.permission_use, '此插件禁止私聊使用！']
+                return [False, user_perm, sv.permission_use, "此插件禁止私聊使用！"]
             elif uid in sv.block_priv:
-                return [False, user_perm, sv.permission_use, '你已被禁止私聊使用此插件！']
+                return [False, user_perm, sv.permission_use, "你已被禁止私聊使用此插件！"]
 
         if perm is not None:
             if user_perm < perm:
-                return [False, user_perm, perm, '你的权限不足以使用此插件！']
-            return [True, user_perm, perm, '']
+                return [False, user_perm, perm, "你的权限不足以使用此插件！"]
+            return [True, user_perm, perm, ""]
         else:
             if user_perm < sv.permission_use:
-                return [False, user_perm, perm, '你的权限不足以使用此插件！']
-        return [True, user_perm, sv.permission_use, '']
+                return [False, user_perm, perm, "你的权限不足以使用此插件！"]
+        return [True, user_perm, sv.permission_use, ""]
 
 
 class Service:
@@ -309,20 +315,21 @@ class Service:
         }
     """
 
-    def __init__(self,
-                 plugin_name: list[str],
-                 plugin_usage: str = "",
-                 use_folder: bool = False,
-                 use_cacha_folder: bool = False,
-                 permission_change: int = SUPERUSER,
-                 permission_use: int = GROUP_MEMBER,
-                 is_enalbe: bool = True,
-                 priv_use: bool = True,
-                 block_priv: list[int] = [],
-                 visible: bool = True,
-                 enable_group: list[int] = [],
-                 block_group: list[int] = []
-                 ):
+    def __init__(
+        self,
+        plugin_name: list[str],
+        plugin_usage: str = "",
+        use_folder: bool = False,
+        use_cacha_folder: bool = False,
+        permission_change: int = SUPERUSER,
+        permission_use: int = GROUP_MEMBER,
+        is_enalbe: bool = True,
+        priv_use: bool = True,
+        block_priv: list[int] = [],
+        visible: bool = True,
+        enable_group: list[int] = [],
+        block_group: list[int] = [],
+    ):
         """注册一个独立的插件
 
         设置单独每个插件的黑名单, 是否私聊使用, 是否启动等信息
@@ -362,7 +369,8 @@ class Service:
         """
         self.plugin_name = plugin_name
         self.path = os.path.join(
-            os.getcwd(), 'src', 'plugins', plugin_name[0], 'sv_config.json')
+            os.getcwd(), "src", "plugins", plugin_name[0], "sv_config.json"
+        )
         exist_config = self.load_config(self.path, plugin_usage)
         if not exist_config:
             self.plugin_name = plugin_name
@@ -380,16 +388,19 @@ class Service:
         self.create_folder()
         self.save_config()
         ALL_SERVICES[self.plugin_name[0]] = self
-        logger.info(
-            f"success to load plugin:{plugin_name[0]}({plugin_name[1]})")
+        logger.info(f"success to load plugin:{plugin_name[0]}({plugin_name[1]})")
 
     def create_folder(self):
         if self.use_folder:
-            os.makedirs(os.path.join(os.getcwd(), 'res', 'source',
-                        self.plugin_name[0]), exist_ok=True)
+            os.makedirs(
+                os.path.join(os.getcwd(), "res", "source", self.plugin_name[0]),
+                exist_ok=True,
+            )
         if self.use_cacha_folder:
-            os.makedirs(os.path.join(os.getcwd(), 'res', 'cacha',
-                        self.plugin_name[0]), exist_ok=True)
+            os.makedirs(
+                os.path.join(os.getcwd(), "res", "cacha", self.plugin_name[0]),
+                exist_ok=True,
+            )
 
     def save_config(self):
         """保存json-file"""
@@ -406,13 +417,10 @@ class Service:
             "block_priv": self.block_priv,
             "visible": self.visible,
             "enable_group": self.enable_group,
-            "block_group": self.block_group
+            "block_group": self.block_group,
         }
-        with open(self.path, mode='w', encoding="utf-8") as f:
-            json.dump(dicts,
-                      f,
-                      ensure_ascii=False,
-                      indent=4)
+        with open(self.path, mode="w", encoding="utf-8") as f:
+            json.dump(dicts, f, ensure_ascii=False, indent=4)
 
     def load_config(self, path: str, usage: str):
         """加载json-file
@@ -420,19 +428,20 @@ class Service:
         每次加载插件的时候都会调用这个函数注册service
         """
         if not os.path.exists(path):
-            with open(path, mode='w', encoding='utf-8') as f:
-                f.write('')
+            with open(path, mode="w", encoding="utf-8") as f:
+                f.write("")
                 logger.info(
-                    f"插件{self.plugin_name[0]}({self.plugin_name[1]})下不存在配置文件,正在创建新文件")
+                    f"插件{self.plugin_name[0]}({self.plugin_name[1]})下不存在配置文件,正在创建新文件"
+                )
             return
-        with open(path, 'r', encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             sv_config = json.load(f)
         self.plugin_name = sv_config["name"]
-        self.usage = sv_config["usage"] if sv_config['usage'] == usage else usage
-        self.use_folder = sv_config['use_folder']
-        self.use_cacha_folder = sv_config['use_cacha_folder']
-        self.permission_change = sv_config['permission_change']
-        self.permission_use = sv_config['permission_use']
+        self.usage = sv_config["usage"] if sv_config["usage"] == usage else usage
+        self.use_folder = sv_config["use_folder"]
+        self.use_cacha_folder = sv_config["use_cacha_folder"]
+        self.permission_change = sv_config["permission_change"]
+        self.permission_use = sv_config["permission_use"]
         self.is_enable = sv_config["is_enable"]
         self.priv_use = sv_config["priv_use"]
         self.block_priv = sv_config["block_priv"]
