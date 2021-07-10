@@ -40,6 +40,7 @@ plugins = {
     "marionette": "人偶",
     "aircon": "群空调",
     "reply_msg": "自定义回复",
+    "bot_manager": "机器人管理",
     "mkmeme": "表情制作",
     "rsshub": "订阅RssHub",
     "yobot": "yobot",
@@ -56,7 +57,6 @@ plugins = {
     # 鬼知道为什么我要放进github里···
     # "priconne": "pcr相关",
     # TODO(shiying): 写好这几个插件 deadline: this life
-    # "bot_manager": "机器人管理",
     # 'web_ui': '网页界面',
     # "uma_musume": "赛马娘",
 }
