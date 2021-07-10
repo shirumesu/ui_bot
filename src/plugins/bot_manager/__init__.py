@@ -15,7 +15,9 @@ sv = Service(["bot_manager", "bot状态"], sv_help, priv_use=False)
 
 @on_command("bot状态")
 async def bot_status(session: CommandSession):
-    stat = await Service_Master().check_permission()
+    stat = await Service_Master().check_permission(
+        "bot_manager", session.event, disable_superuser=True
+    )
     if not stat[0]:
         await session.finish(stat[3])
 
