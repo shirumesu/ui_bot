@@ -27,6 +27,9 @@ PORT = 19198
 # 是否启用调试模式(更详细的输出)
 DEBUG = False
 
+# 是否检查更新(由于需要直连到github,没有梯子可能异常久甚至无法连接,会导致错误令程序退出)
+checkupdate = False
+
 # 图片路径(绝对路径，例如D:\mybot\photo)
 # 图片会在photo文件下生成
 res = r""

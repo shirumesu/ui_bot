@@ -1,18 +1,49 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.0
-@EditTime   : 2021/10/7 7:48pm(Editor: shiying)
-@Desc       : 尝试使用文件头信息判断版本以提醒用户使用git pull进行更新
+@Version    : 1.0.1
+@EditTime   : 2021/7/10 8:17pm(Editor: shiying)
+@Desc       : 自动检查更新功能完善
 """
 import os
 import sys
+import requests
+import time
+import re
 from loguru import logger
 
 import nonebot
 
 import config
 from src.Services import init_bot
+
+
+version = "1.0.1"
+
+
+def check_update():
+    logger.info("正在尝试检查更新……")
+    resp = requests.get(
+        "https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py",
+        proxies=config.proxies,
+    )
+
+    version_git = re.findall("@Version    : (.+)", resp.text)[0]
+    version_desc = re.findall("@Desc       : (.+)", resp.text)[0]
+
+    new_msg = (
+        f"发现新版本更新: {version_git}\n"
+        f"更新描述: {version_desc}\n"
+        f"请在根目录shift+右键打开终端PowerShell,使用git pull进行更新"
+    )
+    msg = (
+        f"目前uibot版本为: {version},无需更新"
+        if version_git == version
+        else f"目前uibot版本为: {version}\n{new_msg}"
+    )
+
+    logger.info(msg)
+    time.sleep(3)
 
 
 def switch_modules(modules_list):
@@ -40,7 +71,8 @@ def log(debug_mode: bool = False):
 
 
 if __name__ == "__main__":
-
+    if config.checkupdate:
+        check_update()
     os.makedirs(config.res, exist_ok=True)
 
     log(config.DEBUG)
