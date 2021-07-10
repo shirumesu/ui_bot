@@ -37,8 +37,9 @@ sv_help = """以图搜图 | 使用帮助
             -> 如果羽衣不幸被qq封了一次,那么可能会开启此插件私聊白名单
             -> 获取白名单的方法同上
 """.strip()
-sv = Service(['search_image', '以图搜图'], sv_help,
-             use_cacha_folder=True, enable_group=[703721611])
+sv = Service(
+    ["search_image", "以图搜图"], sv_help, use_cacha_folder=True, enable_group=[703721611]
+)
 
 
 @on_command("搜图", patterns=r"^搜图")
@@ -48,49 +49,48 @@ async def search_image(session: CommandSession):
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission('search_image', session.event)
+    stat = await Service_Master().check_permission("search_image", session.event)
     if not stat[0]:
         await session.finish(stat[3])
 
-    image = session.get('image')
+    image = session.get("image")
     for i in image:
         coro = [saucenao.get_sauce(i), ascii2d.search_color(i)]
         res = await asyncio.gather(*coro, return_exceptions=True)
-        ascii2d_text = ''
+        ascii2d_text = ""
         if not isinstance(res[0], dict):
-            sauce_text = 'sauceNao访问失败'
+            sauce_text = "sauceNao访问失败"
         else:
             sauce_text = await saucenao.text(res[0])
-            if float(res[0]['sim'].replace('%', '')) < config.sim_to_ascii2d:
+            if float(res[0]["sim"].replace("%", "")) < config.sim_to_ascii2d:
                 ascii2d_text = res[1]
         url_list = [
-            f'https://saucenao.com/search.php?db=999&url={i}', f'https://ascii2d.net/search/url/{i}']
+            f"https://saucenao.com/search.php?db=999&url={i}",
+            f"https://ascii2d.net/search/url/{i}",
+        ]
         urls = await short_url(url_list)
-        more_result = (f'更多结果\n'
-                       f'sauceNao: {urls[0]}\n'
-                       f'ascii2d: {urls[1]}')
+        more_result = f"更多结果\n" f"sauceNao: {urls[0]}\n" f"ascii2d: {urls[1]}"
         if ascii2d_text:
-            msg = (f'{sauce_text}'
-                   f'\n============\n'
-                   f'{ascii2d_text}\n'
-                   f'{more_result}')
+            msg = (
+                f"{sauce_text}" f"\n============\n" f"{ascii2d_text}\n" f"{more_result}"
+            )
         else:
-            msg = f'{sauce_text}\n{more_result}'
+            msg = f"{sauce_text}\n{more_result}"
         await session.send(msg, at_sender=True)
 
 
-@on_command('搜本')
+@on_command("搜本")
 async def search_eh(session: CommandSession):
     """搜本的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission('search_image', session.event)
+    stat = await Service_Master().check_permission("search_image", session.event)
     if not stat[0]:
         await session.finish(stat[3])
 
-    image = session.get('image')
+    image = session.get("image")
     for url in image:
         content = await ehentai.dl_src(url)
         data = await ehentai.get_search(content)
@@ -98,13 +98,15 @@ async def search_eh(session: CommandSession):
         if isinstance(data, str):
             await session.send(data)
             continue
-        msg = ''
+        msg = ""
         for i in data:
-            msg += (f"标题: {i['title']}\n"
-                    f"类型: {i['type']}\n"
-                    f"页数: {i['page_count']}\n"
-                    f"链接: {i['link']}\n"
-                    f"{i['im_seq']}\n")
+            msg += (
+                f"标题: {i['title']}\n"
+                f"类型: {i['type']}\n"
+                f"页数: {i['page_count']}\n"
+                f"链接: {i['link']}\n"
+                f"{i['im_seq']}\n"
+            )
         await session.send(msg)
 
 
@@ -119,14 +121,13 @@ async def short_url(url_list: list) -> list:
     """
     if not config.short_url_apikey:
         return url_list
-    url = 'http://short.uisbox.com/api/v2/action/shorten'
+    url = "http://short.uisbox.com/api/v2/action/shorten"
     urls = []
     for i in url_list:
-        params = {
-            'key': config.short_url_apikey,
-            'url': i
-        }
-        async with httpx.AsyncClient(proxies=config.proxies, params=params, timeout=5) as client:
+        params = {"key": config.short_url_apikey, "url": i}
+        async with httpx.AsyncClient(
+            proxies=config.proxies, params=params, timeout=5
+        ) as client:
             s = await client.get(url)
             if s.status_code != 200:
                 return url_list

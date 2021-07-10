@@ -11,8 +11,13 @@ from src.Services import SUPERUSER, Service, GROUP_ADMIN
 sv_help = """文件清理 | 使用帮助
 啊这…森林里的精灵们会自动打扫的 还要什么使用帮助吗？
 """.strip()
-sv = Service(['file_manager', '文件清理'], sv_help,
-             permission_use=SUPERUSER, priv_use=False, visible=False)
+sv = Service(
+    ["file_manager", "文件清理"],
+    sv_help,
+    permission_use=SUPERUSER,
+    priv_use=False,
+    visible=False,
+)
 
 
 async def rt_all_file(dir_path: str) -> list:
@@ -36,7 +41,9 @@ async def rt_all_file(dir_path: str) -> list:
     return file_list
 
 
-async def rt_res(file_list: list, now_time: float, overtime: int, list_name: str) -> None:
+async def rt_res(
+    file_list: list, now_time: float, overtime: int, list_name: str
+) -> None:
     """清理文件
 
     对于传入的文件列表,对比创建时间以及现在时间,如果少于overtime则清理
@@ -55,23 +62,21 @@ async def rt_res(file_list: list, now_time: float, overtime: int, list_name: str
         size = os.path.getsize(file)
         br = abs(ctime - now_time)
         if os.path.isfile(file) and br > overtime:
-            strf_ctime = time.strftime(
-                r'%Y-%m-%d %H %M %S', time.localtime(ctime))
+            strf_ctime = time.strftime(r"%Y-%m-%d %H %M %S", time.localtime(ctime))
             os.remove(file)
             total_size += size
             num += 1
             logger.debug(
-                f"清除文件:{file}\n文件大小:{round((size/1024),2)} KB\n创建时间{strf_ctime}")
+                f"清除文件:{file}\n文件大小:{round((size/1024),2)} KB\n创建时间{strf_ctime}"
+            )
     logger.info(
-        f"定期清理{list_name}文件完毕,清理文件数目:{num},总大小:{round(total_size/(1024*1024),2)} MB")
+        f"定期清理{list_name}文件完毕,清理文件数目:{num},总大小:{round(total_size/(1024*1024),2)} MB"
+    )
 
 
-@nonebot.scheduler.scheduled_job(
-    'interval',
-    minutes=60
-)
+@nonebot.scheduler.scheduled_job("interval", minutes=60)
 async def _():
     """定时函数 定时清理文件"""
     now_time = time.time()
-    file_list = await rt_all_file(os.path.join(cfg.res, 'cacha'))
-    await rt_res(file_list, now_time, 600, r'res/cacha')
+    file_list = await rt_all_file(os.path.join(cfg.res, "cacha"))
+    await rt_res(file_list, now_time, 600, r"res/cacha")

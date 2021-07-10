@@ -38,18 +38,28 @@ sv_help = """搞的很快的插件！ | 使用帮助
         开启原图 -> setu功能开启原图
         关闭原图 -> setu功能关闭原图
 """.strip()
-sv = Service(['setu', '获取色图'], sv_help, use_cacha_folder=True,
-             permission_change=GROUP_ADMIN, priv_use=False)
+sv = Service(
+    ["setu", "获取色图"],
+    sv_help,
+    use_cacha_folder=True,
+    permission_change=GROUP_ADMIN,
+    priv_use=False,
+)
 
-if os.path.exists(os.path.join(os.getcwd(), 'src', 'plugins', 'setu', 'config.json')):
-    with open(os.path.join(os.getcwd(), 'src', 'plugins', 'setu', 'config.json'), 'r', encoding='utf-8') as f:
+if os.path.exists(os.path.join(os.getcwd(), "src", "plugins", "setu", "config.json")):
+    with open(
+        os.path.join(os.getcwd(), "src", "plugins", "setu", "config.json"),
+        "r",
+        encoding="utf-8",
+    ) as f:
         self_config = json.load(f)
 else:
-    with open(os.path.join(os.getcwd(), 'src', 'plugins', 'setu', 'config.json'), 'w', encoding='utf-8') as f:
-        self_config = {
-            'group': {},
-            'private': {}
-        }
+    with open(
+        os.path.join(os.getcwd(), "src", "plugins", "setu", "config.json"),
+        "w",
+        encoding="utf-8",
+    ) as f:
+        self_config = {"group": {}, "private": {}}
         json.dump(self_config, f, indent=4, ensure_ascii=False)
 
 
@@ -64,30 +74,36 @@ async def set_original(session):
     Args:
         session: bot封装的信息
     """
-    stat = await Service_Master().check_permission('setu', session.event)
+    stat = await Service_Master().check_permission("setu", session.event)
     if not stat[0]:
         if stat[3]:
             await session.finish(stat[3])
         else:
-            await session.finish(f'你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}')
-    if session.event.detail_type == 'group':
-        gid = str(session.event['group_id'])
+            await session.finish(
+                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
+            )
+    if session.event.detail_type == "group":
+        gid = str(session.event["group_id"])
     else:
         gid = None
-    uid = str(session.event['user_id'])
-    if '开启' in session.event['raw_message']:
+    uid = str(session.event["user_id"])
+    if "开启" in session.event["raw_message"]:
         if gid:
-            self_config['group'][gid] = True
+            self_config["group"][gid] = True
         else:
-            self_config['private'][uid] = True
+            self_config["private"][uid] = True
     else:
         if gid:
-            self_config['group'][gid] = False
+            self_config["group"][gid] = False
         else:
-            self_config['private'][uid] = False
-    with open(os.path.join(os.getcwd(), 'src', 'plugins', 'setu', 'config.json'), 'w', encoding='utf-8') as f:
+            self_config["private"][uid] = False
+    with open(
+        os.path.join(os.getcwd(), "src", "plugins", "setu", "config.json"),
+        "w",
+        encoding="utf-8",
+    ) as f:
         json.dump(self_config, f, ensure_ascii=False, indent=4)
-    await session.send(session.event['raw_message'][:2]+'成功')
+    await session.send(session.event["raw_message"][:2] + "成功")
 
 
 @on_command("色图", patterns=r"^[色|涩]图([1-9][0-9]{0,1}|100)([份|张])", privileged=True)
@@ -97,7 +113,7 @@ async def get_setu(session):
     Args:
         session: bot封装的信息
     """
-    stat = await Service_Master().check_permission('setu', session.event)
+    stat = await Service_Master().check_permission("setu", session.event)
     if not stat[0]:
         await session.finish(stat[3])
 
@@ -113,13 +129,18 @@ async def get_setu(session):
         logger.info("获取色图失败")
 
     coro = []
-    for i in range(result['count']):
-        gid = session.event['user_id'] if session.event.detail_type == 'private' else session.event['group_id']
-        coro.append(process(result['data'][i],
-                    session.event.detail_type == 'private', gid))
+    for i in range(result["count"]):
+        gid = (
+            session.event["user_id"]
+            if session.event.detail_type == "private"
+            else session.event["group_id"]
+        )
+        coro.append(
+            process(result["data"][i], session.event.detail_type == "private", gid)
+        )
     img_data = await asyncio.gather(*coro, return_exceptions=True)
     img_data = [x for x in img_data if isinstance(x, str)]
-    msg = '\n'.join(img_data)
+    msg = "\n".join(img_data)
     await session.send(msg.strip(), at_sender=True)
 
 
@@ -134,12 +155,14 @@ async def process(result: dict, to_me: bool, gid: int) -> str:
     Return:
         可以直接发送的字符串以及CQ code
     """
-    seq = await get_image(result['url'], to_me, gid)
-    msg = (f"作者:{result['author']}(id:{result['uid']})\n"
-           f"标题:{result['title']}(id:{result['pid']})\n"
-           f"图片链接:{result['url']}\n"
-           f'tags:' + '，'.join(result['tags']) + '\n'
-           f'{seq}')
+    seq = await get_image(result["url"], to_me, gid)
+    msg = (
+        f"作者:{result['author']}(id:{result['uid']})\n"
+        f"标题:{result['title']}(id:{result['pid']})\n"
+        f"图片链接:{result['url']}\n"
+        f"tags:" + "，".join(result["tags"]) + "\n"
+        f"{seq}"
+    )
     return msg
 
 
@@ -161,35 +184,39 @@ async def get_image(url: str, to_me: bool, gid: int) -> str:
     gid = str(gid)
     original = False
     if to_me:
-        if gid in self_config['private']:
-            if self_config['private'][gid]:
+        if gid in self_config["private"]:
+            if self_config["private"][gid]:
                 original = True
     else:
-        if gid in self_config['group']:
-            if self_config['group'][gid]:
+        if gid in self_config["group"]:
+            if self_config["group"][gid]:
                 original = True
     if not original:
         url = url.replace("img-original", "c/480x960/img-master")
-        if '.jpg' in url:
+        if ".jpg" in url:
             url = url.replace(".jpg", "_master1200.jpg")
         url = url.replace(".png", "_master1200.jpg")
     if not cfg.proxy_pixiv:
-        url = url.replace('i.pixiv.cat', 'i.pximg.net')
+        url = url.replace("i.pixiv.cat", "i.pximg.net")
 
-    header = {
-        'referer': 'https://www.pixiv.net/'
-    }
-    async with httpx.AsyncClient(timeout=30, proxies=cfg.proxies_for_all, headers=header, verify=False) as s:
+    header = {"referer": "https://www.pixiv.net/"}
+    async with httpx.AsyncClient(
+        timeout=30, proxies=cfg.proxies_for_all, headers=header, verify=False
+    ) as s:
         res = await s.get(url)
     content = res.content
     if "_master1200.jpg" in url:
-        url = url.replace("_master1200.jpg", '')
-    folder_name = url.rsplit('/', 1)[1]
-    path = os.path.join(cfg.res, 'cacha', 'setu',
-                        folder_name.replace('.jpg', '').replace('.png', '') + '.png')
-    with open(path, 'wb') as f:
+        url = url.replace("_master1200.jpg", "")
+    folder_name = url.rsplit("/", 1)[1]
+    path = os.path.join(
+        cfg.res,
+        "cacha",
+        "setu",
+        folder_name.replace(".jpg", "").replace(".png", "") + ".png",
+    )
+    with open(path, "wb") as f:
         f.write(content)
-    path = r'file:///' + path
+    path = r"file:///" + path
     seq = MessageSegment.image(path)
     return seq
 
@@ -210,17 +237,15 @@ async def get_api(session: CommandSession, keyword: str, r18: int, num: int) -> 
         返回图片的json字典
     """
     urls = "https://api.lolicon.app/setu/v1"
-    data = {
-        'keyword': keyword,
-        'r18': r18,
-        'num': int(num)
-    }
-    async with httpx.AsyncClient(params=data, timeout=15, proxies=cfg.proxies_for_all, verify=False) as s:
+    data = {"keyword": keyword, "r18": r18, "num": int(num)}
+    async with httpx.AsyncClient(
+        params=data, timeout=15, proxies=cfg.proxies_for_all, verify=False
+    ) as s:
         res = await s.get(urls)
         if res.status_code != 200:
             raise RuntimeError("请求结果不正确")
         result = res.json()
-        if result['msg'] == "没有符合条件的色图":
+        if result["msg"] == "没有符合条件的色图":
             await session.finish("没有符合条件的涩图", at_sender=True)
         return result
 
@@ -228,27 +253,27 @@ async def get_api(session: CommandSession, keyword: str, r18: int, num: int) -> 
 @get_setu.args_parser
 async def _(session: CommandSession):
     """解析传入的指令与参数"""
-    com = session.ctx.raw_message.strip().split(' ')
+    com = session.ctx.raw_message.strip().split(" ")
 
-    num = re.findall(r'[色|涩]图([1-9][0-9]{0,1}|100)(?:[份|张])', com[0])
+    num = re.findall(r"[色|涩]图([1-9][0-9]{0,1}|100)(?:[份|张])", com[0])
     if not num:
         num = [1]
-    session.state['num'] = num[0]
+    session.state["num"] = num[0]
     com.pop(0)
 
-    session.state['r18'] = 0
+    session.state["r18"] = 0
     for i in com:
-        if i == 'R18' or i == 'r18':
-            session.state['r18'] = 1
+        if i == "R18" or i == "r18":
+            session.state["r18"] = 1
             try:
-                com.remove('r18')
+                com.remove("r18")
             except ValueError:
-                com.remove('R18')
+                com.remove("R18")
             break
 
     if not com:
-        session.state['keyword'] = ''
+        session.state["keyword"] = ""
     elif len(com) == 1:
-        session.state['keyword'] = com[0]
+        session.state["keyword"] = com[0]
     else:
-        session.state['keyword'] = ''
+        session.state["keyword"] = ""

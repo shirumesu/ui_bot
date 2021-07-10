@@ -44,7 +44,7 @@ async def sendmsg(msg: dict) -> dict:
         "no_china": False,
         "quote_in_not_china": False,
         "is_tweet": False,
-        "seq": ""
+        "seq": "",
     }
     # 回复
     if msg["in_reply_to_status_id"] != None:
@@ -60,8 +60,7 @@ async def sendmsg(msg: dict) -> dict:
         try:
             if msg["entities"]["urls"]["media"]:
                 if msg["entities"]["urls"]["media"]["type"] == "photo":
-                    data["imgurl"].append(
-                        msg["entities"]["media"][0]["media_url"])
+                    data["imgurl"].append(msg["entities"]["media"][0]["media_url"])
                     data["have_img"] = True
                 else:
                     data["isvideo"] = True
@@ -93,14 +92,17 @@ async def sendmsg(msg: dict) -> dict:
             data["RTtext"] = msg["retweeted_status"]["full_text"]
         except:
             pass
-        #data["RTuser"] = msg["full_text"][4:].split(":", 1)[0]
+        # data["RTuser"] = msg["full_text"][4:].split(":", 1)[0]
         data["RTuser"] = msg["retweeted_status"]["user"]["name"]
         try:
             if msg["retweeted_status"]["entities"]["urls"]["media"]:
-                if msg["retweeted_status"]["entities"]["urls"]["media"][
-                        "type"] == "photo":
-                    data["imgurl"].append(msg["retweeted_status"]["entities"]
-                                          ["media"][0]["media_url"])
+                if (
+                    msg["retweeted_status"]["entities"]["urls"]["media"]["type"]
+                    == "photo"
+                ):
+                    data["imgurl"].append(
+                        msg["retweeted_status"]["entities"]["media"][0]["media_url"]
+                    )
                     data["have_img"] = True
                 else:
                     data["isvideo"] = True
@@ -143,8 +145,7 @@ async def sendmsg(msg: dict) -> dict:
         try:
             if msg["entities"]["urls"]["media"]:
                 if msg["entities"]["urls"]["media"]["type"] == "photo":
-                    data["imgurl"].append(
-                        msg["entities"]["media"][0]["media_url"])
+                    data["imgurl"].append(msg["entities"]["media"][0]["media_url"])
                     data["have_img"] = True
                 else:
                     data["isvideo"] = True
@@ -170,8 +171,7 @@ async def sendmsg(msg: dict) -> dict:
         try:
             if msg["entities"]["urls"]["media"]:
                 if msg["entities"]["urls"]["media"]["type"] == "photo":
-                    data["imgurl"].append(
-                        msg["entities"]["media"][0]["media_url"])
+                    data["imgurl"].append(msg["entities"]["media"][0]["media_url"])
                     data["have_img"] = True
                 else:
                     data["isvideo"] = True
@@ -197,8 +197,11 @@ async def sendmsg(msg: dict) -> dict:
     if data["isquote"] == True:
         data["text"] = data["text"][:-23]
     if data["text"] != None:
-        if (data["isvideo"] == True or data["have_img"] == True
-                and data["text"][-23:-10] == "https://t.co/") == True:
+        if (
+            data["isvideo"] == True
+            or data["have_img"] == True
+            and data["text"][-23:-10] == "https://t.co/"
+        ) == True:
             data["text"] = data["text"][:-23]
 
     # 去掉多余的@user/reply_link
@@ -226,8 +229,7 @@ async def sendmsg(msg: dict) -> dict:
     if data["lang"] != "zh":
         data["no_china"] = True
         try:
-            data["translate_result"] = await baidu_translate(
-                data["text"])
+            data["translate_result"] = await baidu_translate(data["text"])
         except:
             pass
 

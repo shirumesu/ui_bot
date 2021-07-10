@@ -16,11 +16,13 @@ class SQL_service:
 
     def __enter__(self):
         """使用with语法进入 连接数据库"""
-        self.conn = sqlite3.connect('user_data.db')
+        self.conn = sqlite3.connect("user_data.db")
         self.curs = self.conn.cursor()
         return self
 
-    def insert(self, table_name: str, columns: list[str], values: list[str/int]) -> None:
+    def insert(
+        self, table_name: str, columns: list[str], values: list[str / int]
+    ) -> None:
         """插入语句
 
         Args:
@@ -28,15 +30,19 @@ class SQL_service:
             columns: 要插入的栏位名,格式list[str,str]
             values: 对应栏位的数据,格式list[str/int,str/int]
         """
-        columns = [str(x).strip() if x !=
-                   'null' else None for x in columns.split(',')]
-        values = [str(x).strip() for x in values.split(',')]
+        columns = [str(x).strip() if x != "null" else None for x in columns.split(",")]
+        values = [str(x).strip() for x in values.split(",")]
         text_col = str(columns)[1:-1]
         text_val = str(values)[1:-1]
-        self.curs.execute(
-            f'insert into {table_name}({text_col}) values ({text_val})')
+        self.curs.execute(f"insert into {table_name}({text_col}) values ({text_val})")
 
-    def update(self, table_name: str, columns: list[str], values: list[str/int], condition: str) -> None:
+    def update(
+        self,
+        table_name: str,
+        columns: list[str],
+        values: list[str / int],
+        condition: str,
+    ) -> None:
         """更新语句
 
         Args:
@@ -45,8 +51,8 @@ class SQL_service:
             values: 对应栏位的数据,格式list[str/int,str/int]
             condition: 条件,为sql语句中where后的所有文本
         """
-        text = ''
-        for column, value in zip(columns.split(','), values.split(',')):
+        text = ""
+        for column, value in zip(columns.split(","), values.split(",")):
             text += f"{column} = {value},"
             text = text[:-1]
         self.curs.execute(f"update {table_name} set {text} where {condition}")
@@ -60,8 +66,14 @@ class SQL_service:
         """
         self.curs.execute(f"delect from {table_name} where {condition}")
 
-    def select(self, pros: str, table_name: str, condition_0: bool = None,
-               condition_1=None, tof: bool = False):
+    def select(
+        self,
+        pros: str,
+        table_name: str,
+        condition_0: bool = None,
+        condition_1=None,
+        tof: bool = False,
+    ):
         """Select语句
 
         Args:
@@ -73,11 +85,12 @@ class SQL_service:
         """
         text_list = []
         if condition_0:
-            for con1, con2 in zip(condition_0.split(','), condition_1.split(',')):
+            for con1, con2 in zip(condition_0.split(","), condition_1.split(",")):
                 text_list.append(f"{con1.strip()} = '{con2.strip()}'")
-            text = ' and '.join(text_list) if tof else 'or'.join(text_list)
+            text = " and ".join(text_list) if tof else "or".join(text_list)
             self.curs.execute(
-                f"select {pros} from {table_name} where {'' if not condition_0 else text}")
+                f"select {pros} from {table_name} where {'' if not condition_0 else text}"
+            )
         else:
             self.curs.execute(f"select {pros} from {table_name}")
         return self.curs

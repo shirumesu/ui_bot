@@ -17,22 +17,27 @@ async def dl_image(url: str) -> list:
     Returns:
         list: 保存路径
     """
-    header = {
-        'referer': 'https://www.pixiv.net/'
-    }
-    async with httpx.AsyncClient(proxies=config.proxies, headers=header, timeout=30) as s:
+    header = {"referer": "https://www.pixiv.net/"}
+    async with httpx.AsyncClient(
+        proxies=config.proxies, headers=header, timeout=30
+    ) as s:
         res = await s.get(url)
         if res.status_code == 404:
-            url = url.replace(
-                'jpg', 'png') if '.jpg' in url else url.replace('png', 'jpg')
-            async with httpx.AsyncClient(proxies=config.proxies, headers=header, timeout=30) as s:
+            url = (
+                url.replace("jpg", "png")
+                if ".jpg" in url
+                else url.replace("png", "jpg")
+            )
+            async with httpx.AsyncClient(
+                proxies=config.proxies, headers=header, timeout=30
+            ) as s:
                 res = await s.get(url)
                 if res.status_code != 200:
                     raise RuntimeError
         elif res.status_code != 200:
             raise RuntimeError
-    file_name = ''.join(random.sample(string.ascii_letters + string.digits, 8))
-    save_path = os.path.join(config.res, 'cacha', 'pixiv', file_name + '.png')
-    with open(save_path, 'wb') as f:
+    file_name = "".join(random.sample(string.ascii_letters + string.digits, 8))
+    save_path = os.path.join(config.res, "cacha", "pixiv", file_name + ".png")
+    with open(save_path, "wb") as f:
         f.write(res.content)
     return save_path

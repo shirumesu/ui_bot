@@ -23,11 +23,11 @@ sv_help = """使用帮助 |使用帮助
 all_help = """详细使用帮助
 咕了
 """.strip()
-sv = Service(['usage', '使用帮助'], sv_help, permission_change=GROUP_ADMIN)
+sv = Service(["usage", "使用帮助"], sv_help, permission_change=GROUP_ADMIN)
 svm = Service_Master()
 
 
-@on_command('使用帮助', aliases=('帮助', 'help'))
+@on_command("使用帮助", aliases=("帮助", "help"))
 async def usage(session: CommandSession):
     """发送使用帮助
 
@@ -37,12 +37,14 @@ async def usage(session: CommandSession):
     Args:
         session: bot封装的信息
     """
-    stat = await Service_Master().check_permission('usage', session.event)
+    stat = await Service_Master().check_permission("usage", session.event)
     if not stat[0]:
         if stat[3]:
             await session.finish(stat[3])
         else:
-            await session.finish(f'你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}')
+            await session.finish(
+                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
+            )
     com = session.current_arg_text.strip()
     if not com:
         msg = sv_help
@@ -57,11 +59,11 @@ async def usage(session: CommandSession):
                 found = True
                 break
         if not found:
-            msg = '没有找到该插件,可以发送使用帮助获取使用帮助'
+            msg = "没有找到该插件,可以发送使用帮助获取使用帮助"
     await session.send(msg)
 
 
-@on_command('详细使用帮助')
+@on_command("详细使用帮助")
 async def usage_all(session: CommandSession):
     """同上
 
@@ -71,10 +73,12 @@ async def usage_all(session: CommandSession):
     Args:
         session: bot封装的信息
     """
-    stat = await Service_Master().check_permission('usage', session.event)
+    stat = await Service_Master().check_permission("usage", session.event)
     if not stat[0]:
         if stat[3]:
             await session.finish(stat[3])
         else:
-            await session.finish(f'你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}')
+            await session.finish(
+                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
+            )
     await session.send(all_help)

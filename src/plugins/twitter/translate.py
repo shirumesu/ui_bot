@@ -20,29 +20,31 @@ async def baidu_translate(text: str) -> str:
     Returns:
         str: 翻译后的文本
     """
-    url = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
+    url = "https://fanyi-api.baidu.com/api/trans/vip/translate"
     data = {
-        'appid': api_id,
-        'secretKey': secret_key,
-        'salt': random.randint(32768, 65536),
-        'sign': '',
-        'q': text,
-        'from': 'auto',
-        'to': 'zh'
+        "appid": api_id,
+        "secretKey": secret_key,
+        "salt": random.randint(32768, 65536),
+        "sign": "",
+        "q": text,
+        "from": "auto",
+        "to": "zh",
     }
     if not text:
         return
-    sign = data['appid'] + data['q'] + str(data['salt']) + data['secretKey']
+    sign = data["appid"] + data["q"] + str(data["salt"]) + data["secretKey"]
     sign.encode()
-    data['sign'] = hashlib.md5(sign.encode()).hexdigest()
-    async with httpx.AsyncClient(params=data, proxies=config.proxies_for_all, timeout=15) as s:
+    data["sign"] = hashlib.md5(sign.encode()).hexdigest()
+    async with httpx.AsyncClient(
+        params=data, proxies=config.proxies_for_all, timeout=15
+    ) as s:
         res = await s.get(url)
         if res.status_code != 200:
             raise RuntimeError
         js = res.json()
-        if 'error_code' in js:
+        if "error_code" in js:
             await asyncio.sleep(1)
             raise RuntimeError
-    for i in js['trans_result']:
-        text = text.replace(i['src'], i['dst'])
+    for i in js["trans_result"]:
+        text = text.replace(i["src"], i["dst"])
     return text

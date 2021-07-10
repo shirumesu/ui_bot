@@ -28,14 +28,14 @@ sv_help = """切噜语翻译 | 使用帮助
 切……切切切!?切拉唎卟,切唎唎?切拉唎啰,切拉唎啰啰啰?切啪拉啪……切噜，切噜噜噜……
 哈?你突然在说什么呢学长…真差劲,我根本没想到你会说这样的话……等…住手!别!别过来!这里不行!
 """
-sv = Service(['cheru', '切噜语翻译'], sv_help, permission_change=GROUP_ADMIN)
+sv = Service(["cheru", "切噜语翻译"], sv_help, permission_change=GROUP_ADMIN)
 
-CHERU_SET = '切卟叮咧哔唎啪啰啵嘭噜噼巴拉蹦铃'
+CHERU_SET = "切卟叮咧哔唎啪啰啵嘭噜噼巴拉蹦铃"
 CHERU_DIC = {c: i for i, c in enumerate(CHERU_SET)}
-ENCODING = 'gb18030'
-rex_split = re.compile(r'\b', re.U)
-rex_word = re.compile(r'^\w+$', re.U)
-rex_cheru_word: re.Pattern = re.compile(rf'切[{CHERU_SET}]+', re.U)
+ENCODING = "gb18030"
+rex_split = re.compile(r"\b", re.U)
+rex_word = re.compile(r"^\w+$", re.U)
+rex_cheru_word: re.Pattern = re.compile(rf"切[{CHERU_SET}]+", re.U)
 
 
 def grouper(iterable, n, fillvalue=None):
@@ -44,22 +44,22 @@ def grouper(iterable, n, fillvalue=None):
 
 
 def word2cheru(w: str) -> str:
-    c = ['切']
+    c = ["切"]
     for b in w.encode(ENCODING):
-        c.append(CHERU_SET[b & 0xf])
-        c.append(CHERU_SET[(b >> 4) & 0xf])
-    return ''.join(c)
+        c.append(CHERU_SET[b & 0xF])
+        c.append(CHERU_SET[(b >> 4) & 0xF])
+    return "".join(c)
 
 
 def cheru2word(c: str) -> str:
-    if not c[0] == '切' or len(c) < 2:
+    if not c[0] == "切" or len(c) < 2:
         return c
     b = []
-    for b1, b2 in grouper(c[1:], 2, '切'):
+    for b1, b2 in grouper(c[1:], 2, "切"):
         x = CHERU_DIC.get(b2, 0)
         x = x << 4 | CHERU_DIC.get(b1, 0)
         b.append(x)
-    return bytes(b).decode(ENCODING, 'replace')
+    return bytes(b).decode(ENCODING, "replace")
 
 
 def str2cheru(s: str) -> str:
@@ -68,39 +68,43 @@ def str2cheru(s: str) -> str:
         if rex_word.search(w):
             w = word2cheru(w)
         c.append(w)
-    return ''.join(c)
+    return "".join(c)
 
 
 def cheru2str(c: str) -> str:
     return rex_cheru_word.sub(lambda w: cheru2word(w.group()), c)
 
 
-@on_command('切噜一下')
+@on_command("切噜一下")
 async def cherulize(session: CommandSession):
-    stat = await Service_Master().check_permission('cheru', session.event)
+    stat = await Service_Master().check_permission("cheru", session.event)
     if not stat[0]:
         if stat[3]:
             await session.finish(stat[3])
         else:
-            await session.finish(f'你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}')
+            await session.finish(
+                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
+            )
     s = session.current_arg_text
     if len(s) > 500:
-        await session.finish('切、切噜太长切不动勒切噜噜...', at_sender=True)
-    await session.finish('切噜～♪' + str2cheru(s))
+        await session.finish("切、切噜太长切不动勒切噜噜...", at_sender=True)
+    await session.finish("切噜～♪" + str2cheru(s))
 
 
-@on_command('切噜～♪', patterns=r"^切噜～♪*")
+@on_command("切噜～♪", patterns=r"^切噜～♪*")
 async def decherulize(session: CommandSession):
-    stat = await Service_Master().check_permission('cheru', session.event)
+    stat = await Service_Master().check_permission("cheru", session.event)
     if not stat[0]:
         if stat[3]:
             await session.finish(stat[3])
         else:
-            await session.finish(f'你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}')
+            await session.finish(
+                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
+            )
     s = session.current_arg_text[4:]
     if len(s) > 1501:
-        await session.finish('切、切噜太长切不动勒切噜噜...', at_sender=True)
+        await session.finish("切、切噜太长切不动勒切噜噜...", at_sender=True)
     cheru = escape(cheru2str(s))
-    s = (s[:3] + '...' + s[-3:]) if len(s) > 10 else s
-    msg = '\n' + s + '的切噜噜是：\n' + cheru
+    s = (s[:3] + "..." + s[-3:]) if len(s) > 10 else s
+    msg = "\n" + s + "的切噜噜是：\n" + cheru
     await session.finish(msg, at_sender=True)
