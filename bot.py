@@ -1,3 +1,10 @@
+"""
+@Author     : shiying (github: LYshiying)
+@Contact    : Twitter: @shiying_ui | QQ: 839778960
+@Version    : 1.0.0
+@EditTime   : 2021/10/7 7:48pm(Editor: shiying)
+@Desc       : 尝试使用文件头信息判断版本以提醒用户使用git pull进行更新
+"""
 import os
 import sys
 from loguru import logger
