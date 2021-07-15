@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.1
-@EditTime   : 2021/7/10 8:17pm(Editor: shiying)
-@Desc       : 自动检查更新功能完善
+@Version    : 1.0.2
+@EditTime   : 2021/7/15 4:41pm(Editor: shiying)
+@Desc       : 新增了碧蓝航线wiki相关的功能,并且重新调整了权限配置,优化了使用帮助的文本
 """
 import os
 import sys
@@ -18,7 +18,7 @@ import config
 from src.Services import init_bot
 
 
-version = "1.0.1"
+version = "1.0.2"
 
 
 def check_update():
