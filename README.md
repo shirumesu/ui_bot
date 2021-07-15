@@ -10,6 +10,7 @@
 基于[Nonebot 1](https://github.com/nonebot/nonebot)可以在qq上配合[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)运行，目前已经支持:
 - 获取色图
 - 订阅推特
+- 碧蓝航线wiki相关支持
 - 订阅pixiv画师,pixivison,查看榜单以及画师精选图等(使用pixiv官方api,稳定性大大提高了！)
 - 订阅RssHub
 - 搜图
@@ -55,11 +56,14 @@
 4. 安装并配置[go-cqhttp](https://github.com/Mrs4s/go-cqhttp),教程请自行去查看[文档](https://docs.go-cqhttp.org/)
     - 如果你知道要干什么，也可以安装你喜欢的框架
     - 并未对其他框架做测试(不保证可用性(good luck.jpg))
-  
-5. 双击bot.py启动,同时别忘了go-cqhttp,一并启动
+ 
+5. 先双击bot初始化一下,然后关闭窗口,去./res/source/blhxwiki/下下载对应版本的chrome-drive
+    - 并不难,linux跟windows都有支持,并未支持mac版本的drive,有报错自行百度即可,一般都是简单的版本跟安装问题,几分钟就能处理完
+ 
+6. 双击bot.py启动,同时别忘了go-cqhttp,一并启动
     - bot.py初始化的时候会生成一些插件配置文件以及目录
   
-6. 安装完毕,使用方法等请在qq私聊bot发送'使用帮助'/'查看所有插件'查看
+7. 安装完毕,使用方法等请在qq私聊bot发送'使用帮助'/'查看所有插件'查看
 
 ## 关于api
 由于本项目使用了不少api,需要用户自己申请,以下放出部分教程(都是别人的)  
@@ -67,13 +71,10 @@
     1. [推特开发者账号](https://blog.csdn.net/jzy3711/article/details/86535692)
     2. [创建app](https://www.howtoing.com/how-to-create-a-twitter-app)
     > 私货:申请开发者理由写学生需要关注一些不同的消息(总之就是学习方面),成功率会高很多
-2. 色图
-    1. [lolicon](https://api.lolicon.app/#/setu)  
-    这个需要telegram(梯子)
-3. 搜图
+2. 搜图
     1. [sauceNAO](https://saucenao.com/)  
     这个只需要注册账号就好
-4. 百度  
+3. 百度  
     1. [百度翻译](https://api.fanyi.baidu.com/doc/21)  
     跟着“如何使用通用翻译API？”一步步注册到第四步即可
     2. [百度ocr](https://cloud.baidu.com/doc/OCR/index.html)  
