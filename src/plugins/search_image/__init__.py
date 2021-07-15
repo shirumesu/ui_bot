@@ -7,7 +7,7 @@ from nonebot.command import CommandManager
 
 import config
 from src.plugins.search_image import saucenao, ascii2d, ehentai
-from src.Services import Service, Service_Master, perm
+from src.Services import Service, Service_Master, GROUP_ADMIN
 
 
 sv_help = """以图搜图 | 使用帮助
@@ -38,7 +38,10 @@ sv_help = """以图搜图 | 使用帮助
             -> 获取白名单的方法同上
 """.strip()
 sv = Service(
-    ["search_image", "以图搜图"], sv_help, use_cacha_folder=True, enable_group=[703721611]
+    ["search_image", "以图搜图"],
+    sv_help,
+    use_cacha_folder=True,
+    permission_change=GROUP_ADMIN,
 )
 
 

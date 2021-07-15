@@ -76,7 +76,11 @@ A.官方解释:pixivision是将以漫画，小说，音乐为主的由创意而�
 个人通俗解释:有人整理各种专题(例如打伞美少女,吸血鬼帅哥,穿雨衣,蛋糕甜食)等主题的推荐分享,以及一些采访等,几乎可等同于每天都能刷到的‘xxx插画推荐,快点进来看看吧’ 
 """
 sv = Service(
-    ["pixiv", "pixiv相关"], sv_help, use_cacha_folder=True, permission_change=GROUP_ADMIN
+    ["pixiv", "pixiv相关"],
+    sv_help,
+    use_cacha_folder=True,
+    permission_use=GROUP_ADMIN,
+    permission_change=GROUP_ADMIN,
 )
 
 bot = get_bot()

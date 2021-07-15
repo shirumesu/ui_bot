@@ -2,7 +2,7 @@ from aiocqhttp import message
 from nonebot import on_command, CommandSession, CQHttpError, get_bot
 
 import config
-from src.Services import Service, Service_Master, perm, GROUP_ADMIN
+from src.Services import Service, Service_Master, perm, SUPERUSER
 
 
 sv_help = """人偶功能 | 使用帮助
@@ -16,7 +16,11 @@ sv_help = """人偶功能 | 使用帮助
     图片问题 -> 是可以发送图片过去的！请连带在**一个消息**里
 """
 sv = Service(
-    ["marionette", "人偶"], sv_help, permission_change=GROUP_ADMIN, priv_use=False
+    ["marionette", "人偶"],
+    sv_help,
+    permission_use=SUPERUSER,
+    permission_change=SUPERUSER,
+    priv_use=False,
 )
 
 bot = get_bot()
@@ -85,14 +89,6 @@ async def send_to_master(session: CommandSession) -> None:
     Args:
         session (CommandSession): bot封装的消息
     """
-    stat = await Service_Master().check_permission("marionette", session.event)
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-        else:
-            await session.finish(
-                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
-            )
     msg = session.get("msg")
     respon = None
     respon = await bot.send_private_msg(user_id=config.SUPERUSERS[0], message=msg)

@@ -174,8 +174,6 @@ async def search(Bot, event, plutin_manager):
     gid = event.group_id
     if str(gid) not in self_config or msg not in self_config[str(gid)]:
         return
-    s = random.choice([True, False])
-    if s:
-        await bot.send_group_msg(
-            group_id=gid, message=random.choice(self_config[str(gid)][msg])
-        )
+    await bot.send_group_msg(
+        group_id=gid, message=random.choice(self_config[str(gid)][msg])
+    )
