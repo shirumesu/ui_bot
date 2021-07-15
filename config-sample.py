@@ -47,6 +47,7 @@ plugins = {
     "mkmeme": "表情制作",
     "rsshub": "订阅RssHub",
     "yobot": "yobot",
+    "blhxwiki": "碧蓝航线wiki",
     "twitter": "推特订阅",  # 没有梯子(下面proxies没有填)的请不要开启,会无法获取
     "pixiv": "pixiv相关",  # 同上
     "translate": "翻译漫画",  # 需要百度翻译以及百度ocr API 否则无法使用
@@ -81,6 +82,9 @@ proxy_pixiv = True
 
 # 自定义回复开关(有些时候会太吵了)
 reply_switch = True
+
+# 系统设置(是否为windows,否则为linux,目前仅支持这两个,受影响插件为blhxwiki,由于使用selenium,需要对应driver和代码)
+windows = True
 
 # Twitter模块用到的api
 Access_token_for_Twitter = ""
