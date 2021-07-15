@@ -227,7 +227,7 @@ class Service_Master:
                     user_perm = await self.role_to_perm(event, event["sender"]["role"])
                 else:
                     user_perm = PRIVATE_USER
-                if user_perm < sv.permission_change:
+                if user_perm > sv.permission_change:
                     return [False, user_perm, sv.permission_use, "你的权限不足以修改此插件！"]
                 else:
                     return [True, user_perm, sv.permission_use, ""]
