@@ -1035,9 +1035,10 @@ async def check_multi_update():
                     if isinstance(i[1], int):
                         subcribe[i[0]]['last_id'] = i[1]
                 except Exception:
-                    logger.error(
-                        f"获取{subcribe[i[0]]['name']}(id:{subcribe[i[0]]['id']})失败,自动跳过推文")
-                    continue
+                    try:
+                        logger.error(f"获取{subcribe[i[0]]['name']}(id:{subcribe[i[0]]['id']})失败,自动跳过推文")
+                    except:
+                        continue
                 del subcribe[i[0]]['id']
             success = [x for x in res if isinstance(x, list)]
             logger.info(
