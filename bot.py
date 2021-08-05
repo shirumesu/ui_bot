@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.2.1
+@Version    : 1.0.2.2
 @EditTime   : 2021/7/15 4:41pm(Editor: shiying)
-@Desc       : 新增了碧蓝航线wiki相关的功能,并且重新调整了权限配置,优化了使用帮助的文本
+@Desc       : 修复了推特出现bug无限复读的错误,错误原因:出错后跳出了代码,没有进行到最后的更新数据库操作
 """
 import os
 import sys
@@ -18,7 +18,7 @@ import config
 from src.Services import init_bot
 
 
-version = "1.0.2.1"
+version = "1.0.2.2"
 
 
 def check_update():

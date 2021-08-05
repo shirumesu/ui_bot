@@ -82,8 +82,14 @@ sv_help = """推特订阅 | 使用帮助
         -> 取消成功
 [查看推特订阅] -> 查看本群/私聊中所有的推特订阅
 """.strip()
-sv = Service(['twitter', '推特订阅'], sv_help, use_cacha_folder=True,
-             permission_change=GROUP_ADMIN, permission_use=GROUP_ADMIN, priv_use=False)
+sv = Service(
+    ["twitter", "推特订阅"],
+    sv_help,
+    use_cacha_folder=True,
+    permission_change=GROUP_ADMIN,
+    permission_use=GROUP_ADMIN,
+    priv_use=False,
+)
 
 
 bot = get_bot()
@@ -91,96 +97,99 @@ bot = get_bot()
 using = False
 
 # tweepy api封装
-auth = tweepy.OAuthHandler(config.API_key_for_Twitter,
-                           config.API_secret_key_for_Twitter)
-auth.set_access_token(config.Access_token_for_Twitter,
-                      config.Access_token_secret_for_Twitter)
+auth = tweepy.OAuthHandler(
+    config.API_key_for_Twitter, config.API_secret_key_for_Twitter
+)
+auth.set_access_token(
+    config.Access_token_for_Twitter, config.Access_token_secret_for_Twitter
+)
 api = tweepy.API(auth, proxy=config.proxy, timeout=15)
 
 
-subcribe_path = os.path.join(
-    os.getcwd(), 'src', 'plugins', 'twitter', 'subcribe.json')
+subcribe_path = os.path.join(os.getcwd(), "src", "plugins", "twitter", "subcribe.json")
 try:
-    with open(subcribe_path, 'r', encoding='utf-8') as f:
+    with open(subcribe_path, "r", encoding="utf-8") as f:
         subcribe = ujson.load(f)
 except FileNotFoundError:
     subcribe = {}
-    with open(subcribe_path, 'w', encoding='utf-8') as f:
+    with open(subcribe_path, "w", encoding="utf-8") as f:
         ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
 
 
-@on_command('订阅推特')
+@on_command("订阅推特")
 async def subcribe_twitter(session: CommandSession):
     """订阅推特的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission('twitter', session.event)
+    stat = await Service_Master().check_permission("twitter", session.event)
     if not stat[0]:
         await session.finish(stat[3])
     tw_id = session.current_arg_text.strip()
     if not tw_id:
-        await session.finish('羽衣不知道你要订阅谁哦')
+        await session.finish("羽衣不知道你要订阅谁哦")
 
-    if session.event.detail_type == 'group':
+    if session.event.detail_type == "group":
         gid = session.event.group_id
         uid = None
     else:
         gid = None
-        uid = session.event['user_id']
+        uid = session.event["user_id"]
     try:
         user_info = await get_user(tw_id)
     except Exception:
-        logger.error(f'请求推特用户id{tw_id}失败')
-        await session.finish('获取该用户失败,请检查是否存在该id')
+        logger.error(f"请求推特用户id{tw_id}失败")
+        await session.finish("获取该用户失败,请检查是否存在该id")
 
     try:
-        res = await get_api(user_info['id'], 1000000000000000000)
-        user_info['last_id'] = res[0]['id']
+        res = await get_api(user_info["id"], 1000000000000000000)
+        user_info["last_id"] = res[0]["id"]
     except:
-        user_info['last_id'] = 1000000000000000000
+        user_info["last_id"] = 1000000000000000000
 
     if gid:
         if tw_id in subcribe:
-            if str(gid) in subcribe[tw_id]['subcribe_group']:
-                await session.finish('已经订阅过该用户了')
+            if str(gid) in subcribe[tw_id]["subcribe_group"]:
+                await session.finish("已经订阅过该用户了")
         else:
             subcribe[tw_id] = {
-                'name': user_info['name'],
-                'last_id': user_info['last_id'],
-                'subcribe_group': {},
-                'subcribe_user': {}
+                "name": user_info["name"],
+                "last_id": user_info["last_id"],
+                "subcribe_group": {},
+                "subcribe_user": {},
             }
-        subcribe[tw_id]['subcribe_group'][str(gid)] = {
-            'send': True,
-            'reply': False,
-            'retweet': True,
-            'quote': True
+        subcribe[tw_id]["subcribe_group"][str(gid)] = {
+            "send": True,
+            "reply": False,
+            "retweet": True,
+            "quote": True,
         }
     else:
         if tw_id in subcribe:
-            if str(uid) in subcribe[tw_id]['subcribe_user']:
-                await session.finish('已经订阅过该用户了')
+            if str(uid) in subcribe[tw_id]["subcribe_user"]:
+                await session.finish("已经订阅过该用户了")
         else:
             subcribe[tw_id] = {
-                'name': user_info['id'],
-                'last_id': user_info['last_id'],
-                'subcribe_group': {},
-                'subcribe_user': {}
+                "name": user_info["id"],
+                "last_id": user_info["last_id"],
+                "subcribe_group": {},
+                "subcribe_user": {},
             }
-        subcribe[tw_id]['subcribe_user'][str(uid)] = {
-            'send': True,
-            'reply': False,
-            'retweet': True,
-            'quote': True
+        subcribe[tw_id]["subcribe_user"][str(uid)] = {
+            "send": True,
+            "reply": False,
+            "retweet": True,
+            "quote": True,
         }
-    with open(subcribe_path, 'w', encoding='utf-8') as f:
+    with open(subcribe_path, "w", encoding="utf-8") as f:
         ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
-    await session.finish(f"订阅成功!\n"
-                         f"用户名称: {user_info['name']}\n"
-                         f"用户简介: {user_info['description']}\n"
-                         f"用户推特主页: {user_info['url']}")
+    await session.finish(
+        f"订阅成功!\n"
+        f"用户名称: {user_info['name']}\n"
+        f"用户简介: {user_info['description']}\n"
+        f"用户推特主页: {user_info['url']}"
+    )
 
 
 @retry(stop_max_attempt_number=5)
@@ -196,10 +205,10 @@ async def get_user(tw_id: str) -> dict:
     res = api.get_user(screen_name=tw_id)
     js = res._json
     data = {
-        'id': js['screen_name'],
-        'name': js['name'],
-        'description': js['description'],
-        'url': 'https://twitter.com/' + js['screen_name']
+        "id": js["screen_name"],
+        "name": js["name"],
+        "description": js["description"],
+        "url": "https://twitter.com/" + js["screen_name"],
     }
     return data
 
@@ -208,12 +217,12 @@ async def get_user(tw_id: str) -> dict:
 async def get_api(user_id: str, tweet_id: int = 1000000000000000000) -> dict:
     """获取用户发送的推特
 
-   Args:
-        user_id(str): 用户推特的id
-        tweet_id: 获取从since_id开始(之后)的推文
+    Args:
+         user_id(str): 用户推特的id
+         tweet_id: 获取从since_id开始(之后)的推文
 
-    Returns:
-        dict: api传回的用户新推特的字典
+     Returns:
+         dict: api传回的用户新推特的字典
     """
     tweet = []
     res = api.user_timeline(user_id, since_id=tweet_id, tweet_mode="extended")
@@ -225,194 +234,218 @@ async def get_api(user_id: str, tweet_id: int = 1000000000000000000) -> dict:
     return tweet
 
 
-@on_command('设置订阅')
+@on_command("设置订阅")
 async def set_subcribe_states(session: CommandSession):
     """设置订阅的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission('twitter', session.event)
+    stat = await Service_Master().check_permission("twitter", session.event)
     if not stat[0]:
         await session.finish(stat[3])
     tw_id = session.current_arg_text.strip()
     if not tw_id:
-        await session.finish('羽衣不知道你要设置谁的推送设定哦')
+        await session.finish("羽衣不知道你要设置谁的推送设定哦")
 
-    if session.event.detail_type == 'group':
+    if session.event.detail_type == "group":
         gid = session.event.group_id
         uid = None
     else:
         gid = None
-        uid = session.event['user_id']
+        uid = session.event["user_id"]
 
     user_info = None
     user_id = None
     if gid:
         for x, y in subcribe.items():
-            if tw_id == x or tw_id == y['name']:
-                if str(gid) in y['subcribe_group']:
-                    user_info = y['subcribe_group'][str(gid)]
+            if tw_id == x or tw_id == y["name"]:
+                if str(gid) in y["subcribe_group"]:
+                    user_info = y["subcribe_group"][str(gid)]
                     user_id = x
                     break
     else:
         for x, y in subcribe.items():
-            if tw_id == x or tw_id == y['name']:
-                if str(uid) in y['subcribe_user']:
-                    user_info = y['subcribe_user'][str(uid)]
+            if tw_id == x or tw_id == y["name"]:
+                if str(uid) in y["subcribe_user"]:
+                    user_info = y["subcribe_user"][str(uid)]
                     user_id = x
                     break
 
     if not user_info:
-        await session.finish('没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id')
+        await session.finish("没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id")
 
-    await session.apause('目前的订阅状态是:\n'
-                         f"1.发推 {'√' if user_info['send'] else '×'}\n"
-                         f"2.回复 {'√' if user_info['reply'] else '×'}\n"
-                         f"3.转发 {'√' if user_info['retweet'] else '×'}\n"
-                         f"4.引用 {'√' if user_info['quote'] else '×'}\n"
-                         '请回复数字, 将会反转设置, 多个数字请用空格隔开')
-    states = session.current_arg_text.split(' ')
+    await session.apause(
+        "目前的订阅状态是:\n"
+        f"1.发推 {'√' if user_info['send'] else '×'}\n"
+        f"2.回复 {'√' if user_info['reply'] else '×'}\n"
+        f"3.转发 {'√' if user_info['retweet'] else '×'}\n"
+        f"4.引用 {'√' if user_info['quote'] else '×'}\n"
+        "请回复数字, 将会反转设置, 多个数字请用空格隔开"
+    )
+    states = session.current_arg_text.split(" ")
     for i in states:
-        if i == '1':
-            user_info['send'] = not user_info['send']
-        elif i == '2':
-            user_info['reply'] = not user_info['reply']
-        elif i == '3':
-            user_info['retweet'] = not user_info['retweet']
-        elif i == '4':
-            user_info['quote'] = not user_info['quote']
+        if i == "1":
+            user_info["send"] = not user_info["send"]
+        elif i == "2":
+            user_info["reply"] = not user_info["reply"]
+        elif i == "3":
+            user_info["retweet"] = not user_info["retweet"]
+        elif i == "4":
+            user_info["quote"] = not user_info["quote"]
         else:
-            await session.finish(f'输入错误！请输入1，2，3，4的数字并用空格隔开,具体可发送help 推特订阅查看使用示例,最后请重新使用设置订阅 {tw_id}进行设定')
-    if not (user_info['send'] or user_info['reply'] or user_info['retweet'] or user_info['quote']):
-        await session.apause('将会关闭所有推送,是要取消订阅吗?(y/n)')
-        if session.current_arg_text == 'y':
+            await session.finish(
+                f"输入错误！请输入1，2，3，4的数字并用空格隔开,具体可发送help 推特订阅查看使用示例,最后请重新使用设置订阅 {tw_id}进行设定"
+            )
+    if not (
+        user_info["send"]
+        or user_info["reply"]
+        or user_info["retweet"]
+        or user_info["quote"]
+    ):
+        await session.apause("将会关闭所有推送,是要取消订阅吗?(y/n)")
+        if session.current_arg_text == "y":
             await delect_subcribe(session)
-        elif session.current_arg_text == 'n':
+        elif session.current_arg_text == "n":
             if gid:
-                subcribe[user_id]['subcribe_group'][str(gid)] = user_info
+                subcribe[user_id]["subcribe_group"][str(gid)] = user_info
             else:
-                subcribe[user_id]['subcribe_user'][str(uid)] = user_info
-            with open(subcribe_path, 'w', encoding='utf-8') as f:
+                subcribe[user_id]["subcribe_user"][str(uid)] = user_info
+            with open(subcribe_path, "w", encoding="utf-8") as f:
                 ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
-            await session.finish('设置成功,目前状态:\n'
-                                 f"1.发推 {'√' if user_info['send'] else '×'}\n"
-                                 f"2.回复 {'√' if user_info['reply'] else '×'}\n"
-                                 f"3.转发 {'√' if user_info['retweet'] else '×'}\n"
-                                 f"4.引用 {'√' if user_info['quote'] else '×'}")
+            await session.finish(
+                "设置成功,目前状态:\n"
+                f"1.发推 {'√' if user_info['send'] else '×'}\n"
+                f"2.回复 {'√' if user_info['reply'] else '×'}\n"
+                f"3.转发 {'√' if user_info['retweet'] else '×'}\n"
+                f"4.引用 {'√' if user_info['quote'] else '×'}"
+            )
         else:
             if gid:
-                subcribe[user_id]['subcribe_group'][str(gid)] = user_info
+                subcribe[user_id]["subcribe_group"][str(gid)] = user_info
             else:
-                subcribe[user_id]['subcribe_user'][str(uid)] = user_info
-            with open(subcribe_path, 'w', encoding='utf-8') as f:
+                subcribe[user_id]["subcribe_user"][str(uid)] = user_info
+            with open(subcribe_path, "w", encoding="utf-8") as f:
                 ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
-            await session.finish('错误输入,默认为n,设置成功,目前状态:\n'
-                                 f"1.发推 {'√' if user_info['send'] else '×'}\n"
-                                 f"2.回复 {'√' if user_info['reply'] else '×'}\n"
-                                 f"3.转发 {'√' if user_info['retweet'] else '×'}\n"
-                                 f"4.引用 {'√' if user_info['quote'] else '×'}")
+            await session.finish(
+                "错误输入,默认为n,设置成功,目前状态:\n"
+                f"1.发推 {'√' if user_info['send'] else '×'}\n"
+                f"2.回复 {'√' if user_info['reply'] else '×'}\n"
+                f"3.转发 {'√' if user_info['retweet'] else '×'}\n"
+                f"4.引用 {'√' if user_info['quote'] else '×'}"
+            )
     else:
         if gid:
-            subcribe[user_id]['subcribe_group'][str(gid)] = user_info
+            subcribe[user_id]["subcribe_group"][str(gid)] = user_info
         else:
-            subcribe[user_id]['subcribe_user'][str(uid)] = user_info
-        with open(subcribe_path, 'w', encoding='utf-8') as f:
+            subcribe[user_id]["subcribe_user"][str(uid)] = user_info
+        with open(subcribe_path, "w", encoding="utf-8") as f:
             ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
-        await session.finish('设置成功,目前状态:\n'
-                             f"1.发推 {'√' if user_info['send'] else '×'}\n"
-                             f"2.回复 {'√' if user_info['reply'] else '×'}\n"
-                             f"3.转发 {'√' if user_info['retweet'] else '×'}\n"
-                             f"4.引用 {'√' if user_info['quote'] else '×'}")
+        await session.finish(
+            "设置成功,目前状态:\n"
+            f"1.发推 {'√' if user_info['send'] else '×'}\n"
+            f"2.回复 {'√' if user_info['reply'] else '×'}\n"
+            f"3.转发 {'√' if user_info['retweet'] else '×'}\n"
+            f"4.引用 {'√' if user_info['quote'] else '×'}"
+        )
 
 
-@on_command('取消推特订阅')
+@on_command("取消推特订阅")
 async def delect_subcribe(session: CommandSession):
     """取消推特订阅的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission('twitter', session.event)
+    stat = await Service_Master().check_permission("twitter", session.event)
     if not stat[0]:
         await session.finish(stat[3])
     tw_id = session.current_arg_text.strip()
     if not tw_id:
-        await session.finish('羽衣不知道你要设置谁的推送设定哦')
+        await session.finish("羽衣不知道你要设置谁的推送设定哦")
 
-    if session.event.detail_type == 'group':
+    if session.event.detail_type == "group":
         gid = session.event.group_id
         uid = None
     else:
         gid = None
-        uid = session.event['user_id']
+        uid = session.event["user_id"]
 
     found = False
     if gid:
         for x, y in subcribe.items():
-            if tw_id == x or tw_id == y['name']:
-                if str(gid) in y['subcribe_group']:
+            if tw_id == x or tw_id == y["name"]:
+                if str(gid) in y["subcribe_group"]:
                     user_info = y
                     user_id = x
-                    del subcribe[x]['subcribe_group'][str(gid)]
+                    del subcribe[x]["subcribe_group"][str(gid)]
                     found = True
                     break
     else:
         for x, y in subcribe.items():
-            if tw_id == x or tw_id == y['name']:
-                if str(uid) in y['subcribe_user']:
+            if tw_id == x or tw_id == y["name"]:
+                if str(uid) in y["subcribe_user"]:
                     user_info = y
                     user_id = x
-                    del subcribe[x]['subcribe_user'][str(uid)]
+                    del subcribe[x]["subcribe_user"][str(uid)]
                     found = True
                     break
 
     if not found:
-        await session.finish('没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id')
-    elif not subcribe[x]['subcribe_group'] and not subcribe[x]['subcribe_user']:
+        await session.finish("没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id")
+    elif not subcribe[x]["subcribe_group"] and not subcribe[x]["subcribe_user"]:
         del subcribe[x]
     else:
-        with open(subcribe_path, 'w', encoding='utf-8') as f:
+        with open(subcribe_path, "w", encoding="utf-8") as f:
             ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
-        await session.finish('删除成功! 订阅用户信息:\n'
-                             f'用户id: {user_id}\n'
-                             f"用户名称: {user_info['name']}\n"
-                             f"用户主页: {'https://twitter.com/' + user_id}")
+        await session.finish(
+            (
+                "删除成功! 订阅用户信息:\n"
+                f"用户id: {user_id}\n"
+                f"用户名称: {user_info['name']}\n"
+                f"用户主页: {'https://twitter.com/' + user_id}"
+            )
+        )
 
 
-@on_command('查看推特订阅', aliases=('查看所有推特订阅',))
+@on_command("查看推特订阅", aliases=("查看所有推特订阅",))
 async def get_all_subcribe(session: CommandSession):
     """查看所有推特订阅的主函数
 
     Args:
         session (CommandSession): bot封装的消息
     """
-    stat = await Service_Master().check_permission('twitter', session.event)
+    stat = await Service_Master().check_permission("twitter", session.event)
     if not stat[0]:
         await session.finish(stat[3])
 
-    if session.event.detail_type == 'group':
+    if session.event.detail_type == "group":
         gid = session.event.group_id
         uid = None
     else:
         gid = None
-        uid = session.event['user_id']
+        uid = session.event["user_id"]
 
     msg = []
     if gid:
-        all_subc = [f"{y['name']}(id:{x})" for x, y in subcribe.items(
-        ) if str(gid) in y['subcribe_group']]
+        all_subc = [
+            f"{y['name']}(id:{x})"
+            for x, y in subcribe.items()
+            if str(gid) in y["subcribe_group"]
+        ]
         if not all_subc:
-            await session.finish('本群没有订阅任何用户!')
+            await session.finish("本群没有订阅任何用户!")
     else:
-        all_subc = [f"{y['name']}(id:{x})" for x, y in subcribe.items(
-        ) if str(uid) in y['subcribe_user']]
+        all_subc = [
+            f"{y['name']}(id:{x})"
+            for x, y in subcribe.items()
+            if str(uid) in y["subcribe_user"]
+        ]
         if not all_subc:
-            await session.finish('你还没有订阅任何用户!')
+            await session.finish("你还没有订阅任何用户!")
 
-    msg = '\n'.join(all_subc)
-    await session.finish(f'总共订阅了{len(all_subc)}个用户:\n'
-                         f"{msg}")
+    msg = "\n".join(all_subc)
+    await session.finish(f"总共订阅了{len(all_subc)}个用户:\n" f"{msg}")
 
 
 @retry(stop_max_attempt_number=5)
@@ -427,21 +460,21 @@ async def get_states(status_id: str) -> dict:
     Returns:
         dict: 封装好的推文信息
     """
-    res = api.get_status(status_id, tweet_mode='extended')
+    res = api.get_status(status_id, tweet_mode="extended")
     js = res._json
     res = await ps_sendmsg(js)
     data = {
-        'name': res['senderid'],
-        'text': res['text'],
-        'seq': res['seq'],
-        'isvideo': res['isvideo'],
-        'reply_china': False,
-        'lang': 'zh',
-        'translate_result': res['translate_result']
+        "name": res["senderid"],
+        "text": res["text"],
+        "seq": res["seq"],
+        "isvideo": res["isvideo"],
+        "reply_china": False,
+        "lang": "zh",
+        "translate_result": res["translate_result"],
     }
-    if js['lang'] != 'zh' and js['lang'] != 'und':
-        data['reply_china'] = True
-        data['lang'] = js['lang']
+    if js["lang"] != "zh" and js["lang"] != "und":
+        data["reply_china"] = True
+        data["lang"] = js["lang"]
     return data
 
 
@@ -461,10 +494,10 @@ async def dl_image(urls: list) -> MessageSegment:
             res = await s.get(url)
             if res.status_code != 200:
                 raise RuntimeError
-        path = os.path.join(config.res, 'cacha', 'twitter', url[-10:])
-        with open(path, 'wb') as f:
+        path = os.path.join(config.res, "cacha", "twitter", url[-10:])
+        with open(path, "wb") as f:
             f.write(res.content)
-        seq.append(MessageSegment.image(r'file:///' + path))
+        seq.append(MessageSegment.image(r"file:///" + path))
     return seq
 
 
@@ -511,12 +544,12 @@ async def sendmsg(msg: dict) -> dict:
         "no_china": False,
         "reply_in_not_china": False,
         "quote_in_not_china": False,
-        "is_tweet": False
+        "is_tweet": False,
     }
     # 回复
     if msg["in_reply_to_status_id"] != None:
         data["isreply"] = True
-        user_name = await get_states(msg['in_reply_to_status_id'])
+        user_name = await get_states(msg["in_reply_to_status_id"])
         try:
             if user_name == "访问失败":
                 data["replyuser"] = msg["in_reply_to_screen_name"]
@@ -535,8 +568,7 @@ async def sendmsg(msg: dict) -> dict:
         try:
             if msg["entities"]["urls"]["media"]:
                 if msg["entities"]["urls"]["media"]["type"] == "photo":
-                    data["imgurl"].append(
-                        msg["entities"]["media"][0]["media_url"])
+                    data["imgurl"].append(msg["entities"]["media"][0]["media_url"])
                     data["have_img"] = True
                 else:
                     data["isvideo"] = True
@@ -572,10 +604,13 @@ async def sendmsg(msg: dict) -> dict:
         data["RTuser"] = msg["retweeted_status"]["user"]["name"]
         try:
             if msg["retweeted_status"]["entities"]["urls"]["media"]:
-                if msg["retweeted_status"]["entities"]["urls"]["media"][
-                        "type"] == "photo":
-                    data["imgurl"].append(msg["retweeted_status"]["entities"]
-                                          ["media"][0]["media_url"])
+                if (
+                    msg["retweeted_status"]["entities"]["urls"]["media"]["type"]
+                    == "photo"
+                ):
+                    data["imgurl"].append(
+                        msg["retweeted_status"]["entities"]["media"][0]["media_url"]
+                    )
                     data["have_img"] = True
                 else:
                     data["isvideo"] = True
@@ -607,13 +642,14 @@ async def sendmsg(msg: dict) -> dict:
             data["quoteuser"] = msg["quoted_status"]["user"]["name"]
             data["quotelang"] = msg["quoted_status"]["lang"]
         except:
-            data['quotetext'] = '这条推文不可用。获取失败,可能原因:\n1.推文是私密推文\n2.推文刚好被删除了'
-            data['quotelang'] = 'zh'
+            data["quotetext"] = "这条推文不可用。获取失败,可能原因:\n1.推文是私密推文\n2.推文刚好被删除了"
+            data["quotelang"] = "zh"
             try:
-                data['quoteuser'] = msg['quoted_status_permalink']['expanded'].rsplit(
-                    '/')[2]
+                data["quoteuser"] = msg["quoted_status_permalink"]["expanded"].rsplit(
+                    "/"
+                )[2]
             except:
-                data['quoteuser'] = '未知'
+                data["quoteuser"] = "未知"
         try:
             data["text"] = msg["full_text"]
         except:
@@ -627,8 +663,7 @@ async def sendmsg(msg: dict) -> dict:
         try:
             if msg["entities"]["urls"]["media"]:
                 if msg["entities"]["urls"]["media"]["type"] == "photo":
-                    data["imgurl"].append(
-                        msg["entities"]["media"][0]["media_url"])
+                    data["imgurl"].append(msg["entities"]["media"][0]["media_url"])
                     data["have_img"] = True
                 else:
                     data["isvideo"] = True
@@ -646,11 +681,10 @@ async def sendmsg(msg: dict) -> dict:
             pass
         try:
             if msg["quoted_status"]["entities"]["urls"]["media"]:
-                if msg["quoted_status"]["entities"]["urls"]["media"][
-                        "type"] == "photo":
+                if msg["quoted_status"]["entities"]["urls"]["media"]["type"] == "photo":
                     data["quote_media_url"].append(
-                        msg["quoted_status"]["entities"]["media"][0]
-                        ["media_url"])
+                        msg["quoted_status"]["entities"]["media"][0]["media_url"]
+                    )
                     data["quote_in_img"] = True
                 else:
                     data["quote_in_video"] = True
@@ -682,8 +716,7 @@ async def sendmsg(msg: dict) -> dict:
         try:
             if msg["entities"]["urls"]["media"]:
                 if msg["entities"]["urls"]["media"]["type"] == "photo":
-                    data["imgurl"].append(
-                        msg["entities"]["media"][0]["media_url"])
+                    data["imgurl"].append(msg["entities"]["media"][0]["media_url"])
                     data["have_img"] = True
                 else:
                     data["isvideo"] = True
@@ -710,13 +743,25 @@ async def sendmsg(msg: dict) -> dict:
     if data["isquote"] == True:
         data["text"] = data["text"][:-23]
     if data["text"] != None:
-        if (data["isvideo"] == True or data["have_img"] == True and data["text"][-23:-10] == "https://t.co/") == True:
+        if (
+            data["isvideo"] == True
+            or data["have_img"] == True
+            and data["text"][-23:-10] == "https://t.co/"
+        ) == True:
             data["text"] = data["text"][:-23]
     if data["RTtext"] != None:
-        if (data["isvideo"] == True or data["have_img"] == True and data["RTtext"][-23:-10] == "https://t.co/") == True:
+        if (
+            data["isvideo"] == True
+            or data["have_img"] == True
+            and data["RTtext"][-23:-10] == "https://t.co/"
+        ) == True:
             data["RTtext"] = data["RTtext"][:-23]
     if data["quotetext"] != None:
-        if (data["quote_in_video"] == True or data["quote_in_img"] == True and data["quotetext"][-23:-10] == "https://t.co/") == True:
+        if (
+            data["quote_in_video"] == True
+            or data["quote_in_img"] == True
+            and data["quotetext"][-23:-10] == "https://t.co/"
+        ) == True:
             data["quotetext"] = data["quotetext"][:-23]
 
     # 替换链接
@@ -737,8 +782,7 @@ async def sendmsg(msg: dict) -> dict:
     try:
         i = 0
         for old in data["quote_url_old"]:
-            data["quotetext"] = data["quotetext"].replace(
-                old, data["quote_url_new"][i])
+            data["quotetext"] = data["quotetext"].replace(old, data["quote_url_new"][i])
             i = i + 1
     except:
         pass
@@ -752,26 +796,27 @@ async def sendmsg(msg: dict) -> dict:
         try:
             if f"@{msg['in_reply_to_screen_name']} " in data["text"]:
                 data["text"] = data["text"].rsplit(
-                    f"@{msg['in_reply_to_screen_name']} ", 1)[1]
+                    f"@{msg['in_reply_to_screen_name']} ", 1
+                )[1]
         except:
             pass
 
     # 翻译
     if data["lang"] != "zh":
         data["no_china"] = True
-        if data['text'] != "":
+        if data["text"] != "":
             try:
-                data["translate_result"] = await translate(data['text'])
+                data["translate_result"] = await translate(data["text"])
             except:
                 pass
         elif data["isRT"] == True and data["RTtext"] != "":
             try:
-                data["translate_result"] = await translate(data['RTtext'])
+                data["translate_result"] = await translate(data["RTtext"])
             except:
                 pass
     if data["quotelang"] != "zh" and data["isquote"] == True and data["text"] != "":
         data["quote_in_not_china"] = True
-        data["quote_translate_result"] = await translate(data['quotetext'])
+        data["quote_translate_result"] = await translate(data["quotetext"])
 
     if data["isreply"] != True and data["isRT"] != True and data["isquote"] != True:
         data["is_tweet"] = True
@@ -798,224 +843,334 @@ async def check_user_update(data: dict) -> bool:
     """
     for x, y in data.items():
         ndata = y
-        ndata['id'] = x
+        ndata["id"] = x
     data = ndata
     try:
-        res = await get_api(data['id'], data['last_id'])
+        res = await get_api(data["id"], data["last_id"])
     except:
         logger.error(f"检查{data['name']}(id:{data['id']})推特时发生错误")
-        return [data['id'], data['last_id']]
+        return [data["id"], data["last_id"]]
     if not res:
-        return [data['id'], data['last_id']]
+        return [data["id"], data["last_id"]]
     logger.info(f"获取到{data['name']}(id:{data['id']})的最新推文{len(res)}条")
     msg_id = []
     for msg in res:
         para = await sendmsg(msg)
-        seq = await dl_image(para['imgurl']) if para['imgurl'] else ['']
-        quote_seq = await dl_image(para['quote_media_url']) if para['quote_media_url'] else ['']
-        msg_id.append(int(para['lastid']))
-        link_for_tweet = 'https://twitter.com/' + \
-            data['id'] + '/status/' + str(para['lastid'])
+        seq = await dl_image(para["imgurl"]) if para["imgurl"] else [""]
+        quote_seq = (
+            await dl_image(para["quote_media_url"]) if para["quote_media_url"] else [""]
+        )
+        msg_id.append(int(para["lastid"]))
+        link_for_tweet = (
+            "https://twitter.com/" + data["id"] + "/status/" + str(para["lastid"])
+        )
 
         # 推特更新的各种情况
-        fatui_text = (f"{para['senderid']}推特更新\n{link_for_tweet}"
-                      '\n================\n'
-                      f"{para['senderid']}发送了推文:\n\n{para['text']}" +
-                      ''.join([str(x) for x in seq if x]))
-        is_RT_text = (f"{para['senderid']}推特更新\n{link_for_tweet}"
-                      '\n================\n'
-                      f"{para['senderid']}转发了{para['RTuser']}的推文:\n\n{para['RTtext']}" +
-                      ''.join([str(x) for x in seq if x]))
+        fatui_text = (
+            f"{para['senderid']}推特更新\n{link_for_tweet}"
+            "\n================\n"
+            f"{para['senderid']}发送了推文:\n\n{para['text']}"
+            + "".join([str(x) for x in seq if x])
+        )
+        is_RT_text = (
+            f"{para['senderid']}推特更新\n{link_for_tweet}"
+            "\n================\n"
+            f"{para['senderid']}转发了{para['RTuser']}的推文:\n\n{para['RTtext']}"
+            + "".join([str(x) for x in seq if x])
+        )
         try:
-            reply_text = (f"{para['senderid']}推特更新\n{link_for_tweet}"
-                          '\n================\n'
-                          f"{para['senderid']}回复了{para['replyuser']}的推文:"
-                          f"\n======{para['replyuser']}的推文======\n"
-                          f"{para['replytext']}" +
-                          "".join([str(x) for x in para['replyseq']]) +
-                          f"\n======{para['senderid']}的回复======\n"
-                          f"{para['text']}" +
-                          ''.join([str(x) for x in seq if x]))
+            reply_text = (
+                f"{para['senderid']}推特更新\n{link_for_tweet}"
+                "\n================\n"
+                f"{para['senderid']}回复了{para['replyuser']}的推文:"
+                f"\n======{para['replyuser']}的推文======\n"
+                f"{para['replytext']}"
+                + "".join([str(x) for x in para["replyseq"]])
+                + f"\n======{para['senderid']}的回复======\n"
+                f"{para['text']}" + "".join([str(x) for x in seq if x])
+            )
         except:
-            reply_text = (f"{para['senderid']}推特更新\n{link_for_tweet}"
-                          '\n================\n'
-                          f"{para['senderid']}回复了{para['replyuser']}的推文"
-                          f"\n======{para['senderid']}的回复======\n{para['text']}" +
-                          ''.join([str(x) for x in seq if x]))
-        quote_text = (f"{para['senderid']}推特更新\n{link_for_tweet}"
-                      '\n================\n'
-                      f"{para['senderid']}引用了{para['quoteuser']}的推文:"
-                      '\n======被引用推文======\n'
-                      f"{para['quotetext']}" + "".join("%s" % a for a in quote_seq) +
-                      f"\n======{para['senderid']}的回复======\n"
-                      f"{para['text']}" +
-                      ''.join([str(x) for x in seq if x]))
+            reply_text = (
+                f"{para['senderid']}推特更新\n{link_for_tweet}"
+                "\n================\n"
+                f"{para['senderid']}回复了{para['replyuser']}的推文"
+                f"\n======{para['senderid']}的回复======\n{para['text']}"
+                + "".join([str(x) for x in seq if x])
+            )
+        quote_text = (
+            f"{para['senderid']}推特更新\n{link_for_tweet}"
+            "\n================\n"
+            f"{para['senderid']}引用了{para['quoteuser']}的推文:"
+            "\n======被引用推文======\n"
+            f"{para['quotetext']}"
+            + "".join("%s" % a for a in quote_seq)
+            + f"\n======{para['senderid']}的回复======\n"
+            f"{para['text']}" + "".join([str(x) for x in seq if x])
+        )
         not_china = f"\n======以下是翻译======\n{para['translate_result']}"
-        not_china_reply_1 = f"\n======{para['replyuser']}推文的翻译======\n{para['reply_translate_result']}"
-        not_china_reply_2 = f"\n======{para['senderid']}回复的翻译======\n{para['translate_result']}"
+        not_china_reply_1 = (
+            f"\n======{para['replyuser']}推文的翻译======\n{para['reply_translate_result']}"
+        )
+        not_china_reply_2 = (
+            f"\n======{para['senderid']}回复的翻译======\n{para['translate_result']}"
+        )
         not_china_quote_1 = f"\n======{para['quoteuser']}被引用推文的翻译======\n{para['quote_translate_result']}"
-        not_china_quote_2 = f"\n======{para['senderid']}回复的翻译======\n{para['translate_result']}"
+        not_china_quote_2 = (
+            f"\n======{para['senderid']}回复的翻译======\n{para['translate_result']}"
+        )
         is_video = f"\n================\n该推文可能有视频/gif,请点击链接查看"
 
-        for group_id, group_status in data['subcribe_group'].items():
+        for group_id, group_status in data["subcribe_group"].items():
             # 发推
-            if para["is_tweet"] == True and group_status['send']:
+            if para["is_tweet"] == True and group_status["send"]:
                 if para["lang"] == "zh":
                     if para["isvideo"] == False:
                         await bot.send_group_msg(group_id=group_id, message=fatui_text)
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=fatui_text + is_video)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=fatui_text + is_video
+                        )
                 else:
                     if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=fatui_text + not_china)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=fatui_text + not_china
+                        )
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=fatui_text + not_china + is_video)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=fatui_text + not_china + is_video
+                        )
             # 回复
-            elif para["isreply"] == True and group_status['reply']:
+            elif para["isreply"] == True and group_status["reply"]:
                 if para["lang"] == "zh" and para["replylang"] == "zh":
                     if para["isvideo"] == False:
                         await bot.send_group_msg(group_id=group_id, message=reply_text)
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=reply_text + is_video)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=reply_text + is_video
+                        )
                 elif para["lang"] != "zh" and para["replylang"] == "zh":
                     if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=reply_text + not_china_reply_1)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=reply_text + not_china_reply_1
+                        )
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=reply_text + not_china_reply_1 +
-                                                 is_video)
+                        await bot.send_group_msg(
+                            group_id=group_id,
+                            message=reply_text + not_china_reply_1 + is_video,
+                        )
                 elif para["lang"] == "zh" and para["replylang"] != "zh":
                     if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=reply_text + not_china_reply_2)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=reply_text + not_china_reply_2
+                        )
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=reply_text + not_china_reply_2 +
-                                                 is_video)
+                        await bot.send_group_msg(
+                            group_id=group_id,
+                            message=reply_text + not_china_reply_2 + is_video,
+                        )
                 else:
                     if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=reply_text + not_china_reply_1 +
-                                                 not_china_reply_2)
+                        await bot.send_group_msg(
+                            group_id=group_id,
+                            message=reply_text + not_china_reply_1 + not_china_reply_2,
+                        )
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=reply_text + not_china_reply_1 +
-                                                 not_china_reply_2 + is_video)
+                        await bot.send_group_msg(
+                            group_id=group_id,
+                            message=reply_text
+                            + not_china_reply_1
+                            + not_china_reply_2
+                            + is_video,
+                        )
             # 转推
-            elif para["isRT"] == True and group_status['retweet']:
+            elif para["isRT"] == True and group_status["retweet"]:
                 if para["RTlang"] == "zh":
                     if para["isvideo"] == False:
                         await bot.send_group_msg(group_id=group_id, message=is_RT_text)
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=is_RT_text + is_video)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=is_RT_text + is_video
+                        )
                 else:
                     if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=is_RT_text + not_china)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=is_RT_text + not_china
+                        )
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=is_RT_text + not_china + is_video)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=is_RT_text + not_china + is_video
+                        )
             # 引用
-            elif para["isquote"] == True and group_status['quote']:
+            elif para["isquote"] == True and group_status["quote"]:
                 if para["lang"] == "zh" and para["quotelang"] == "zh":
                     if para["isvideo"] == False:
                         await bot.send_group_msg(group_id=group_id, message=quote_text)
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=quote_text + is_video)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=quote_text + is_video
+                        )
                 elif para["lang"] != "zh" and para["quotelang"] == "zh":
                     if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=quote_text + not_china_quote_1)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=quote_text + not_china_quote_1
+                        )
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=quote_text + not_china_quote_1 +
-                                                 is_video)
+                        await bot.send_group_msg(
+                            group_id=group_id,
+                            message=quote_text + not_china_quote_1 + is_video,
+                        )
                 elif para["lang"] == "zh" and para["quotelang"] != "zh":
                     if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=quote_text + not_china_quote_2)
+                        await bot.send_group_msg(
+                            group_id=group_id, message=quote_text + not_china_quote_2
+                        )
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=quote_text + not_china_quote_2 +
-                                                 is_video)
+                        await bot.send_group_msg(
+                            group_id=group_id,
+                            message=quote_text + not_china_quote_2 + is_video,
+                        )
                 else:
                     if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=quote_text + not_china_quote_1 +
-                                                 not_china_quote_2)
+                        await bot.send_group_msg(
+                            group_id=group_id,
+                            message=quote_text + not_china_quote_1 + not_china_quote_2,
+                        )
                     else:
-                        await bot.send_group_msg(group_id=group_id, message=quote_text + not_china_quote_1 +
-                                                 not_china_quote_2 + is_video)
-        for user_id, user_status in data['subcribe_user'].items():
+                        await bot.send_group_msg(
+                            group_id=group_id,
+                            message=quote_text
+                            + not_china_quote_1
+                            + not_china_quote_2
+                            + is_video,
+                        )
+        for user_id, user_status in data["subcribe_user"].items():
             # 发推
-            if para["is_tweet"] == True and user_status['send']:
+            if para["is_tweet"] == True and user_status["send"]:
                 if para["lang"] == "zh":
                     if para["isvideo"] == False:
                         await bot.send_private_msg(user_id=user_id, message=fatui_text)
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=fatui_text + is_video)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=fatui_text + is_video
+                        )
                 else:
                     if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=fatui_text + not_china)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=fatui_text + not_china
+                        )
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=fatui_text + not_china + is_video)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=fatui_text + not_china + is_video
+                        )
             # 回复
-            elif para["isreply"] == True and user_status['reply']:
+            elif para["isreply"] == True and user_status["reply"]:
                 if para["lang"] == "zh" and para["replylang"] == "zh":
                     if para["isvideo"] == False:
                         await bot.send_private_msg(user_id=user_id, message=reply_text)
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=reply_text + is_video)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=reply_text + is_video
+                        )
                 elif para["lang"] != "zh" and para["replylang"] == "zh":
                     if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=reply_text + not_china_reply_1)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=reply_text + not_china_reply_1
+                        )
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=reply_text + not_china_reply_1 +
-                                                   is_video)
+                        await bot.send_private_msg(
+                            user_id=user_id,
+                            message=reply_text + not_china_reply_1 + is_video,
+                        )
                 elif para["lang"] == "zh" and para["replylang"] != "zh":
                     if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=reply_text + not_china_reply_2)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=reply_text + not_china_reply_2
+                        )
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=reply_text + not_china_reply_2 +
-                                                   is_video)
+                        await bot.send_private_msg(
+                            user_id=user_id,
+                            message=reply_text + not_china_reply_2 + is_video,
+                        )
                 else:
                     if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=reply_text + not_china_reply_1 +
-                                                   not_china_reply_2)
+                        await bot.send_private_msg(
+                            user_id=user_id,
+                            message=reply_text + not_china_reply_1 + not_china_reply_2,
+                        )
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=reply_text + not_china_reply_1 +
-                                                   not_china_reply_2 + is_video)
+                        await bot.send_private_msg(
+                            user_id=user_id,
+                            message=reply_text
+                            + not_china_reply_1
+                            + not_china_reply_2
+                            + is_video,
+                        )
             # 转推
-            elif para["isRT"] == True and user_status['retweet']:
+            elif para["isRT"] == True and user_status["retweet"]:
                 if para["RTlang"] == "zh":
                     if para["isvideo"] == False:
                         await bot.send_private_msg(user_id=user_id, message=is_RT_text)
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=is_RT_text + is_video)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=is_RT_text + is_video
+                        )
                 else:
                     if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=is_RT_text + not_china)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=is_RT_text + not_china
+                        )
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=is_RT_text + not_china + is_video)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=is_RT_text + not_china + is_video
+                        )
             # 引用
-            elif para["isquote"] == True and user_status['quote']:
+            elif para["isquote"] == True and user_status["quote"]:
                 if para["lang"] == "zh" and para["quotelang"] == "zh":
                     if para["isvideo"] == False:
                         await bot.send_private_msg(user_id=user_id, message=quote_text)
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=quote_text + is_video)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=quote_text + is_video
+                        )
                 elif para["lang"] != "zh" and para["quotelang"] == "zh":
                     if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=quote_text + not_china_quote_1)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=quote_text + not_china_quote_1
+                        )
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=quote_text + not_china_quote_1 +
-                                                   is_video)
+                        await bot.send_private_msg(
+                            user_id=user_id,
+                            message=quote_text + not_china_quote_1 + is_video,
+                        )
                 elif para["lang"] == "zh" and para["quotelang"] != "zh":
                     if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=quote_text + not_china_quote_2)
+                        await bot.send_private_msg(
+                            user_id=user_id, message=quote_text + not_china_quote_2
+                        )
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=quote_text + not_china_quote_2 +
-                                                   is_video)
+                        await bot.send_private_msg(
+                            user_id=user_id,
+                            message=quote_text + not_china_quote_2 + is_video,
+                        )
                 else:
                     if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=quote_text + not_china_quote_1 +
-                                                   not_china_quote_2)
+                        await bot.send_private_msg(
+                            user_id=user_id,
+                            message=quote_text + not_china_quote_1 + not_china_quote_2,
+                        )
                     else:
-                        await bot.send_private_msg(user_id=user_id, message=quote_text + not_china_quote_1 +
-                                                   not_china_quote_2 + is_video)
-    return [data['id'], max(msg_id)]
+                        await bot.send_private_msg(
+                            user_id=user_id,
+                            message=quote_text
+                            + not_china_quote_1
+                            + not_china_quote_2
+                            + is_video,
+                        )
+    return [data["id"], max(msg_id)]
 
 
 @scheduler.scheduled_job(
-    'interval',
+    "interval",
     minutes=1,
     # seconds=10,
 )
@@ -1024,7 +1179,7 @@ async def check_multi_update():
     global using
     if not using:
         using = True
-        logger.info('检查推特更新')
+        logger.info("检查推特更新")
         try:
             coro = []
             for x, y in subcribe.items():
@@ -1033,19 +1188,23 @@ async def check_multi_update():
             for i in res:
                 try:
                     if isinstance(i[1], int):
-                        subcribe[i[0]]['last_id'] = i[1]
+                        subcribe[i[0]]["last_id"] = i[1]
+                    else:
+                        subcribe[i[0]]["last_id"] = max([x[1] for x in res])
                 except Exception:
                     try:
-                        logger.error(f"获取{subcribe[i[0]]['name']}(id:{subcribe[i[0]]['id']})失败,自动跳过推文")
+                        logger.error(
+                            f"获取{subcribe[i[0]]['name']}(id:{subcribe[i[0]]['id']})失败,自动跳过推文"
+                        )
+                        subcribe[i[0]]["last_id"] = max([x[1] for x in res])
                     except:
                         continue
-                del subcribe[i[0]]['id']
+                del subcribe[i[0]]["id"]
             success = [x for x in res if isinstance(x, list)]
-            logger.info(
-                f'检查结束,成功{len(success)}次,失败{len(subcribe) - len(success)}次')
+            logger.info(f"检查结束,成功{len(success)}次,失败{len(subcribe) - len(success)}次")
         except:
-            logger.error('检查时发生错误:' + traceback.format_exc())
+            logger.error("检查时发生错误:" + traceback.format_exc())
         finally:
-            with open(subcribe_path, 'w', encoding='utf-8') as f:
+            with open(subcribe_path, "w", encoding="utf-8") as f:
                 ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
             using = False
