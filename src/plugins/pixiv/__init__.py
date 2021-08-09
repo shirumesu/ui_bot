@@ -540,10 +540,13 @@ async def sche_check_pixiv():
                 f"标签: {i['tags']}\n"
                 f"{im_data}"
             )
-            for gid in illuster["group"]:
-                await bot.send_group_msg(group_id=gid, message=msg)
-            for uid in illuster["user"]:
-                await bot.send_private_msg(user_id=uid, message=msg)
+            try:
+                for gid in illuster["group"]:
+                    await bot.send_group_msg(group_id=gid, message=msg)
+                for uid in illuster["user"]:
+                    await bot.send_private_msg(user_id=uid, message=msg)
+            except:
+                logger.error(f"画师{illuster['name']}的新作品(pid:{i['title']})推送失败,自动跳过")
         if new_illust_list:
             illuster["illust_cacha"] = max(new_illust_list)
         if new_manga_list:

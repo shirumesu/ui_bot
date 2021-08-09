@@ -926,7 +926,9 @@ async def check_user_update(data: dict) -> bool:
                 if para["is_tweet"] == True and group_status["send"]:
                     if para["lang"] == "zh":
                         if para["isvideo"] == False:
-                            await bot.send_group_msg(group_id=group_id, message=fatui_text)
+                            await bot.send_group_msg(
+                                group_id=group_id, message=fatui_text
+                            )
                         else:
                             await bot.send_group_msg(
                                 group_id=group_id, message=fatui_text + is_video
@@ -938,13 +940,16 @@ async def check_user_update(data: dict) -> bool:
                             )
                         else:
                             await bot.send_group_msg(
-                                group_id=group_id, message=fatui_text + not_china + is_video
+                                group_id=group_id,
+                                message=fatui_text + not_china + is_video,
                             )
                 # 回复
                 elif para["isreply"] == True and group_status["reply"]:
                     if para["lang"] == "zh" and para["replylang"] == "zh":
                         if para["isvideo"] == False:
-                            await bot.send_group_msg(group_id=group_id, message=reply_text)
+                            await bot.send_group_msg(
+                                group_id=group_id, message=reply_text
+                            )
                         else:
                             await bot.send_group_msg(
                                 group_id=group_id, message=reply_text + is_video
@@ -952,7 +957,8 @@ async def check_user_update(data: dict) -> bool:
                     elif para["lang"] != "zh" and para["replylang"] == "zh":
                         if para["isvideo"] == False:
                             await bot.send_group_msg(
-                                group_id=group_id, message=reply_text + not_china_reply_1
+                                group_id=group_id,
+                                message=reply_text + not_china_reply_1,
                             )
                         else:
                             await bot.send_group_msg(
@@ -962,7 +968,8 @@ async def check_user_update(data: dict) -> bool:
                     elif para["lang"] == "zh" and para["replylang"] != "zh":
                         if para["isvideo"] == False:
                             await bot.send_group_msg(
-                                group_id=group_id, message=reply_text + not_china_reply_2
+                                group_id=group_id,
+                                message=reply_text + not_china_reply_2,
                             )
                         else:
                             await bot.send_group_msg(
@@ -973,7 +980,9 @@ async def check_user_update(data: dict) -> bool:
                         if para["isvideo"] == False:
                             await bot.send_group_msg(
                                 group_id=group_id,
-                                message=reply_text + not_china_reply_1 + not_china_reply_2,
+                                message=reply_text
+                                + not_china_reply_1
+                                + not_china_reply_2,
                             )
                         else:
                             await bot.send_group_msg(
@@ -987,7 +996,9 @@ async def check_user_update(data: dict) -> bool:
                 elif para["isRT"] == True and group_status["retweet"]:
                     if para["RTlang"] == "zh":
                         if para["isvideo"] == False:
-                            await bot.send_group_msg(group_id=group_id, message=is_RT_text)
+                            await bot.send_group_msg(
+                                group_id=group_id, message=is_RT_text
+                            )
                         else:
                             await bot.send_group_msg(
                                 group_id=group_id, message=is_RT_text + is_video
@@ -999,13 +1010,16 @@ async def check_user_update(data: dict) -> bool:
                             )
                         else:
                             await bot.send_group_msg(
-                                group_id=group_id, message=is_RT_text + not_china + is_video
+                                group_id=group_id,
+                                message=is_RT_text + not_china + is_video,
                             )
                 # 引用
                 elif para["isquote"] == True and group_status["quote"]:
                     if para["lang"] == "zh" and para["quotelang"] == "zh":
                         if para["isvideo"] == False:
-                            await bot.send_group_msg(group_id=group_id, message=quote_text)
+                            await bot.send_group_msg(
+                                group_id=group_id, message=quote_text
+                            )
                         else:
                             await bot.send_group_msg(
                                 group_id=group_id, message=quote_text + is_video
@@ -1013,7 +1027,8 @@ async def check_user_update(data: dict) -> bool:
                     elif para["lang"] != "zh" and para["quotelang"] == "zh":
                         if para["isvideo"] == False:
                             await bot.send_group_msg(
-                                group_id=group_id, message=quote_text + not_china_quote_1
+                                group_id=group_id,
+                                message=quote_text + not_china_quote_1,
                             )
                         else:
                             await bot.send_group_msg(
@@ -1023,7 +1038,8 @@ async def check_user_update(data: dict) -> bool:
                     elif para["lang"] == "zh" and para["quotelang"] != "zh":
                         if para["isvideo"] == False:
                             await bot.send_group_msg(
-                                group_id=group_id, message=quote_text + not_china_quote_2
+                                group_id=group_id,
+                                message=quote_text + not_china_quote_2,
                             )
                         else:
                             await bot.send_group_msg(
@@ -1034,7 +1050,9 @@ async def check_user_update(data: dict) -> bool:
                         if para["isvideo"] == False:
                             await bot.send_group_msg(
                                 group_id=group_id,
-                                message=quote_text + not_china_quote_1 + not_china_quote_2,
+                                message=quote_text
+                                + not_china_quote_1
+                                + not_china_quote_2,
                             )
                         else:
                             await bot.send_group_msg(
@@ -1049,7 +1067,9 @@ async def check_user_update(data: dict) -> bool:
                 if para["is_tweet"] == True and user_status["send"]:
                     if para["lang"] == "zh":
                         if para["isvideo"] == False:
-                            await bot.send_private_msg(user_id=user_id, message=fatui_text)
+                            await bot.send_private_msg(
+                                user_id=user_id, message=fatui_text
+                            )
                         else:
                             await bot.send_private_msg(
                                 user_id=user_id, message=fatui_text + is_video
@@ -1061,13 +1081,16 @@ async def check_user_update(data: dict) -> bool:
                             )
                         else:
                             await bot.send_private_msg(
-                                user_id=user_id, message=fatui_text + not_china + is_video
+                                user_id=user_id,
+                                message=fatui_text + not_china + is_video,
                             )
                 # 回复
                 elif para["isreply"] == True and user_status["reply"]:
                     if para["lang"] == "zh" and para["replylang"] == "zh":
                         if para["isvideo"] == False:
-                            await bot.send_private_msg(user_id=user_id, message=reply_text)
+                            await bot.send_private_msg(
+                                user_id=user_id, message=reply_text
+                            )
                         else:
                             await bot.send_private_msg(
                                 user_id=user_id, message=reply_text + is_video
@@ -1096,7 +1119,9 @@ async def check_user_update(data: dict) -> bool:
                         if para["isvideo"] == False:
                             await bot.send_private_msg(
                                 user_id=user_id,
-                                message=reply_text + not_china_reply_1 + not_china_reply_2,
+                                message=reply_text
+                                + not_china_reply_1
+                                + not_china_reply_2,
                             )
                         else:
                             await bot.send_private_msg(
@@ -1110,7 +1135,9 @@ async def check_user_update(data: dict) -> bool:
                 elif para["isRT"] == True and user_status["retweet"]:
                     if para["RTlang"] == "zh":
                         if para["isvideo"] == False:
-                            await bot.send_private_msg(user_id=user_id, message=is_RT_text)
+                            await bot.send_private_msg(
+                                user_id=user_id, message=is_RT_text
+                            )
                         else:
                             await bot.send_private_msg(
                                 user_id=user_id, message=is_RT_text + is_video
@@ -1122,13 +1149,16 @@ async def check_user_update(data: dict) -> bool:
                             )
                         else:
                             await bot.send_private_msg(
-                                user_id=user_id, message=is_RT_text + not_china + is_video
+                                user_id=user_id,
+                                message=is_RT_text + not_china + is_video,
                             )
                 # 引用
                 elif para["isquote"] == True and user_status["quote"]:
                     if para["lang"] == "zh" and para["quotelang"] == "zh":
                         if para["isvideo"] == False:
-                            await bot.send_private_msg(user_id=user_id, message=quote_text)
+                            await bot.send_private_msg(
+                                user_id=user_id, message=quote_text
+                            )
                         else:
                             await bot.send_private_msg(
                                 user_id=user_id, message=quote_text + is_video
@@ -1157,7 +1187,9 @@ async def check_user_update(data: dict) -> bool:
                         if para["isvideo"] == False:
                             await bot.send_private_msg(
                                 user_id=user_id,
-                                message=quote_text + not_china_quote_1 + not_china_quote_2,
+                                message=quote_text
+                                + not_china_quote_1
+                                + not_china_quote_2,
                             )
                         else:
                             await bot.send_private_msg(
@@ -1168,7 +1200,7 @@ async def check_user_update(data: dict) -> bool:
                                 + is_video,
                             )
         except:
-            logger.error(f"{data['id']}推送失败, 自动跳过")
+            logger.error(f"{data['id']}的推文(msg-id:{para['lastid']})推送失败, 自动跳过")
     return [data["id"], max(msg_id)]
 
 

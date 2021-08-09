@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.2.3
+@Version    : 1.0.2.4
 @EditTime   : 2021/7/15 4:41pm(Editor: shiying)
-@Desc       : 修复了推特出现bug无限复读的错误,错误原因:出错后跳出了代码,没有进行到最后的更新数据库操作
+@Desc       : 推特与pixiv更新推送跳过功能,没有发送到自动跳过,防止长时间不启动bot一口气瞬间刷屏
 """
 import os
 import sys
@@ -18,7 +18,7 @@ import config
 from src.Services import init_bot
 
 
-version = "1.0.2.3"
+version = "1.0.2.4"
 
 
 def check_update():
