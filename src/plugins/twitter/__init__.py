@@ -920,252 +920,255 @@ async def check_user_update(data: dict) -> bool:
         )
         is_video = f"\n================\n该推文可能有视频/gif,请点击链接查看"
 
-        for group_id, group_status in data["subcribe_group"].items():
-            # 发推
-            if para["is_tweet"] == True and group_status["send"]:
-                if para["lang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=fatui_text)
+        try:
+            for group_id, group_status in data["subcribe_group"].items():
+                # 发推
+                if para["is_tweet"] == True and group_status["send"]:
+                    if para["lang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(group_id=group_id, message=fatui_text)
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=fatui_text + is_video
+                            )
                     else:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=fatui_text + is_video
-                        )
-                else:
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=fatui_text + not_china
-                        )
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=fatui_text + not_china
+                            )
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=fatui_text + not_china + is_video
+                            )
+                # 回复
+                elif para["isreply"] == True and group_status["reply"]:
+                    if para["lang"] == "zh" and para["replylang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(group_id=group_id, message=reply_text)
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=reply_text + is_video
+                            )
+                    elif para["lang"] != "zh" and para["replylang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=reply_text + not_china_reply_1
+                            )
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id,
+                                message=reply_text + not_china_reply_1 + is_video,
+                            )
+                    elif para["lang"] == "zh" and para["replylang"] != "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=reply_text + not_china_reply_2
+                            )
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id,
+                                message=reply_text + not_china_reply_2 + is_video,
+                            )
                     else:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=fatui_text + not_china + is_video
-                        )
-            # 回复
-            elif para["isreply"] == True and group_status["reply"]:
-                if para["lang"] == "zh" and para["replylang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=reply_text)
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(
+                                group_id=group_id,
+                                message=reply_text + not_china_reply_1 + not_china_reply_2,
+                            )
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id,
+                                message=reply_text
+                                + not_china_reply_1
+                                + not_china_reply_2
+                                + is_video,
+                            )
+                # 转推
+                elif para["isRT"] == True and group_status["retweet"]:
+                    if para["RTlang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(group_id=group_id, message=is_RT_text)
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=is_RT_text + is_video
+                            )
                     else:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=reply_text + is_video
-                        )
-                elif para["lang"] != "zh" and para["replylang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=reply_text + not_china_reply_1
-                        )
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=is_RT_text + not_china
+                            )
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=is_RT_text + not_china + is_video
+                            )
+                # 引用
+                elif para["isquote"] == True and group_status["quote"]:
+                    if para["lang"] == "zh" and para["quotelang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(group_id=group_id, message=quote_text)
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=quote_text + is_video
+                            )
+                    elif para["lang"] != "zh" and para["quotelang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=quote_text + not_china_quote_1
+                            )
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id,
+                                message=quote_text + not_china_quote_1 + is_video,
+                            )
+                    elif para["lang"] == "zh" and para["quotelang"] != "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(
+                                group_id=group_id, message=quote_text + not_china_quote_2
+                            )
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id,
+                                message=quote_text + not_china_quote_2 + is_video,
+                            )
                     else:
-                        await bot.send_group_msg(
-                            group_id=group_id,
-                            message=reply_text + not_china_reply_1 + is_video,
-                        )
-                elif para["lang"] == "zh" and para["replylang"] != "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=reply_text + not_china_reply_2
-                        )
+                        if para["isvideo"] == False:
+                            await bot.send_group_msg(
+                                group_id=group_id,
+                                message=quote_text + not_china_quote_1 + not_china_quote_2,
+                            )
+                        else:
+                            await bot.send_group_msg(
+                                group_id=group_id,
+                                message=quote_text
+                                + not_china_quote_1
+                                + not_china_quote_2
+                                + is_video,
+                            )
+            for user_id, user_status in data["subcribe_user"].items():
+                # 发推
+                if para["is_tweet"] == True and user_status["send"]:
+                    if para["lang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(user_id=user_id, message=fatui_text)
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=fatui_text + is_video
+                            )
                     else:
-                        await bot.send_group_msg(
-                            group_id=group_id,
-                            message=reply_text + not_china_reply_2 + is_video,
-                        )
-                else:
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(
-                            group_id=group_id,
-                            message=reply_text + not_china_reply_1 + not_china_reply_2,
-                        )
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=fatui_text + not_china
+                            )
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=fatui_text + not_china + is_video
+                            )
+                # 回复
+                elif para["isreply"] == True and user_status["reply"]:
+                    if para["lang"] == "zh" and para["replylang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(user_id=user_id, message=reply_text)
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=reply_text + is_video
+                            )
+                    elif para["lang"] != "zh" and para["replylang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=reply_text + not_china_reply_1
+                            )
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id,
+                                message=reply_text + not_china_reply_1 + is_video,
+                            )
+                    elif para["lang"] == "zh" and para["replylang"] != "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=reply_text + not_china_reply_2
+                            )
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id,
+                                message=reply_text + not_china_reply_2 + is_video,
+                            )
                     else:
-                        await bot.send_group_msg(
-                            group_id=group_id,
-                            message=reply_text
-                            + not_china_reply_1
-                            + not_china_reply_2
-                            + is_video,
-                        )
-            # 转推
-            elif para["isRT"] == True and group_status["retweet"]:
-                if para["RTlang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=is_RT_text)
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(
+                                user_id=user_id,
+                                message=reply_text + not_china_reply_1 + not_china_reply_2,
+                            )
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id,
+                                message=reply_text
+                                + not_china_reply_1
+                                + not_china_reply_2
+                                + is_video,
+                            )
+                # 转推
+                elif para["isRT"] == True and user_status["retweet"]:
+                    if para["RTlang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(user_id=user_id, message=is_RT_text)
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=is_RT_text + is_video
+                            )
                     else:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=is_RT_text + is_video
-                        )
-                else:
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=is_RT_text + not_china
-                        )
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=is_RT_text + not_china
+                            )
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=is_RT_text + not_china + is_video
+                            )
+                # 引用
+                elif para["isquote"] == True and user_status["quote"]:
+                    if para["lang"] == "zh" and para["quotelang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(user_id=user_id, message=quote_text)
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=quote_text + is_video
+                            )
+                    elif para["lang"] != "zh" and para["quotelang"] == "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=quote_text + not_china_quote_1
+                            )
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id,
+                                message=quote_text + not_china_quote_1 + is_video,
+                            )
+                    elif para["lang"] == "zh" and para["quotelang"] != "zh":
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(
+                                user_id=user_id, message=quote_text + not_china_quote_2
+                            )
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id,
+                                message=quote_text + not_china_quote_2 + is_video,
+                            )
                     else:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=is_RT_text + not_china + is_video
-                        )
-            # 引用
-            elif para["isquote"] == True and group_status["quote"]:
-                if para["lang"] == "zh" and para["quotelang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(group_id=group_id, message=quote_text)
-                    else:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=quote_text + is_video
-                        )
-                elif para["lang"] != "zh" and para["quotelang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=quote_text + not_china_quote_1
-                        )
-                    else:
-                        await bot.send_group_msg(
-                            group_id=group_id,
-                            message=quote_text + not_china_quote_1 + is_video,
-                        )
-                elif para["lang"] == "zh" and para["quotelang"] != "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(
-                            group_id=group_id, message=quote_text + not_china_quote_2
-                        )
-                    else:
-                        await bot.send_group_msg(
-                            group_id=group_id,
-                            message=quote_text + not_china_quote_2 + is_video,
-                        )
-                else:
-                    if para["isvideo"] == False:
-                        await bot.send_group_msg(
-                            group_id=group_id,
-                            message=quote_text + not_china_quote_1 + not_china_quote_2,
-                        )
-                    else:
-                        await bot.send_group_msg(
-                            group_id=group_id,
-                            message=quote_text
-                            + not_china_quote_1
-                            + not_china_quote_2
-                            + is_video,
-                        )
-        for user_id, user_status in data["subcribe_user"].items():
-            # 发推
-            if para["is_tweet"] == True and user_status["send"]:
-                if para["lang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=fatui_text)
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=fatui_text + is_video
-                        )
-                else:
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=fatui_text + not_china
-                        )
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=fatui_text + not_china + is_video
-                        )
-            # 回复
-            elif para["isreply"] == True and user_status["reply"]:
-                if para["lang"] == "zh" and para["replylang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=reply_text)
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=reply_text + is_video
-                        )
-                elif para["lang"] != "zh" and para["replylang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=reply_text + not_china_reply_1
-                        )
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id,
-                            message=reply_text + not_china_reply_1 + is_video,
-                        )
-                elif para["lang"] == "zh" and para["replylang"] != "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=reply_text + not_china_reply_2
-                        )
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id,
-                            message=reply_text + not_china_reply_2 + is_video,
-                        )
-                else:
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(
-                            user_id=user_id,
-                            message=reply_text + not_china_reply_1 + not_china_reply_2,
-                        )
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id,
-                            message=reply_text
-                            + not_china_reply_1
-                            + not_china_reply_2
-                            + is_video,
-                        )
-            # 转推
-            elif para["isRT"] == True and user_status["retweet"]:
-                if para["RTlang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=is_RT_text)
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=is_RT_text + is_video
-                        )
-                else:
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=is_RT_text + not_china
-                        )
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=is_RT_text + not_china + is_video
-                        )
-            # 引用
-            elif para["isquote"] == True and user_status["quote"]:
-                if para["lang"] == "zh" and para["quotelang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(user_id=user_id, message=quote_text)
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=quote_text + is_video
-                        )
-                elif para["lang"] != "zh" and para["quotelang"] == "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=quote_text + not_china_quote_1
-                        )
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id,
-                            message=quote_text + not_china_quote_1 + is_video,
-                        )
-                elif para["lang"] == "zh" and para["quotelang"] != "zh":
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(
-                            user_id=user_id, message=quote_text + not_china_quote_2
-                        )
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id,
-                            message=quote_text + not_china_quote_2 + is_video,
-                        )
-                else:
-                    if para["isvideo"] == False:
-                        await bot.send_private_msg(
-                            user_id=user_id,
-                            message=quote_text + not_china_quote_1 + not_china_quote_2,
-                        )
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id,
-                            message=quote_text
-                            + not_china_quote_1
-                            + not_china_quote_2
-                            + is_video,
-                        )
+                        if para["isvideo"] == False:
+                            await bot.send_private_msg(
+                                user_id=user_id,
+                                message=quote_text + not_china_quote_1 + not_china_quote_2,
+                            )
+                        else:
+                            await bot.send_private_msg(
+                                user_id=user_id,
+                                message=quote_text
+                                + not_china_quote_1
+                                + not_china_quote_2
+                                + is_video,
+                            )
+        except:
+            logger.error(f"{data['id']}推送失败, 自动跳过")
     return [data["id"], max(msg_id)]
 
 
