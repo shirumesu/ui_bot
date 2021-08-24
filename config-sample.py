@@ -83,9 +83,6 @@ proxy_pixiv = True
 # 自定义回复开关(有些时候会太吵了)
 reply_switch = True
 
-# 系统设置(是否为windows,否则为linux,目前仅支持这两个,受影响插件为blhxwiki,由于使用selenium,需要对应driver和代码)
-windows = True
-
 # Twitter模块用到的api
 Access_token_for_Twitter = ""
 Access_token_secret_for_Twitter = ""

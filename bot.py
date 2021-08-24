@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.2.5
+@Version    : 1.0.3.0
 @EditTime   : 2021/7/15 4:41pm(Editor: shiying)
-@Desc       : 修复bug(request下代理会更改代理字典导致httpx报错),优化推特跟pixiv的错误跳过功能
+@Desc       : 支持初始化时自动获取chrome-drive并给出网址下载,不再需要用户手动输入系统
 """
 import os
 import sys
@@ -11,13 +11,32 @@ import requests
 import time
 import re
 from loguru import logger
+from bs4 import BeautifulSoup
 
 import nonebot
 import config
 from src.Services import init_bot
 
 
-version = "1.0.2.5"
+version = "1.0.3.0"
+
+
+def get_chrome():
+    logger.info("正在尝试检查chrome-drive内核……")
+    if not os.listdir(os.path.join(config.res, "source", "blhxwiki")):
+        s = requests.get(
+            "https://chromedriver.chromium.org/",
+            proxies=config.proxies.copy(),
+            timeout=10,
+        )
+        soup = BeautifulSoup(s.text, "lxml")
+        html = soup.find_all("a", {"class": "XqQF9c"})
+        logger.info(
+            f"检测到稳定版chrome-drive:{html[4].string},请前往下载:{html[4].attrs['href']}"
+        )
+    else:
+        logger.info("已有chrome-drive,无需下载")
+    time.sleep(3)
 
 
 def check_update():
@@ -42,7 +61,6 @@ def check_update():
     )
 
     logger.info(msg)
-    time.sleep(3)
 
 
 def switch_modules(modules_list):
@@ -75,6 +93,13 @@ if __name__ == "__main__":
             check_update()
         except:
             logger.error("检查更新失败,自动跳过")
+        else:
+            try:
+                get_chrome()
+            except:
+                logger.error(
+                    "无法检查chrome内核版本,请前往手动下载:https://chromedriver.chromium.org/\n(否则blhxwiki插件无法使用)"
+                )
     os.makedirs(config.res, exist_ok=True)
 
     log(config.DEBUG)

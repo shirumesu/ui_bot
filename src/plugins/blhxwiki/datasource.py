@@ -1,6 +1,7 @@
 import os
 import string
 import random
+import platform
 import time
 from typing import Union
 from aiocqhttp.message import MessageSegment
@@ -15,7 +16,7 @@ import config
 
 class driver:
     def __init__(self) -> None:
-        self.sys_is_windows = config.windows
+        self.sys = platform.system()
 
     def get_pac(self, url: str) -> Union[str, MessageSegment]:
         """判断使用哪一种方式去获取截图
@@ -27,12 +28,12 @@ class driver:
             Union[str,MessageSegment]: 返回错误信息,或是成功保存的图片CQ码
         """
         try:
-            if self.sys_is_windows:
-                s = self.win_driver(url)
-                return s
-            else:
+            if self.sys == "Windows":
+                return self.win_driver(url)
+            elif self.sys == "Linux":
                 return self.linux_driver(url)
         except:
+            logger.error(f"暂不支持{self.sys}系统")
             return "该插件目前处于不可用状态"
 
     def win_driver(self, url: str) -> Union[str, MessageSegment]:
