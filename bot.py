@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.2.4
+@Version    : 1.0.2.5
 @EditTime   : 2021/7/15 4:41pm(Editor: shiying)
-@Desc       : 推特与pixiv更新推送跳过功能,没有发送到自动跳过,防止长时间不启动bot一口气瞬间刷屏
+@Desc       : 修复bug(request下代理会更改代理字典导致httpx报错),优化推特跟pixiv的错误跳过功能
 """
 import os
 import sys
@@ -13,19 +13,18 @@ import re
 from loguru import logger
 
 import nonebot
-
 import config
 from src.Services import init_bot
 
 
-version = "1.0.2.4"
+version = "1.0.2.5"
 
 
 def check_update():
     logger.info("正在尝试检查更新……")
     resp = requests.get(
         "https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py",
-        proxies=config.proxies,
+        proxies=config.proxies.copy(),
     )
 
     version_git = re.findall("@Version    : (.+)", resp.text)[0]
@@ -72,7 +71,10 @@ def log(debug_mode: bool = False):
 
 if __name__ == "__main__":
     if config.checkupdate:
-        check_update()
+        try:
+            check_update()
+        except:
+            logger.error("检查更新失败,自动跳过")
     os.makedirs(config.res, exist_ok=True)
 
     log(config.DEBUG)
