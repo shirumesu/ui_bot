@@ -23,7 +23,7 @@ async def shut_up(session: CommandSession) -> None:
 
 @on_command("说话")
 async def speak(session: CommandSession, gid) -> None:
-    stat = await Service_Master().check_permission("bot_manager", event)
+    stat = await Service_Master().check_permission("bot_manager", session)
     if not stat[0]:
         await bot.send(session, stat[3])
 
