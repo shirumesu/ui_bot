@@ -35,7 +35,7 @@ async def speak(session: CommandSession, gid) -> None:
 @message_preprocessor
 async def Shut_Up(Bot, Event, Plutin_manager):
     if Event.raw_message == "说话":
-        await speak(Event, speak)
+        await speak(Event, Event.group_id)
     elif Event.group_id in SHUTUP and SHUTUP[Event.group_id][0]:
         if SHUTUP[Event.group_id][1] >= 3:
             await bot.send(Event, "呜呜……!就算你一直说我也没办法说话了啦,来试试对我说`说话`吧！")
