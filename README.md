@@ -51,19 +51,25 @@
            pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt  
         > 有报错请自行百度解决,此过程如果报错不管可能导致bot无法使用
 
-3. 将**config-sample.py**改名为**config.py**并打开根据注释编辑
+    3. 安装playwright
 
-4. 安装并配置[go-cqhttp](https://github.com/Mrs4s/go-cqhttp),教程请自行去查看[文档](https://docs.go-cqhttp.org/)
+        Windows: playwright install  
+        Linux: python3 -m playwright install
+        > 注意,linux不支持32位系统
+
+4. 将**config-sample.py**改名为**config.py**并打开根据注释编辑
+
+5. 安装并配置[go-cqhttp](https://github.com/Mrs4s/go-cqhttp),教程请自行去查看[文档](https://docs.go-cqhttp.org/)
     - 如果你知道要干什么，也可以安装你喜欢的框架
     - 并未对其他框架做测试(不保证可用性(good luck.jpg))
  
-5. 先双击bot初始化一下,然后关闭窗口,去./res/source/blhxwiki/下下载对应版本的chrome-drive
+6. 先双击bot初始化一下,然后关闭窗口,去./res/source/blhxwiki/下下载对应版本的chrome-drive
     - 并不难,linux跟windows都有支持,并未支持mac版本的drive,有报错自行百度即可,一般都是简单的版本跟安装问题,几分钟就能处理完
  
-6. 双击bot.py启动,同时别忘了go-cqhttp,一并启动
+7. 双击bot.py启动,同时别忘了go-cqhttp,一并启动
     - bot.py初始化的时候会生成一些插件配置文件以及目录
   
-7. 安装完毕,使用方法等请在qq私聊bot发送'使用帮助'/'查看所有插件'查看
+8. 安装完毕,使用方法等请在qq私聊bot发送'使用帮助'/'查看所有插件'查看
 
 ## 关于api
 由于本项目使用了不少api,需要用户自己申请,以下放出部分教程(都是别人的)  
