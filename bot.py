@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.4.0
+@Version    : 1.0.4.1
 @EditTime   : 2021/8-29 5:51pm(Editor: shiying)
-@Desc       : 新增功能: 说话,闭嘴实现禁言,修复bug: Pixiv榜单第x张出错,blhxwiki截图问题,优化: 增加更多的debug日志
+@Desc       : Debug: ui_exception写法错误导致NameError
 """
 import os
 import sys
@@ -18,7 +18,7 @@ import config
 from src.Services import init_bot
 
 
-version = "1.0.4.0"
+version = "1.0.4.1"
 
 
 def get_chrome():
