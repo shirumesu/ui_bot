@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.3.0
-@EditTime   : 2021/7/15 4:41pm(Editor: shiying)
-@Desc       : 支持初始化时自动获取chrome-drive并给出网址下载,不再需要用户手动输入系统
+@Version    : 1.0.4.0
+@EditTime   : 2021/8-29 5:51pm(Editor: shiying)
+@Desc       : 新增功能: 说话,闭嘴实现禁言,修复bug: Pixiv榜单第x张出错,blhxwiki截图问题,优化: 增加更多的debug日志
 """
 import os
 import sys
@@ -18,17 +18,21 @@ import config
 from src.Services import init_bot
 
 
-version = "1.0.3.0"
+version = "1.0.4.0"
 
 
 def get_chrome():
     logger.info("正在尝试检查chrome-drive内核……")
     if not os.listdir(os.path.join(config.res, "source", "blhxwiki")):
+        logger.debug(
+            f"连接url:https://chromedriver.chromium.org/,代理:{str(config.proxies.copy())}"
+        )
         s = requests.get(
             "https://chromedriver.chromium.org/",
             proxies=config.proxies.copy(),
             timeout=10,
         )
+        logger.debug(f"status_code:{str(s.status_code)}")
         soup = BeautifulSoup(s.text, "lxml")
         html = soup.find_all("a", {"class": "XqQF9c"})
         logger.info(
@@ -41,10 +45,14 @@ def get_chrome():
 
 def check_update():
     logger.info("正在尝试检查更新……")
+    logger.debug(
+        "连接url:https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py,代理:{str(config.proxies.copy())}"
+    )
     resp = requests.get(
         "https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py",
         proxies=config.proxies.copy(),
     )
+    logger.debug(f"status_code:{str(resp.status_code)}")
 
     version_git = re.findall("@Version    : (.+)", resp.text)[0]
     version_desc = re.findall("@Desc       : (.+)", resp.text)[0]
@@ -85,9 +93,12 @@ def log(debug_mode: bool = False):
         diagnose=False,
         level="DEBUG" if debug_mode else "INFO",
     )
+    logger.debug("日志配置加载完毕")
 
 
 if __name__ == "__main__":
+    log(config.DEBUG)
+
     if config.checkupdate:
         try:
             check_update()
@@ -101,8 +112,8 @@ if __name__ == "__main__":
                     "无法检查chrome内核版本,请前往手动下载:https://chromedriver.chromium.org/\n(否则blhxwiki插件无法使用)"
                 )
     os.makedirs(config.res, exist_ok=True)
+    logger.debug("res文件夹创造完毕/已经存在res文件夹")
 
-    log(config.DEBUG)
     nonebot.init(config)
     init_bot()
 

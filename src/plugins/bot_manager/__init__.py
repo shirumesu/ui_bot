@@ -2,15 +2,17 @@ import psutil
 import random
 import time
 
-from nonebot import on_command, CommandSession, MessageSegment
+from nonebot import on_command, CommandSession
 
 from src.Services import Service, Service_Master
 
-sv_help = """bot状态 | 使用帮助
+import src.plugins.bot_manager.shutup
+
+sv_help = """bot相关 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
-[bot状态] -> 查看目前bot状态
+[bot相关] -> 查看目前bot状态
 """
-sv = Service(["bot_manager", "bot状态"], sv_help, priv_use=False)
+sv = Service(["bot_manager", "bot相关"], sv_help, priv_use=False)
 
 
 @on_command("bot状态")

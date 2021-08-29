@@ -30,9 +30,10 @@ def init_bot() -> None:
 
     **如果不存在sv_config.json文件(该插件从未启用过)将会加载初始化一次然后根据is_enable属性决定是否关闭**
     """
-    name_list = [x for x, y in config.plugins.items()]
+    name_list = [x for x in config.plugins.keys()]
     for i in name_list:
         nonebot.load_plugin(f"src.plugins.{i}")
+    logger.info("bot插件加载完毕")
 
 
 class Service_Master:
@@ -431,7 +432,7 @@ class Service:
             with open(path, mode="w", encoding="utf-8") as f:
                 f.write("")
                 logger.info(
-                    f"插件{self.plugin_name[0]}({self.plugin_name[1]})下不存在配置文件,正在创建新文件"
+                    f"插件{self.plugin_name[0]}({self.plugin_name[1]})下不存在配置文件,正在创建新文件svconfig.json"
                 )
             return
         with open(path, "r", encoding="utf-8") as f:

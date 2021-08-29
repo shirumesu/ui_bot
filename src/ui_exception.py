@@ -1,3 +1,6 @@
+from loguru import logger
+
+
 class Plugin_Change_Error(Exception):
     pass
 
@@ -12,3 +15,7 @@ class Pixiv_not_found_Error(Exception):
 
 class baidu_ocr_get_Error(Exception):
     pass
+
+
+class Shut_Up_Error(Exception):
+    logger.debug(f"bot在{gid}已被禁言了!不响应该指令")

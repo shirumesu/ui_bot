@@ -127,7 +127,7 @@ async def pixiv_rank(session: CommandSession):
     msg = ""
     for index, i in enumerate(im_data):
         msg += (
-            f"第{index}张:\n"
+            f"第{index + 1}张:\n"
             f"{i['seq']}\n"
             f"图片上传日期:{i['date']}\n"
             f"图片标题:{i['title']}(id:{i['pid']})\n"

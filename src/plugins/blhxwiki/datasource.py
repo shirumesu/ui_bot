@@ -3,12 +3,17 @@ import string
 import random
 import platform
 import time
+import traceback
+
 from typing import Union
 from aiocqhttp.message import MessageSegment
 from loguru import logger
+
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
+
+from playwright.sync_api import Playwright, sync_playwright
 
 
 import config
@@ -28,12 +33,19 @@ class driver:
             Union[str,MessageSegment]: 返回错误信息,或是成功保存的图片CQ码
         """
         try:
+            logger.debug(f"判断系统为:{self.sys},使用对应方法处理")
             if self.sys == "Windows":
                 return self.win_driver(url)
             elif self.sys == "Linux":
                 return self.linux_driver(url)
         except:
-            logger.error(f"暂不支持{self.sys}系统")
+            logger.error(f"暂不支持{self.sys}系统,尝试使用playwright进行截图")
+            try:
+                with sync_playwright() as playwright:
+                    return self.play_wright(url, playwright)
+            except:
+                logger.info("截图失败,该功能无法使用")
+                logger.debug(traceback.format_exc())
             return "该插件目前处于不可用状态"
 
     def win_driver(self, url: str) -> Union[str, MessageSegment]:
@@ -58,6 +70,7 @@ class driver:
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         driver = webdriver.Chrome(chromedriver, chrome_options=chrome_options)
+        logger.info(f"尝试用driver获取页面:{url}")
         driver.get(url)
         try:
             WebDriverWait(driver, 15)
@@ -115,6 +128,7 @@ class driver:
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         driver = webdriver.Chrome(chromedriver, chrome_options=chrome_options)
+        logger.info(f"尝试用driver获取页面:{url}")
         driver.get(url)
         try:
             WebDriverWait(driver, 15)
@@ -149,5 +163,37 @@ class driver:
         pac_path = os.path.join(config.res, "cacha", "blhxwiki", pac_name)
         driver.save_screenshot(pac_path)
         driver.quit()
+
+        return MessageSegment.image(r"file:///" + pac_path)
+
+    def play_wright(self, url: str, playwright: Playwright) -> MessageSegment:
+        """当selenium无法使用的时候,使用`playwright`进行截图
+
+        已知问题: 截图可能重复,并且存在懒加载导致部分图片未能加载的情况
+
+        Args:
+            url (str): 需要截图的连接地址
+            playwright (Playwright): Playwright
+
+        Returns:
+            MessageSegment: 保存的CQ码
+        """
+        browser = playwright.chromium.launch(headless=False)
+        context = browser.new_context()
+
+        # Open new page
+        page = context.new_page()
+
+        page.goto(url)
+
+        pac_name = (
+            "".join(random.sample(string.digits + string.ascii_letters, 8)) + ".png"
+        )
+        pac_path = os.path.join(config.res, "cacha", "blhxwiki", pac_name)
+
+        page.screenshot(path=pac_path)
+
+        context.close()
+        browser.close()
 
         return MessageSegment.image(r"file:///" + pac_path)

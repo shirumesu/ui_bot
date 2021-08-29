@@ -2,6 +2,7 @@ from aiocqhttp.exceptions import Error
 import httpx
 import time
 import asyncio
+from loguru import logger
 from retrying import retry
 
 from nonebot import MessageSegment
@@ -25,10 +26,13 @@ async def get_rank(mode: str, num: int) -> list[dict]:
     url = "https://www.pixiv.net/ranking.php"
     param = {"mode": mode, "p": 1, "format": "json"}
     async with httpx.AsyncClient(proxies=config.proxies, params=param, timeout=25) as s:
+        logger.debug(f"连接url:{url}")
         res = await s.get(url)
+        logger.debug(f"status_code:{str(res.status_code)}")
         if res.status_code != 200:
             raise Pixiv_api_Connect_Error
     js = res.json()
+    logger.debug(f"json-data:{str(js)}")
     im_data = []
     for index, x in enumerate(js["contents"]):
         if index < num:
@@ -80,12 +84,16 @@ async def get_image(pid: str) -> dict:
     async with httpx.AsyncClient(
         proxies=config.proxies, headers=header, timeout=25
     ) as s:
-        res = await s.get("https://www.pixiv.net/ajax/illust/" + pid)
+        url = "https://www.pixiv.net/ajax/illust/" + pid
+        logger.debug(f"连接url:{url}")
+        res = await s.get(url)
+        logger.debug(f"status_code: {str(res.status_code)}")
         if "该作品已被删除，或作品ID不存在。" in res.text:
             return None
         elif res.status_code != 200:
             raise RuntimeError
     js = res.json()["body"]
+    logger.debug(f"json-data: {str(js)}")
     count = int(js["pageCount"])
     title = js["title"]
     tags = "，".join(
@@ -152,9 +160,12 @@ async def check_illust_list(uid: str) -> dict:
     async with httpx.AsyncClient(
         proxies=config.proxies, headers=headers, timeout=25
     ) as s:
+        logger.debug(f"连接url: {url}")
         res = await s.get(url)
+        logger.debug(f"status_code: {str(res.status_code)}")
         try:
             js = res.json()
+            logger.debug(f"json-data:{str(js)}")
             if js["error"]:
                 return js["message"]
         except:
@@ -200,10 +211,13 @@ async def get_pick_up(uid: str) -> list[dict]:
     async with httpx.AsyncClient(
         proxies=config.proxies, headers=headers, timeout=25
     ) as s:
+        logger.debug(f"连接url: {url}")
         res = await s.get(url)
+        logger.debug(f"status_code: {str(res.status_code)}")
         if res.status_code != 200:
             raise RuntimeError
     js = res.json()["body"]["pickup"]
+    logger.debug(f"json-data: {str(res.json())}")
     if not js or (js[0]["type"] == "fanbox" and len(js) == 1):
         js = res.json()["body"]["illusts"]
         if not js:

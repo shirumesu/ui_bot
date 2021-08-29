@@ -31,7 +31,9 @@ async def get_pixivion_index(return_photo: bool = True) -> list[dict]:
     async with httpx.AsyncClient(
         proxies=config.proxies, headers=headers, timeout=25
     ) as s:
+        logger.debug(f"连接url: {url}")
         res = await s.get(url)
+        logger.debug(f"status_code: {str(res.status_code)}")
         if res.status_code != 200:
             raise RuntimeError
 
