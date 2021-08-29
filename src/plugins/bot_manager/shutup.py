@@ -1,4 +1,4 @@
-from aiocqhttp import event
+from loguru import logger
 from nonebot import message_preprocessor, get_bot, on_command, CommandSession
 
 from src.Services import Service_Master
@@ -17,7 +17,7 @@ async def shut_up(session: CommandSession) -> None:
     gid = session.event.group_id
 
     SHUTUP[gid] = [True, 0]
-
+    logger.debug(SHUTUP)
     await session.finish("……那我走了哦…呜呜")
 
 
@@ -28,7 +28,7 @@ async def speak(session: CommandSession, gid) -> None:
         await bot.send(session, stat[3])
 
     SHUTUP[gid] = [False, 0]
-
+    logger.debug(SHUTUP)
     await bot.send(session, "好耶！")
 
 
