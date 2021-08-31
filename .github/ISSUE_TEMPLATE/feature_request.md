@@ -1,6 +1,6 @@
 ---
 name: Feature_Request
-about: 提出对bot新功能的需求, 有时间会尽量实现(让我整点活)
+about: 请使用这个模板为bot建议新功能
 title: "[Feature Request]"
 labels: enhancement
 assignees: LYshiying
