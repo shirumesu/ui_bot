@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.4.1
+@Version    : 1.0.4.2
 @EditTime   : 2021/8-29 5:51pm(Editor: shiying)
-@Desc       : Debug: ui_exception写法错误导致NameError
+@Desc       : 修复: pixiv插件周榜与月榜识别错误(月榜爬了周榜,周榜爬了月榜)
 """
 import os
 import sys
@@ -18,7 +18,7 @@ import config
 from src.Services import init_bot
 
 
-version = "1.0.4.1"
+version = "1.0.4.2"
 
 
 def get_chrome():

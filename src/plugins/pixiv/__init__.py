@@ -111,7 +111,7 @@ async def pixiv_rank(session: CommandSession):
 
     if "日" in session.current_arg_text.strip():
         mode = "daily"
-    elif "月" in session.current_arg_text.strip():
+    elif "周" in session.current_arg_text.strip():
         mode = "weekly"
     else:
         mode = "monthly"
