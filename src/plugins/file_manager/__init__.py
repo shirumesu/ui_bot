@@ -1,5 +1,6 @@
 import os
 import time
+from pathlib import Path
 from loguru import logger
 
 import nonebot
@@ -31,13 +32,8 @@ async def rt_all_file(dir_path: str) -> list:
     Return:
         file_list: 该文件夹下所有文件
     """
-    file_list = []
-    for root, dirs, files in os.walk(dir_path):
-        for file in files:
-            file_list.append(os.path.join(root, file))
-        for _dir in dirs:
-            file_lists = await rt_all_file(os.path.join(root, _dir))
-            file_list += file_lists
+    pt = Path(dir_path)
+    file_list = [x for x in pt.glob("**/*") if x.is_file()]
     return file_list
 
 
@@ -74,7 +70,7 @@ async def rt_res(
     )
 
 
-@nonebot.scheduler.scheduled_job("interval", minutes=60)
+@nonebot.scheduler.scheduled_job("interval", minutes=60, jitter=60)
 async def _():
     """定时函数 定时清理文件"""
     now_time = time.time()
