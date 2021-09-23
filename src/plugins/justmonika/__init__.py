@@ -28,6 +28,8 @@ async def monika_tran(session: CommandSession):
         await session.finish(stat[3])
 
     text = session.current_arg_text.strip()
+    if len(text) % 2:
+        text = text + "<OOV>"
     await session.finish(_monika.encode(text))
 
 
@@ -38,4 +40,7 @@ async def monika_tran_2_word(session: CommandSession):
         await session.finish(stat[3])
 
     text = session.current_arg_text.strip()
-    await session.finish(_monika.decode(text))
+    fin_text = _monika.decode(text)
+    if "<OOV>" in fin_text:
+        fin_text = fin_text.replace("<OOV>", "")
+    await session.finish(fin_text)
