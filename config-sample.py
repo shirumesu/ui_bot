@@ -46,7 +46,8 @@ plugins = {
     "bot_manager": "机器人管理",
     "mkmeme": "表情制作",
     "rsshub": "订阅RssHub",
-    "yobot": "yobot",
+    #"yobot": "yobot",
+    "justmonika": "莫妮卡翻译",
     "blhxwiki": "碧蓝航线wiki",
     "twitter": "推特订阅",  # 没有梯子(下面proxies没有填)的请不要开启,会无法获取
     "pixiv": "pixiv相关",  # 同上
