@@ -14,6 +14,7 @@
   - 订阅pixiv画师,pixivison,查看榜单以及画师精选图等(使用pixiv官方api,稳定性大大提高了！)
   - 订阅RssHub
   - 搜图
+  - 莫妮卡乱码(把任何文字变为justmonika乱码,同时可以进行翻译)
   - 搜本
   - 翻译图片(支持竖排的漫画(~~当然质量一般~~))
   - 制作表情包
@@ -32,6 +33,8 @@
   - [群空调](https://github.com/iamwyh2019/aircon)
 
   - [俄罗斯轮盘](https://github.com/pcrbot/russian)
+
+  - 莫妮卡乱码的基础: [RCNB](https://github.com/rcnbapp/RCNB.py)
 
 ## 如何使用  
 
