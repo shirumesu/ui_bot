@@ -10,6 +10,7 @@ from nonebot import on_command, CommandSession, get_bot, scheduler
 from src.Services import Service, Service_Master, GROUP_ADMIN, SUPERUSER
 from src.plugins.pixiv import pixiv, pixivison
 from src.ui_exception import Pixiv_api_Connect_Error, Pixiv_not_found_Error
+from src.util import shutup
 
 sv_help = """pixiv相关 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
@@ -484,7 +485,8 @@ async def sche_check_pixivison():
             f"感兴趣的话可以发送pixivison (id)获取该页面哦,不知道id是什么请查看使用帮助(发送‘使用帮助 pixiv相关’)"
         )
         for gid in subcribe["pixivison"]["group"]:
-            await bot.send_group_msg(group_id=gid, message=msg)
+            if gid in shutup and not shutup[gid][0]:
+                await bot.send_group_msg(group_id=gid, message=msg)
         for uid in subcribe["pixivison"]["user"]:
             await bot.send_private_msg(user_id=uid, message=msg)
     logger.info("检查结束")
@@ -542,7 +544,8 @@ async def sche_check_pixiv():
             )
             try:
                 for gid in illuster["group"]:
-                    await bot.send_group_msg(group_id=gid, message=msg)
+                    if gid in shutup and not shutup[gid][0]:
+                        await bot.send_group_msg(group_id=gid, message=msg)
                 for uid in illuster["user"]:
                     await bot.send_private_msg(user_id=uid, message=msg)
             except:

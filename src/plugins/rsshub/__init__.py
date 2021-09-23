@@ -19,6 +19,7 @@ from nonebot import on_command, CommandSession, scheduler, MessageSegment, get_b
 
 import config
 from src.Services import Service, Service_Master, GROUP_ADMIN
+from src.util import shutup
 
 
 sv_help = """RssHub订阅 | 使用帮助
@@ -455,7 +456,7 @@ async def check_update(link):
         if subcribe[link]["subcribe_group"]:
             for gid, full_text in subcribe[link]["subcribe_group"].items():
                 try:
-                    if not gid:
+                    if not gid or (gid in shutup and not shutup[gid][0]):
                         break
                     if full_text:
                         try:
@@ -556,7 +557,7 @@ async def check_multi_rss():
             )
             if subcribe[url]["error_times"] >= 5:
                 del subcribe[url]
-        continue
+            continue
         await update_hash(i)
     with open(subc_path, "w", encoding="utf-8") as f:
         ujson.dump(subcribe, f, ensure_ascii=False, indent=4)

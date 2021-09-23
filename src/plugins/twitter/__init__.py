@@ -14,6 +14,7 @@ import config
 from src.plugins.twitter.translate import baidu_translate as translate
 from src.plugins.twitter.parser import sendmsg as ps_sendmsg
 from src.Services import Service, Service_Master, GROUP_ADMIN
+from src.util import shutup
 
 sv_help = """推特订阅 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
@@ -922,6 +923,9 @@ async def check_user_update(data: dict) -> bool:
 
         try:
             for group_id, group_status in data["subcribe_group"].items():
+                if group_id in shutup and shutup[group_id][0]:
+                    logger.info(f"群({group_id})因为被命令闭嘴没法说话了啦……")
+                    continue
                 # 发推
                 if para["is_tweet"] == True and group_status["send"]:
                     if para["lang"] == "zh":
