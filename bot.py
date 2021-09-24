@@ -3,7 +3,7 @@
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
 @Version    : 1.0.5.1
 @EditTime   : 2021/9/19 20:19pm(Editor: shiying)
-@Desc       : 修复: 文件清理插件由于定时任务冲突阻塞无限跳过的bug
+@Desc       : 新增: 使用闭嘴的时候可以屏蔽所有推送相关功能, 修复: 闭嘴功能在推送屏蔽的bug(闭嘴了依旧推送)
 """
 import os
 import sys
