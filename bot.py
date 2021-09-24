@@ -1,7 +1,7 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.4.3
+@Version    : 1.0.5.1
 @EditTime   : 2021/9/19 20:19pm(Editor: shiying)
 @Desc       : 修复: 文件清理插件由于定时任务冲突阻塞无限跳过的bug
 """
@@ -18,7 +18,7 @@ import config
 from src.Services import init_bot
 
 
-version = "1.0.4.3"
+version = "1.0.5.1"
 
 
 def get_chrome():

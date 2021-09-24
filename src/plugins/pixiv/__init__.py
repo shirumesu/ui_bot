@@ -544,7 +544,7 @@ async def sche_check_pixiv():
             )
             try:
                 for gid in illuster["group"]:
-                    if gid in shutup and not shutup[gid][0]:
+                    if not (gid in shutup and shutup[gid][0]):
                         await bot.send_group_msg(group_id=gid, message=msg)
                 for uid in illuster["user"]:
                     await bot.send_private_msg(user_id=uid, message=msg)
