@@ -1,5 +1,4 @@
 import traceback
-import nonebot
 import tweepy
 import os
 import ujson
@@ -14,7 +13,7 @@ import config
 from src.plugins.twitter.translate import baidu_translate as translate
 from src.plugins.twitter.parser import sendmsg as ps_sendmsg
 from src.Services import Service, Service_Master, GROUP_ADMIN
-from src.util import shutup
+from src.util import shutup, sync_to_async
 
 sv_help = """推特订阅 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
@@ -138,13 +137,13 @@ async def subcribe_twitter(session: CommandSession):
         gid = None
         uid = session.event["user_id"]
     try:
-        user_info = await get_user(tw_id)
+        user_info = get_user(tw_id)
     except Exception:
         logger.error(f"请求推特用户id{tw_id}失败")
         await session.finish("获取该用户失败,请检查是否存在该id")
 
     try:
-        res = await get_api(user_info["id"], 1000000000000000000)
+        res = get_api(user_info["id"], 1000000000000000000)
         user_info["last_id"] = res[0]["id"]
     except:
         user_info["last_id"] = 1000000000000000000
@@ -193,8 +192,9 @@ async def subcribe_twitter(session: CommandSession):
     )
 
 
+@sync_to_async
 @retry(stop_max_attempt_number=5)
-async def get_user(tw_id: str) -> dict:
+def get_user(tw_id: str) -> dict:
     """获取推特用户的信息
 
     Args:
@@ -214,8 +214,9 @@ async def get_user(tw_id: str) -> dict:
     return data
 
 
+@sync_to_async
 @retry(stop_max_attempt_number=5)
-async def get_api(user_id: str, tweet_id: int = 1000000000000000000) -> dict:
+def get_api(user_id: str, tweet_id: int = 1000000000000000000) -> dict:
     """获取用户发送的推特
 
     Args:
@@ -449,6 +450,7 @@ async def get_all_subcribe(session: CommandSession):
     await session.finish(f"总共订阅了{len(all_subc)}个用户:\n" f"{msg}")
 
 
+@sync_to_async
 @retry(stop_max_attempt_number=5)
 async def get_states(status_id: str) -> dict:
     """获取推文详细信息
@@ -550,7 +552,7 @@ async def sendmsg(msg: dict) -> dict:
     # 回复
     if msg["in_reply_to_status_id"] != None:
         data["isreply"] = True
-        user_name = await get_states(msg["in_reply_to_status_id"])
+        user_name = get_states(msg["in_reply_to_status_id"])
         try:
             if user_name == "访问失败":
                 data["replyuser"] = msg["in_reply_to_screen_name"]
@@ -764,7 +766,6 @@ async def sendmsg(msg: dict) -> dict:
             and data["quotetext"][-23:-10] == "https://t.co/"
         ) == True:
             data["quotetext"] = data["quotetext"][:-23]
-
     # 替换链接
     try:
         i = 0
@@ -847,7 +848,7 @@ async def check_user_update(data: dict) -> bool:
         ndata["id"] = x
     data = ndata
     try:
-        res = await get_api(data["id"], data["last_id"])
+        res = get_api(data["id"], data["last_id"])
     except:
         logger.error(f"检查{data['name']}(id:{data['id']})推特时发生错误")
         return [data["id"], data["last_id"]]
