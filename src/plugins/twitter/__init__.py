@@ -143,7 +143,7 @@ async def subcribe_twitter(session: CommandSession):
         await session.finish("获取该用户失败,请检查是否存在该id")
 
     try:
-        res = get_api(user_info["id"], 1000000000000000000)
+        res = await get_api(user_info["id"], 1000000000000000000)
         user_info["last_id"] = res[0]["id"]
     except:
         user_info["last_id"] = 1000000000000000000
@@ -848,7 +848,7 @@ async def check_user_update(data: dict) -> bool:
         ndata["id"] = x
     data = ndata
     try:
-        res = get_api(data["id"], data["last_id"])
+        res = await get_api(data["id"], data["last_id"])
     except:
         logger.error(f"检查{data['name']}(id:{data['id']})推特时发生错误")
         return [data["id"], data["last_id"]]
