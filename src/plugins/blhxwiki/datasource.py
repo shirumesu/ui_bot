@@ -136,17 +136,25 @@ class driver:
         Returns:
             Union[str,MessageSegment]: 返回错误信息,或是成功保存的图片CQ码
         """
-        chromedriver = os.path.join(config.res, "source", "blhxwiki", "chromedriver")
-        if not os.path.exists(chromedriver):
-            logger.warning("没有检测到对应的chrome-driver,无法进行截图")
-            return "该插件目前处于不可用状态"
-        os.environ["webdriver.chrome.driver"] = chromedriver
-
         chrome_options = Options()
         chrome_options.add_argument("headless")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
-        driver = webdriver.Chrome(chromedriver, chrome_options=chrome_options)
+
+        try:
+            driver = webdriver.Chrome(chrome_options=chrome_options)
+        except:
+            logger.info("没有在系统环境找到对应的chromedriver,尝试在res文件夹下寻找")
+            try:
+                chromedriver = os.path.join(
+                    config.res, "source", "blhxwiki", "chromedriver"
+                )
+                if not os.path.exists(chromedriver):
+                    logger.warning("没有检测到对应的chrome-driver，无法进行截图")
+                driver = webdriver.Chrome(chromedriver, chrome_options=chrome_options)
+                os.environ["webdriver.chrome.driver"] = chromedriver
+            except:
+                return "该插件目前处于不可用状态"
         logger.info(f"尝试用driver获取页面:{url}")
         driver.get(url)
         try:
