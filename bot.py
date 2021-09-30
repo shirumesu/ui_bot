@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.5.1
-@EditTime   : 2021/9/19 20:19pm(Editor: shiying)
-@Desc       : 新增: 使用闭嘴的时候可以屏蔽所有推送相关功能, 修复: 闭嘴功能在推送屏蔽的bug(闭嘴了依旧推送)
+@Version    : 1.0.5.2
+@EditTime   : 2021/9/30 15:35pm(Editor: shiying)
+@Desc       : 新增: 全功能禁止,全功能开启,字面意思，对该群进行所有功能封禁;给色图评分(需要百度图像审核api)
 """
 import os
 import sys
@@ -18,7 +18,7 @@ import config
 from src.Services import init_bot
 
 
-version = "1.0.5.1"
+version = "1.0.5.2"
 
 
 def get_chrome():
@@ -46,7 +46,7 @@ def get_chrome():
 def check_update():
     logger.info("正在尝试检查更新……")
     logger.debug(
-        "连接url:https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py,代理:{str(config.proxies.copy())}"
+        f"连接url:https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py,代理:{str(config.proxies.copy())}"
     )
     resp = requests.get(
         "https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py",

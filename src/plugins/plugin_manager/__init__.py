@@ -47,6 +47,9 @@ sv_help = """插件管理器 | 使用帮助
     使用示例:
         全局关闭插件 setu
         全局开启插件 setu
+[全功能开启/全功能禁止] -> 对该群关闭所有插件
+    特别注意:
+        使用权限: 仅为superuser
 """
 sv = Service(
     ["plugin_manager", "插件管理器"],
@@ -233,3 +236,28 @@ async def enable_plugin(session):
         await session.send("开启成功！")
     else:
         await session.send("开启失败,出现未知错误")
+
+
+@on_command("全功能禁止", aliases=("全功能关闭",))
+async def shut_all(session: CommandSession):
+    stat = await svm.check_permission("plugin_manager", session.event, SUPERUSER)
+    if not stat[0]:
+        await session.finish(stat[3])
+
+    gid = session.event.group_id
+    plugin_name = [x.plugin_name[0] for x in svm.sv_list.values()]
+    for i in plugin_name:
+        await svm.enable_plugin(i, False, gid)
+    await session.finish("本群所有功能禁用成功！(已经订阅的p站,推特会继续推送,想禁止请取消订阅/使用`闭嘴`命令)")
+
+@on_command("全功能开启", aliases=("全功能启用",))
+async def enable_all(session: CommandSession):
+    stat = await svm.check_permission("plugin_manager", session.event, SUPERUSER)
+    if not stat[0]:
+        await session.finish(stat[3])
+
+    gid = session.event.group_id
+    plugin_name = [x.plugin_name[0] for x in svm.sv_list.values()]
+    for i in plugin_name:
+        await svm.enable_plugin(i, True, gid)
+    await session.finish("本群所有功能禁用成功！可以正常用咯~")

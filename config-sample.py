@@ -43,19 +43,18 @@ plugins = {
     "marionette": "人偶",
     "aircon": "群空调",
     "reply_msg": "自定义回复",
-    "bot_manager": "机器人管理",
+    "setu_score": "给色图打分",
     "mkmeme": "表情制作",
     "rsshub": "订阅RssHub",
-    #"yobot": "yobot",
     "justmonika": "莫妮卡翻译",
     "blhxwiki": "碧蓝航线wiki",
+    "bot_manager": "机器人管理",
     "twitter": "推特订阅",  # 没有梯子(下面proxies没有填)的请不要开启,会无法获取
     "pixiv": "pixiv相关",  # 同上
     "translate": "翻译漫画",  # 需要百度翻译以及百度ocr API 否则无法使用
     "search_image": "以图搜图",  # 需要sauceNao API
-    # **请绝对不要关闭这几个插件！**
-    # file_manager 可选关闭,所有获取的图片都会保存下来,不开启的话res文件夹大小会飞涨,想获取色图的话可以选择注释关一段时间,然后去res/cacha/setu查看
-    "file_manager": "文件清理",
+    #! **请绝对不要关闭这几个插件！**
+    "file_manager": "文件清理",  # 可选关闭,所有获取的图片都会保存下来,不开启的话res文件夹大小会飞涨,想获取色图的话可以选择注释关一段时间,然后去res/cacha/setu查看
     "usage": "使用帮助",
     "plugin_manager": "插件管理器",
     # TODO(shiying): 待制作插件
@@ -99,6 +98,10 @@ baidu_ocr_client_secret = ""
 # 翻译
 baidu_translate_api_id = ""
 baidu_translate_secret_key = ""
+
+# 百度色图打分用到的api
+baidu_setu_score_api_key = ""
+baidu_setu_score_secret_key = ""
 
 # 搜图模块用到的api
 sauceNAO_api = ""
