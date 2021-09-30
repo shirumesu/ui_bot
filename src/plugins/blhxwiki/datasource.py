@@ -9,12 +9,23 @@ from typing import Union
 from aiocqhttp.message import MessageSegment
 from loguru import logger
 
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.chrome.options import Options
+try:
+    from selenium import webdriver
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.chrome.options import Options
 
-from playwright.sync_api import Playwright, sync_playwright
+    NOT_SELENIUM = False
+except:
+    logger.info("没有找到模块:selenium或导入错误 已自动禁用")
+    NOT_SELENIUM = True
 
+try:
+    from playwright.sync_api import Playwright, sync_playwright
+
+    NOT_PLAYWRIGHT = False
+except:
+    logger.info("没有找到模块:playwright或导入错误 已自动禁用")
+    NOT_PLAYWRIGHT = True
 
 import config
 
@@ -57,19 +68,27 @@ class driver:
         Returns:
             Union[str,MessageSegment]: 返回错误信息,或是成功保存的图片CQ码
         """
-        chromedriver = os.path.join(
-            config.res, "source", "blhxwiki", "chromedriver.exe"
-        )
-        if not os.path.exists(chromedriver):
-            logger.warning("没有检测到对应的chrome-driver,无法进行截图")
-            return "该插件目前处于不可用状态"
-        os.environ["webdriver.chrome.driver"] = chromedriver
-
         chrome_options = Options()
         chrome_options.add_argument("headless")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
-        driver = webdriver.Chrome(chromedriver, chrome_options=chrome_options)
+
+        try:
+            driver = webdriver.Chrome(chrome_options=chrome_options)
+        except:
+            try:
+                chromedriver = os.path.join(
+                    config.res, "source", "blhxwiki", "chromedriver.exe"
+                )
+                os.environ["webdriver.chrome.driver"] = chromedriver
+                if not os.path.exists(chromedriver):
+                    logger.warning("没有检测到对应的chrome-driver,无法进行截图")
+                    return "该插件目前处于不可用状态"
+                driver = webdriver.Chrome(chromedriver, chrome_options=chrome_options)
+            except:
+                logger.warning("检测到chromedriver存在但发生了错误,selenium无法使用")
+                return "该插件目前处于不可用状态"
+
         logger.info(f"尝试用driver获取页面:{url}")
         driver.get(url)
         try:

@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.5.2
+@Version    : 1.0.5.3
 @EditTime   : 2021/9/30 15:35pm(Editor: shiying)
-@Desc       : 新增: 全功能禁止,全功能开启,字面意思，对该群进行所有功能封禁;给色图评分(需要百度图像审核api)
+@Desc       : 修复: selenium跟playwright有一个不存在会导致整个插件无法使用的情况
 """
 import os
 import sys
@@ -18,7 +18,7 @@ import config
 from src.Services import init_bot
 
 
-version = "1.0.5.2"
+version = "1.0.5.3"
 
 
 def get_chrome():
