@@ -49,7 +49,8 @@ class driver:
                 return self.win_driver(url)
             elif self.sys == "Linux":
                 return self.linux_driver(url)
-        except:
+        except Exception as e:
+            logger.debug(e)
             logger.error(f"暂不支持{self.sys}系统,尝试使用playwright进行截图")
             try:
                 with sync_playwright() as playwright:
