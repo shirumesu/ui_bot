@@ -64,7 +64,6 @@ class pic_score:
 
         data = {"imgUrl": url} if url else {"image": img_path}
         async with httpx.AsyncClient(
-            self.token_host,
             headers=self.headers,
             proxies=config.proxies_for_all,
             timeout=15,
@@ -80,12 +79,12 @@ class pic_score:
                 logger.debug(f"json解析失败")
                 return {"status": False, "error_msg": "API Error", "result": None}
         score = [
-            int(x["probability"]) * 500
-            for x in js
+            x["probability"] * 500
+            for x in js["data"]
             if x["type"] == 1
             and (x["subType"] == 0 or x["subType"] == 1 or x["subType"] == 10)
         ]
-        return {"status": True, "error_msg": "", "result": max(score)}
+        return {"status": True, "error_msg": "", "result": round(max(score))}
 
     def image_encode(path: str) -> Union[None, b64encode]:
         """将图片加密至base64编码

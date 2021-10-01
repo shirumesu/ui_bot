@@ -27,7 +27,7 @@ async def setu_score(session: CommandSession):
         await session.finish(stat[3])
 
     image = session.get("image")
-    res = scorer.get_score(image)
+    res = await scorer.get_score(image[0])
     if res["status"]:
         score = res["result"]
         text = assess_base.get(round(score, -2))
