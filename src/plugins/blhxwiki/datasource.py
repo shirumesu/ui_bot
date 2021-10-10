@@ -129,7 +129,16 @@ class driver:
 
         return MessageSegment.image(r"file:///" + pac_path)
 
-    def linux_driver(self, url: str) -> Union[str, MessageSegment]:
+    def linux_driver(
+        self,
+        url: str,
+        pac_path=os.path.join(
+            config.res,
+            "cacha",
+            "blhxwiki",
+            ("".join(random.sample(string.digits + string.ascii_letters, 8)) + ".png"),
+        ),
+    ) -> Union[str, MessageSegment]:
         """windows下获取页面截图的主要函数
 
         Args:
@@ -140,62 +149,19 @@ class driver:
         """
         chrome_options = Options()
         chrome_options.add_argument("headless")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-
-        try:
-            driver = webdriver.Chrome(
-                executable_path="/usr/bin/chromedriver", chrome_options=chrome_options
-            )
-        except Exception as e:
-            logger.warning("e")
-            logger.info("没有在系统环境找到对应的chromedriver,尝试在res文件夹下寻找")
-            try:
-                chromedriver = os.path.join(
-                    config.res, "source", "blhxwiki", "chromedriver"
-                )
-                if not os.path.exists(chromedriver):
-                    logger.warning("没有检测到对应的chrome-driver，无法进行截图")
-                driver = webdriver.Chrome(chromedriver, chrome_options=chrome_options)
-                os.environ["webdriver.chrome.driver"] = chromedriver
-            except Exception as e:
-                logger.warning(f"发生错误：{e}")
-                return "该插件目前处于不可用状态"
+        driver = webdriver.Chrome(
+            executable_path="/usr/bin/chromedriver", chrome_options=chrome_options
+        )
         logger.info(f"尝试用driver获取页面:{url}")
         driver.get(url)
         time.sleep(1)
-        try:
-            height = driver.execute_script(
-                "return document.documentElement.scrollHeight"
-            )
-            driver.set_window_size(1400, height)  # blhxwiki的宽度为1400 可以设置其他
-            time.sleep(1)
-            # 应对懒加载问题
-            """
-            s = 1
-            height = driver.execute_script("return document.body.clientHeight")
-            while True:
-                if s * 500 < height:
-                    js_move = f"window.scrollTo(0,{s*500})"
-                    driver.execute_script(js_move)
-                    time.sleep(0.2)
-                    WebDriverWait(driver, 15)
-                    height = driver.execute_script("return document.body.clientHeight")
-                    s += 1
-                else:
-                    break
-            """
-        except:
-            logger.error("等待页面加载元素超时!")
-            return "等待页面加载元素超时！"
-        pac_name = (
-            "".join(random.sample(string.digits + string.ascii_letters, 8)) + ".png"
-        )
-        pac_path = os.path.join(config.res, "cacha", "blhxwiki", pac_name)
-        driver.save_screenshot(pac_path)
-        driver.quit()
+        height = driver.execute_script("return document.documentElement.scrollHeight")
+        driver.set_window_size(1566, height)
+        logger.debug(f"获取页面高度为:{height},将浏览器设置为(1566,{height})")
+        time.sleep(1)
 
+        driver.save_screenshot(pac_path)
+        driver.close()
         return MessageSegment.image(r"file:///" + pac_path)
 
     def play_wright(self, url: str, playwright: Playwright) -> MessageSegment:
