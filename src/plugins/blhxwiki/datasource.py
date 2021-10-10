@@ -155,7 +155,15 @@ class driver:
         logger.info(f"尝试用driver获取页面:{url}")
         driver.get(url)
         time.sleep(1)
-        height = driver.execute_script("return document.documentElement.scrollHeight")
+        try:
+            height = driver.execute_script(
+                """return document.querySelector("#mw-content-text > div > div:nth-child(11) > div").getBoundingClientRect().top"""
+            )
+        except:
+            height = driver.execute_script(
+                "return document.documentElement.scrollHeight"
+            )
+
         driver.set_window_size(1566, height)
         logger.debug(f"获取页面高度为:{height},将浏览器设置为(1566,{height})")
         time.sleep(1)
