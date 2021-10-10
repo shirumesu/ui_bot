@@ -148,7 +148,8 @@ class driver:
             driver = webdriver.Chrome(
                 executable_path="/usr/bin/chromedriver", chrome_options=chrome_options
             )
-        except:
+        except Exception as e:
+            logger.warning(f"发生错误:{e}")
             logger.info("没有在系统环境找到对应的chromedriver,尝试在res文件夹下寻找")
             try:
                 chromedriver = os.path.join(
