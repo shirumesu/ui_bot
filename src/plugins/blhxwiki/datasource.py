@@ -86,7 +86,8 @@ class driver:
                     logger.warning("没有检测到对应的chrome-driver,无法进行截图")
                     return "该插件目前处于不可用状态"
                 driver = webdriver.Chrome(chromedriver, chrome_options=chrome_options)
-            except:
+            except Exception as e:
+                logger.debug(e)
                 logger.warning("检测到chromedriver存在但发生了错误,selenium无法使用")
                 return "该插件目前处于不可用状态"
 
@@ -141,9 +142,12 @@ class driver:
         chrome_options.add_argument("headless")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
 
         try:
-            driver = webdriver.Chrome(chrome_options=chrome_options)
+            driver = webdriver.Chrome(
+                executable_path="/usr/bin/chromedriver", chrome_options=chrome_options
+            )
         except:
             logger.info("没有在系统环境找到对应的chromedriver,尝试在res文件夹下寻找")
             try:
@@ -154,7 +158,8 @@ class driver:
                     logger.warning("没有检测到对应的chrome-driver，无法进行截图")
                 driver = webdriver.Chrome(chromedriver, chrome_options=chrome_options)
                 os.environ["webdriver.chrome.driver"] = chromedriver
-            except:
+            except Exception as e:
+                logger.warning(f"发生错误：{e}")
                 return "该插件目前处于不可用状态"
         logger.info(f"尝试用driver获取页面:{url}")
         driver.get(url)
