@@ -149,7 +149,7 @@ class driver:
                 executable_path="/usr/bin/chromedriver", chrome_options=chrome_options
             )
         except Exception as e:
-            logger.warning(f"发生错误:{e}")
+            logger.warning("e")
             logger.info("没有在系统环境找到对应的chromedriver,尝试在res文件夹下寻找")
             try:
                 chromedriver = os.path.join(
@@ -164,18 +164,15 @@ class driver:
                 return "该插件目前处于不可用状态"
         logger.info(f"尝试用driver获取页面:{url}")
         driver.get(url)
+        time.sleep(1)
         try:
-            WebDriverWait(driver, 15)
-
             height = driver.execute_script(
                 "return document.documentElement.scrollHeight"
             )
-
             driver.set_window_size(1400, height)  # blhxwiki的宽度为1400 可以设置其他
-            WebDriverWait(driver, 15)
-            driver.execute_script(f"window.scrollTo(0,{height})")
-
+            time.sleep(1)
             # 应对懒加载问题
+            """
             s = 1
             height = driver.execute_script("return document.body.clientHeight")
             while True:
@@ -188,6 +185,7 @@ class driver:
                     s += 1
                 else:
                     break
+            """
         except:
             logger.error("等待页面加载元素超时!")
             return "等待页面加载元素超时！"
