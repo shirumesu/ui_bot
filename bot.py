@@ -81,13 +81,13 @@ def log(debug_mode: bool = False):
     logger.remove()
     logger.add(
         sys.stderr,
-        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <lvl>{level}</lvl> | <lvl>{message}</lvl>",
+        format="<g>{time:YYYY-MM-DD HH:mm:ss}</g> | <m>{module}:{function}</m> | <lvl>{level}</lvl> | <lvl>{message}</lvl>",
         level="DEBUG" if debug_mode else "INFO",
         colorize=True,
     )
     logger.add(
         "./log/uilog.log",
-        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <lvl>{level}</lvl> | <lvl>{message}</lvl>",
+        format="<g>{time:YYYY-MM-DD HH:mm:ss}</g> | <m>{module}:{function}</m> | <lvl>{level}</lvl> | <lvl>{message}</lvl>",
         rotation="00:00",
         retention="5 days",
         diagnose=False,
