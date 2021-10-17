@@ -285,11 +285,12 @@ class uiPlugin(uiPlugin_Master):
         self.name_cn = name[1]
         self.r18 = r18
         self.enable = True
-        self.path = (
-            inspect.stack()[1].filename.rsplit("\\", 1)[0]
-            if not plugin_path
-            else plugin_path
-        )
+        self.path = inspect.stack()[1].filename
+        if "\\" in self.path:
+            self.path = self.path.rsplit("\\", 1)[0]
+        else:
+            self.path = self.path.rsplit("/", 1)[0]
+        self.path = self.path if not plugin_path else plugin_path
         self.usage = usage
         self.use_cache_folder = use_cache_folder
         self.use_source_folder = use_source_folder
