@@ -4,16 +4,16 @@ import os
 import ujson
 import asyncio
 import httpx
-from loguru import logger
 from retrying import retry
 
-from nonebot import on_command, CommandSession, MessageSegment, get_bot, scheduler
+from nonebot import CommandSession, MessageSegment, get_bot, scheduler
 
 import config
 from src.plugins.twitter.translate import baidu_translate as translate
 from src.plugins.twitter.parser import sendmsg as ps_sendmsg
-from src.Services import Service, Service_Master, GROUP_ADMIN
-from src.util import shutup, sync_to_async
+from src.Services import uiPlugin, GROUP_ADMIN, SUPERUSER
+from src.shared import shutup
+from soraha_utils import logger, sync_to_async
 
 sv_help = """推特订阅 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
@@ -82,15 +82,14 @@ sv_help = """推特订阅 | 使用帮助
         -> 取消成功
 [查看推特订阅] -> 查看本群/私聊中所有的推特订阅
 """.strip()
-sv = Service(
+sv = uiPlugin(
     ["twitter", "推特订阅"],
-    sv_help,
-    use_cacha_folder=True,
-    permission_change=GROUP_ADMIN,
-    permission_use=GROUP_ADMIN,
-    priv_use=False,
+    True,
+    usage=sv_help,
+    use_cache_folder=True,
+    perm_use=GROUP_ADMIN,
+    perm_manager=SUPERUSER,
 )
-
 
 bot = get_bot()
 
@@ -116,16 +115,13 @@ except FileNotFoundError:
         ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
 
 
-@on_command("订阅推特")
+@sv.ui_command("订阅推特")
 async def subcribe_twitter(session: CommandSession):
     """订阅推特的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("twitter", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
     tw_id = session.current_arg_text.strip()
     if not tw_id:
         await session.finish("羽衣不知道你要订阅谁哦")
@@ -193,7 +189,7 @@ async def subcribe_twitter(session: CommandSession):
 
 
 @sync_to_async
-@retry(stop_max_attempt_number=5)
+@retry()
 def get_user(tw_id: str) -> dict:
     """获取推特用户的信息
 
@@ -215,7 +211,7 @@ def get_user(tw_id: str) -> dict:
 
 
 @sync_to_async
-@retry(stop_max_attempt_number=5)
+@retry()
 def get_api(user_id: str, tweet_id: int = 1000000000000000000) -> dict:
     """获取用户发送的推特
 
@@ -236,16 +232,13 @@ def get_api(user_id: str, tweet_id: int = 1000000000000000000) -> dict:
     return tweet
 
 
-@on_command("设置订阅")
+@sv.ui_command("设置订阅")
 async def set_subcribe_states(session: CommandSession):
     """设置订阅的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("twitter", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
     tw_id = session.current_arg_text.strip()
     if not tw_id:
         await session.finish("羽衣不知道你要设置谁的推送设定哦")
@@ -275,7 +268,9 @@ async def set_subcribe_states(session: CommandSession):
                     break
 
     if not user_info:
-        await session.finish("没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id")
+        await session.finish(
+            "没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id"
+        )
 
     await session.apause(
         "目前的订阅状态是:\n"
@@ -352,16 +347,13 @@ async def set_subcribe_states(session: CommandSession):
         )
 
 
-@on_command("取消推特订阅")
+@sv.ui_command("取消推特订阅")
 async def delect_subcribe(session: CommandSession):
     """取消推特订阅的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("twitter", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
     tw_id = session.current_arg_text.strip()
     if not tw_id:
         await session.finish("羽衣不知道你要设置谁的推送设定哦")
@@ -394,7 +386,9 @@ async def delect_subcribe(session: CommandSession):
                     break
 
     if not found:
-        await session.finish("没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id")
+        await session.finish(
+            "没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id"
+        )
     elif not subcribe[x]["subcribe_group"] and not subcribe[x]["subcribe_user"]:
         del subcribe[x]
     else:
@@ -410,17 +404,13 @@ async def delect_subcribe(session: CommandSession):
         )
 
 
-@on_command("查看推特订阅", aliases=("查看所有推特订阅",))
+@sv.ui_command("查看推特订阅", aliases=("查看所有推特订阅",))
 async def get_all_subcribe(session: CommandSession):
     """查看所有推特订阅的主函数
 
     Args:
         session (CommandSession): bot封装的消息
     """
-    stat = await Service_Master().check_permission("twitter", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     if session.event.detail_type == "group":
         gid = session.event.group_id
         uid = None
@@ -451,7 +441,7 @@ async def get_all_subcribe(session: CommandSession):
 
 
 @sync_to_async
-@retry(stop_max_attempt_number=5)
+@retry()
 async def get_states(status_id: str) -> dict:
     """获取推文详细信息
 
@@ -481,7 +471,7 @@ async def get_states(status_id: str) -> dict:
     return data
 
 
-@retry(stop_max_attempt_number=5)
+@retry()
 async def dl_image(urls: list) -> MessageSegment:
     """下载推特上的图片,封装为CQ码返回
 
@@ -552,7 +542,7 @@ async def sendmsg(msg: dict) -> dict:
     # 回复
     if msg["in_reply_to_status_id"] != None:
         data["isreply"] = True
-        user_name = get_states(msg["in_reply_to_status_id"])
+        user_name = await get_states(msg["in_reply_to_status_id"])
         try:
             if user_name == "访问失败":
                 data["replyuser"] = msg["in_reply_to_screen_name"]
@@ -818,7 +808,8 @@ async def sendmsg(msg: dict) -> dict:
                 pass
     if data["quotelang"] != "zh" and data["isquote"] == True and data["text"] != "":
         data["quote_in_not_china"] = True
-        data["quote_translate_result"] = await translate(data["quotetext"])
+        quote_tr_result = translate(data["quotetext"])
+        data["quote_translate_result"] = quote_tr_result
 
     if data["isreply"] != True and data["isRT"] != True and data["isquote"] != True:
         data["is_tweet"] = True

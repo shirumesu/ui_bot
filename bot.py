@@ -6,56 +6,27 @@
 @Desc       : 修复: selenium跟playwright有一个不存在会导致整个插件无法使用的情况
 """
 import os
-import sys
-import requests
-import time
 import re
-from loguru import logger
-from bs4 import BeautifulSoup
+import asyncio
+import uvicorn
+import nest_asyncio
+import uvicorn
 
 import nonebot
 import config
-from src.Services import init_bot
+import soraha_utils
+from soraha_utils import logger
 
 
 version = "1.0.5.3"
 
 
-def get_chrome():
-    logger.info("正在尝试检查chrome-drive内核……")
-    if not os.listdir(os.path.join(config.res, "source", "blhxwiki")):
-        logger.debug(
-            f"连接url:https://chromedriver.chromium.org/,代理:{str(config.proxies.copy())}"
-        )
-        s = requests.get(
-            "https://chromedriver.chromium.org/",
-            proxies=config.proxies.copy(),
-            timeout=10,
-        )
-        logger.debug(f"status_code:{str(s.status_code)}")
-        soup = BeautifulSoup(s.text, "lxml")
-        html = soup.find_all("a", {"class": "XqQF9c"})
-        logger.info(
-            f"检测到稳定版chrome-drive:{html[4].string},请前往下载:{html[4].attrs['href']}"
-        )
-    else:
-        logger.info("已有chrome-drive,无需下载")
-    time.sleep(3)
-
-
 def check_update():
-    logger.info("正在尝试检查更新……")
-    logger.debug(
-        f"连接url:https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py,代理:{str(config.proxies.copy())}"
-    )
-    resp = requests.get(
-        "https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py",
-        proxies=config.proxies.copy(),
-    )
-    logger.debug(f"status_code:{str(resp.status_code)}")
+    with soraha_utils.sync_uiclient(proxy=config.proxies.copy()) as uicl:
+        res = uicl.get("https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py")
 
-    version_git = re.findall("@Version    : (.+)", resp.text)[0]
-    version_desc = re.findall("@Desc       : (.+)", resp.text)[0]
+    version_git = re.findall("@Version    : (.+)", res.text)[0]
+    version_desc = re.findall("@Desc       : (.+)", res.text)[0]
 
     new_msg = (
         f"发现新版本更新: {version_git}\n"
@@ -77,44 +48,30 @@ def switch_modules(modules_list):
     return
 
 
-def log(debug_mode: bool = False):
-    logger.remove()
-    logger.add(
-        sys.stderr,
-        format="<g>{time:YYYY-MM-DD HH:mm:ss}</g> | <m>{module}:{function}</m> | <lvl>{level}</lvl> | <lvl>{message}</lvl>",
-        level="DEBUG" if debug_mode else "INFO",
-        colorize=True,
-    )
-    logger.add(
-        "./log/uilog.log",
-        format="<g>{time:YYYY-MM-DD HH:mm:ss}</g> | <m>{module}:{function}</m> | <lvl>{level}</lvl> | <lvl>{message}</lvl>",
-        rotation="00:00",
-        retention="5 days",
-        diagnose=False,
-        level="DEBUG" if debug_mode else "INFO",
-    )
-    logger.debug("日志配置加载完毕")
+def start() -> None:
+    nonebot.init(config)
+    name_list = [x for x in config.plugins]
+    for i in name_list:
+        nonebot.load_plugin(f"src.plugins.{i}")
+    nest_asyncio.apply()
+    nonebot.run(loop=asyncio.get_event_loop())
 
 
 if __name__ == "__main__":
-    log(config.DEBUG)
+    logger = soraha_utils.set_logger(
+        level=config.DEBUG,
+        use_file=True,
+        file_path="./log/uilog.log",
+        file_level=config.DEBUG,
+    )
 
     if config.checkupdate:
         try:
             check_update()
         except:
-            logger.error("检查更新失败,自动跳过")
-        else:
-            try:
-                get_chrome()
-            except:
-                logger.error(
-                    "无法检查chrome内核版本,请前往手动下载:https://chromedriver.chromium.org/\n(否则blhxwiki插件无法使用)"
-                )
+            logger.info("版本检查失败,那就由羽衣来猜吧！唔姆唔姆……有新版本可用！")
+
     os.makedirs(config.res, exist_ok=True)
     logger.debug("res文件夹创造完毕/已经存在res文件夹")
 
-    nonebot.init(config)
-    init_bot()
-
-    nonebot.run()
+    uvicorn.run(app="bot:start", reload=True, reload_dirs=["bot.py"])

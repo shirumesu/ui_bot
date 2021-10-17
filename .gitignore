@@ -122,3 +122,4 @@ src/plugins/setu/config.json
 .vscode/settings.json
 res/source/blhxwiki/chromedriver.exe
 src/plugins/reply_msg/config.json
+uiconfig.json

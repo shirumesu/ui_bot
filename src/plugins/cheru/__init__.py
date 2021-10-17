@@ -10,10 +10,10 @@ https://bbs.nga.cn/read.php?tid=21636504&rand=167
 import re
 from itertools import zip_longest
 
-from nonebot import on_command, CommandSession
+from nonebot import CommandSession
 from nonebot.message import escape
 
-from src.Services import GROUP_ADMIN, Service, Service_Master, perm
+from src.Services import uiPlugin
 
 
 sv_help = """切噜语翻译 | 使用帮助
@@ -28,7 +28,7 @@ sv_help = """切噜语翻译 | 使用帮助
 切……切切切!?切拉唎卟,切唎唎?切拉唎啰,切拉唎啰啰啰?切啪拉啪……切噜，切噜噜噜……
 哈?你突然在说什么呢学长…真差劲,我根本没想到你会说这样的话……等…住手!别!别过来!这里不行!
 """
-sv = Service(["cheru", "切噜语翻译"], sv_help, permission_change=GROUP_ADMIN)
+sv = uiPlugin(["cheru", "切噜语翻译"], False, usage=sv_help)
 
 CHERU_SET = "切卟叮咧哔唎啪啰啵嘭噜噼巴拉蹦铃"
 CHERU_DIC = {c: i for i, c in enumerate(CHERU_SET)}
@@ -75,36 +75,20 @@ def cheru2str(c: str) -> str:
     return rex_cheru_word.sub(lambda w: cheru2word(w.group()), c)
 
 
-@on_command("切噜一下")
+@sv.ui_command("切噜一下")
 async def cherulize(session: CommandSession):
-    stat = await Service_Master().check_permission("cheru", session.event)
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-        else:
-            await session.finish(
-                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
-            )
     s = session.current_arg_text
     if len(s) > 500:
         await session.finish("切、切噜太长切不动勒切噜噜...", at_sender=True)
-    await session.finish("切噜～♪" + str2cheru(s))
+    await session.send("切噜～♪" + str2cheru(s))
 
 
-@on_command("切噜～♪", patterns=r"^切噜～♪*")
+@sv.ui_command("切噜～♪", patterns=r"^切噜～♪*")
 async def decherulize(session: CommandSession):
-    stat = await Service_Master().check_permission("cheru", session.event)
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-        else:
-            await session.finish(
-                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
-            )
     s = session.current_arg_text[4:]
     if len(s) > 1501:
         await session.finish("切、切噜太长切不动勒切噜噜...", at_sender=True)
     cheru = escape(cheru2str(s))
     s = (s[:3] + "..." + s[-3:]) if len(s) > 10 else s
     msg = "\n" + s + "的切噜噜是：\n" + cheru
-    await session.finish(msg, at_sender=True)
+    await session.send(msg, at_sender=True)

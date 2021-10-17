@@ -15,11 +15,11 @@ from feedparser import parse
 from hashlib import md5
 from loguru import logger
 
-from nonebot import on_command, CommandSession, scheduler, MessageSegment, get_bot
+from nonebot import CommandSession, scheduler, MessageSegment, get_bot
 
 import config
-from src.Services import Service, Service_Master, GROUP_ADMIN
-from src.util import shutup
+from src.Services import uiPlugin, GROUP_ADMIN, SUPERUSER
+from src.shared import shutup
 
 
 sv_help = """RssHub订阅 | 使用帮助
@@ -45,13 +45,13 @@ sv_help = """RssHub订阅 | 使用帮助
 [设置rss] -> 设置是否需要全文推送(依照指示来输入就好)
 [删除rss] -> 删除rss订阅 同样,会有指示说明的
 """.strip()
-
-sv = Service(
+sv = uiPlugin(
     ["rsshub", "订阅RssHub"],
-    sv_help,
-    use_cacha_folder=True,
-    permission_use=GROUP_ADMIN,
-    permission_change=GROUP_ADMIN,
+    True,
+    usage=sv_help,
+    use_cache_folder=True,
+    perm_use=GROUP_ADMIN,
+    perm_manager=SUPERUSER,
 )
 
 bot = get_bot()
@@ -71,17 +71,13 @@ class DelError(Exception):
     pass
 
 
-@on_command("订阅rss")
+@sv.ui_command("订阅rss")
 async def subc_rss(session: CommandSession):
     """订阅rsshub的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("rsshub", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     rss_link = session.current_arg_text.strip()
     if (
         "twitter" in rss_link
@@ -121,17 +117,13 @@ async def subc_rss(session: CommandSession):
     await session.finish("订阅成功")
 
 
-@on_command("查看rss订阅")
+@sv.ui_command("查看rss订阅")
 async def check_subc(session: CommandSession):
     """查看rss订阅的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("rsshub", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     if session.event.detail_type == "group":
         gid = str(session.event.group_id)
         name_list = [
@@ -174,17 +166,13 @@ async def check_subc(session: CommandSession):
     await session.finish(msg)
 
 
-@on_command("删除rss")
+@sv.ui_command("删除rss")
 async def del_rss(session: CommandSession):
     """删除rss的函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("rsshub", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     if session.event.detail_type == "group":
         gid = str(session.event.group_id)
         name_list = [
@@ -247,17 +235,13 @@ async def del_rss(session: CommandSession):
     await session.finish("删除成功！")
 
 
-@on_command("设置rss")
+@sv.ui_command("设置rss")
 async def set_subc(session: CommandSession):
     """设置rss的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("rsshub", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     if session.event.detail_type == "group":
         gid = str(session.event.group_id)
         name_list = [

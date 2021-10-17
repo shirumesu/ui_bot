@@ -1,23 +1,8 @@
-import os
-import json
-from re import T
-from loguru import logger
-
-from nonebot import on_command, get_bot
-from nonebot import plugin
-from nonebot.plugin import PluginManager
+from nonebot import get_bot
 from nonebot.command import CommandSession
 
 import config
-from src.Services import (
-    GROUP_MEMBER,
-    SUPERUSER,
-    Service,
-    GROUP_ADMIN,
-    Service_Master,
-    ALL_SERVICES,
-    perm,
-)
+from src.Services import uiPlugin, uiPlugin_Master, SUPERUSER, GROUP_ADMIN
 
 
 bot = get_bot()
@@ -51,17 +36,17 @@ sv_help = """插件管理器 | 使用帮助
     特别注意:
         使用权限: 仅为superuser
 """
-sv = Service(
+sv = uiPlugin(
     ["plugin_manager", "插件管理器"],
-    sv_help,
-    permission_change=SUPERUSER,
-    permission_use=GROUP_ADMIN,
-    visible=False,
+    False,
+    usage=sv_help,
+    perm_use=GROUP_ADMIN,
+    perm_manager=SUPERUSER,
 )
-svm = Service_Master()
+svm = uiPlugin_Master()
 
 
-@on_command("查看插件列表", aliases=("查看所有插件"))
+@sv.ui_command("查看插件列表", aliases=("查看所有插件"))
 async def plugin_list(session: CommandSession):
     """发送所有插件列表
 
@@ -70,194 +55,86 @@ async def plugin_list(session: CommandSession):
     Args:
         session: bot封装的信息
     """
-    try:
-        stat = await svm.check_permission("plugin_manager", session.event, GROUP_MEMBER)
-    except Exception:
-        stat = [True, "", "", ""]
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-    enable_list = []
-    disable_list = []
-    if (
-        session.event["user_id"] in config.SUPERUSERS
-        and session.event["message_type"] == "private"
-    ):
-        plugins_namelist = [y.plugin_name for x, y in svm.sv_list.items()]
-        msg = "所有插件:\n"
-        for i in plugins_namelist:
-            msg += f"{i[1]}({i[0]})\n"
-    elif session.event["message_type"] == "group":
-        for y in svm.sv_list.values():
-            if not y.visible:
-                continue
-            perm = await svm.check_permission(
-                y.plugin_name[0], session.event, disable_superuser=True
-            )
-            if perm[0]:
-                enable_list.append(y.plugin_name)
-            else:
-                disable_list.append(y.plugin_name)
-        msg = "=====可以发送使用帮助获取使用帮助=====\n=====正在使用的插件！=====\n"
-        for i in enable_list:
-            msg += f"{i[1]}({i[0]})\n"
-        msg += "=====没有使用的插件!=====\n"
-        for i in disable_list:
-            msg += f"{i[1]}({i[0]})\n"
-    else:
-        for x, y in svm.sv_list.items():
-            if not y.visible or y.priv_use:
-                continue
-            else:
-                perm = await svm.check_permission(y.plugin_name[0], session.event)
-                if perm[0]:
-                    enable_list.append(y.plugin_name)
-        msg = "你可以使用的插件有:\n"
-        for i in enable_list:
-            msg += f"{i[1]}({i[0]})\n"
-    await session.send(msg.strip())
+    gid = session.event.group_id if session.event.detail_type == "group" else 0
+    plugins = svm.match_plugin()
+    enable_plugins = []
+    disable_plugins = []
+    for plugin in plugins:
+        enable_plugins.append(
+            f"{plugin.name_cn}({plugin.name_en})"
+        ) if gid in plugin.enable_group else disable_plugins.append(
+            f"{plugin.name_cn}({plugin.name_en})"
+        )
+    msg = "=====可以发送使用帮助获取使用帮助=====\n=====正在使用的插件！=====\n"
+    msg += "\n".join(enable_plugins)
+    msg += "\n=====没有使用的插件!=====\n"
+    msg += "\n".join(disable_plugins)
+    await session.send(msg)
 
 
-@on_command("开启插件")
+@sv.ui_command("注册群", plugin_manager=True)
+async def regis_grouper(session):
+    if session.event.detail_type != "group":
+        await session.finish("仅支持群！")
+    gid = session.event.group_id
+    group_type = session.current_arg.strip()
+    msg = svm.regis_group(gid, group_type)
+    await session.finish(f"以下插件已成功开启:\n" + "\n".join(msg))
+
+
+@sv.ui_command("插件管理", plugin_manager=True)
 async def load_plugin(session):
     """开启插件
 
     Args:
         session: bot封装的信息
     """
-    stat = await svm.check_permission("plugin_manager", session.event, "upm")
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-    plugin_name = session.current_arg.strip()
-    plugin_name = [x for x, y in svm.sv_list.items() if plugin_name in y.plugin_name]
-    if not plugin_name:
-        session.finish("未找到插件名字！请重新输入")
+    type_table = {
+        "全局开启": ["enable", True],
+        "全局关闭": ["enable", False],
+        "拉黑本群": ["group", False],
+        "本群白名单": ["group", True],
+        "允许私聊": ["disable_private", True],
+        "禁止私聊": ["disable_private", False],
+        "拉黑用户": ["private", False],
+        "用户白名单": ["private", True],
+    }
+    uid = session.event.user_id
+    gid = session.event.group_id if session.event.detail_type == "group" else -1
+    switch_type = type_table[session.current_arg.strip().split()[0]]
+    plugin_name = session.current_arg.strip().split()[1]
+    plugins = svm.match_plugin(plugin_name)
+    if not plugins:
+        await session.finish("未找到插件名字！请重新输入")
+    if switch_type[0] == "enable":
+        msg = svm.switch_all(switch_type[1], plugin_name)
     else:
-        plugin_name = plugin_name[0]
-        if session.event.detail_type == "group":
-            gid = session.event["group_id"]
-            uid = None
-        else:
-            gid = None
-            uid = session.event["user_id"]
-        stat = await svm.enable_plugin(plugin_name, True, gid, uid)
-    if stat:
-        await session.send("开启成功！")
-    else:
-        await session.send("开启失败,出现未知错误")
+        msg = svm.block_all(switch_type[0], uid, gid, switch_type[1], plugin_name)
+    msg = "\n".join([f"{x}: {y}" for x, y in msg.items()])
+    await session.send(msg)
 
 
-@on_command("关闭插件")
-async def end_plugin(session):
-    """关闭插件
-
-    Args:
-        session: bot封装的信息
-    """
-    stat = await svm.check_permission("plugin_manager", session.event, "upm")
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-    plugin_name = session.current_arg.strip()
-    plugin_name = [x for x, y in svm.sv_list.items() if plugin_name in y.plugin_name]
-    if not plugin_name:
-        session.finish("未找到插件名字！请重新输入")
-    else:
-        plugin_name = plugin_name[0]
-        if session.event.detail_type == "group":
-            gid = session.event["group_id"]
-            uid = None
-        else:
-            gid = None
-            uid = session.event["user_id"]
-        stat = await svm.enable_plugin(plugin_name, False, gid, uid)
-    if stat:
-        await session.send("关闭成功！")
-    else:
-        await session.send("关闭失败,出现未知错误")
-
-
-@on_command("全局关闭插件")
-async def disable_plugin(session):
-    """关闭插件
-
-    具体是设置插件sv的is_enable属性
-
-    Args:
-        session: bot封装的信息
-    """
-    stat = await svm.check_permission("plugin_manager", session.event, SUPERUSER)
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-        else:
-            await session.finish(
-                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
-            )
-    plugin_name = session.current_arg.strip()
-    plugin_name = [x for x, y in svm.sv_list.items() if plugin_name in y.plugin_name]
-    if not plugin_name:
-        session.finish("未找到插件名字！请重新输入")
-    else:
-        plugin_name = plugin_name[0]
-        stat = await svm.switch_plugin_global(plugin_name, False)
-    if stat:
-        await session.send("关闭成功！")
-    else:
-        await session.send("关闭失败,出现未知错误")
-
-
-@on_command("全局开启插件")
-async def enable_plugin(session):
-    """开启插件
-
-    具体是设置插件sv的is_enable属性
-
-    Args:
-        session: bot封装的信息
-    """
-    stat = await svm.check_permission("plugin_manager", session.event, SUPERUSER)
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-        else:
-            await session.finish(
-                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
-            )
-    plugin_name = session.current_arg.strip()
-    plugin_name = [x for x, y in svm.sv_list.items() if plugin_name in y.plugin_name]
-    if not plugin_name:
-        session.finish("未找到插件名字！请重新输入")
-    else:
-        plugin_name = plugin_name[0]
-        stat = await svm.switch_plugin_global(plugin_name, True)
-    if stat:
-        await session.send("开启成功！")
-    else:
-        await session.send("开启失败,出现未知错误")
-
-
-@on_command("全功能禁止", aliases=("全功能关闭",))
+@sv.ui_command("全功能禁止", aliases=("全功能关闭",), plugin_manager=True)
 async def shut_all(session: CommandSession):
-    stat = await svm.check_permission("plugin_manager", session.event, SUPERUSER)
-    if not stat[0]:
-        await session.finish(stat[3])
+    if session.event.detail_type != "group":
+        await session.finish("仅支持在群聊使用！")
+    msg = svm.block_all("group", session.event.user_id, session.event.group_id, False)
+    msg = (
+        "成功！以下插件已更改: \n"
+        "\n".join([f"{plugin}: {text}" for plugin, text in msg.items()])
+        + "(已经订阅的p站,推特会继续推送,想禁止请取消订阅/使用`闭嘴`命令)"
+    )
+    await session.send(msg)
 
-    gid = session.event.group_id
-    plugin_name = [x.plugin_name[0] for x in svm.sv_list.values()]
-    for i in plugin_name:
-        await svm.enable_plugin(i, False, gid)
-    await session.finish("本群所有功能禁用成功！(已经订阅的p站,推特会继续推送,想禁止请取消订阅/使用`闭嘴`命令)")
 
-@on_command("全功能开启", aliases=("全功能启用",))
+@sv.ui_command("全功能开启", aliases=("全功能启用",))
 async def enable_all(session: CommandSession):
-    stat = await svm.check_permission("plugin_manager", session.event, SUPERUSER)
-    if not stat[0]:
-        await session.finish(stat[3])
-
-    gid = session.event.group_id
-    plugin_name = [x.plugin_name[0] for x in svm.sv_list.values()]
-    for i in plugin_name:
-        await svm.enable_plugin(i, True, gid)
-    await session.finish("本群所有功能禁用成功！可以正常用咯~")
+    if session.event.detail_type != "group":
+        await session.finish("仅支持在群聊使用！")
+    msg = svm.block_all("group", session.event.user_id, session.event.group_id, True)
+    msg = (
+        "成功！以下插件已更改: \n"
+        "\n".join([f"{plugin}: {text}" for plugin, text in msg.items()])
+        + "(已经订阅的p站,推特会继续推送,想禁止请取消订阅/使用`闭嘴`命令)"
+    )
+    await session.send(msg)

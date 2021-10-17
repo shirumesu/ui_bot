@@ -1,6 +1,6 @@
 import sqlite3
 
-from loguru import logger
+from soraha_utils import logger
 
 
 class SQL_service:

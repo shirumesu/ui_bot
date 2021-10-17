@@ -1,10 +1,6 @@
-from loguru import logger
+from nonebot import CommandSession
 
-from nonebot import on_command, CommandSession
-from aiocqhttp import MessageSegment
-
-import config as cfg
-from src.Services import Service_Master, Service, GROUP_ADMIN, perm
+from src.Services import uiPlugin, uiPlugin_Master
 
 
 sv_help = """使用帮助 |使用帮助
@@ -42,11 +38,11 @@ sv_help = """使用帮助 |使用帮助
 all_help = """详细使用帮助
 咕了
 """.strip()
-sv = Service(["usage", "使用帮助"], sv_help, permission_change=GROUP_ADMIN)
-svm = Service_Master()
+sv = uiPlugin(["usage", "使用帮助"], False, usage=sv_help)
+svm = uiPlugin_Master()
 
 
-@on_command("使用帮助", aliases=("帮助", "help"))
+@sv.ui_command("使用帮助", aliases=("帮助", "help"))
 async def usage(session: CommandSession):
     """发送使用帮助
 
@@ -56,33 +52,19 @@ async def usage(session: CommandSession):
     Args:
         session: bot封装的信息
     """
-    stat = await Service_Master().check_permission("usage", session.event)
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-        else:
-            await session.finish(
-                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
-            )
     com = session.current_arg_text.strip()
     if not com:
         msg = sv_help
-    elif com in svm.sv_list:
-        plugin = svm.sv_list[com]
-        msg = plugin.usage
     else:
-        found = False
-        for y in svm.sv_list.values():
-            if com in y.plugin_name:
-                msg = y.usage
-                found = True
-                break
-        if not found:
+        plugin = svm.match_plugin((com,) if isinstance(com, str) else com)
+        if not plugin:
             msg = "没有找到该插件,可以发送使用帮助获取使用帮助"
+        else:
+            msg = plugin.usage
     await session.send(msg)
 
 
-@on_command("详细使用帮助")
+@sv.ui_command("详细使用帮助")
 async def usage_all(session: CommandSession):
     """同上
 
@@ -92,12 +74,4 @@ async def usage_all(session: CommandSession):
     Args:
         session: bot封装的信息
     """
-    stat = await Service_Master().check_permission("usage", session.event)
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-        else:
-            await session.finish(
-                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
-            )
     await session.send(all_help)

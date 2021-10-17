@@ -1,8 +1,7 @@
-from aiocqhttp import message
-from nonebot import on_command, CommandSession, CQHttpError, get_bot
+from nonebot import CommandSession, CQHttpError, get_bot
 
 import config
-from src.Services import Service, Service_Master, perm, SUPERUSER
+from src.Services import uiPlugin, SUPERUSER
 
 
 sv_help = """人偶功能 | 使用帮助
@@ -15,32 +14,18 @@ sv_help = """人偶功能 | 使用帮助
     权限问题 -> 请确保羽衣酱有办法发送到该人/群！
     图片问题 -> 是可以发送图片过去的！请连带在**一个消息**里
 """
-sv = Service(
-    ["marionette", "人偶"],
-    sv_help,
-    permission_use=SUPERUSER,
-    permission_change=SUPERUSER,
-    priv_use=False,
-)
+sv = uiPlugin(["marionette", "人偶"], False, usage=sv_help, perm_manager=SUPERUSER)
 
 bot = get_bot()
 
 
-@on_command("发送私聊消息", aliases=["发送给人", "发送到人"])
+@sv.ui_command("发送私聊消息", aliases=["发送给人", "发送到人"])
 async def send_pri_msg(session: CommandSession) -> None:
     """发送私聊消息给人
 
     Args:
         session (CommandSession): bot封装的消息
     """
-    stat = await Service_Master().check_permission("marionette", session.event)
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-        else:
-            await session.finish(
-                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
-            )
     msg = session.get("msg")
     userid = session.get("userid")
     try:
@@ -48,41 +33,33 @@ async def send_pri_msg(session: CommandSession) -> None:
     except CQHttpError:
         stranger_info = await bot.get_stranger_info(user_id=userid)
         nickname = stranger_info["nickname"]
-        await session.finish("权限不足,%s(qq:%s)不是我的好友" % (nickname, userid))
+        await session.send("权限不足,%s(qq:%s)不是我的好友" % (nickname, userid))
     if respon:
-        await session.finish("发送成功")
+        await session.send("发送成功")
     else:
-        await session.finish("发送失败,可能被风控了")
+        await session.send("发送失败,可能被风控了")
 
 
-@on_command("发送群消息", aliases=["发送给群", "发送到群"])
+@sv.ui_command("发送群消息", aliases=["发送给群", "发送到群"])
 async def send_grp_msg(session: CommandSession) -> None:
     """发送群消息到群
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("marionette", session.event)
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-        else:
-            await session.finish(
-                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
-            )
     msg = session.get("msg")
     userid = session.get("grpid")
     try:
         respon = await bot.send_group_msg(user_id=userid, message=msg)
     except CQHttpError:
-        await session.finish(f"发送失败,我还没有加{userid}群")
+        await session.send(f"发送失败,我还没有加{userid}群")
     if respon:
-        await session.finish("发送成功")
+        await session.send("发送成功")
     else:
-        await session.finish("发送失败,可能被风控了")
+        await session.send("发送失败,可能被风控了")
 
 
-@on_command("联系主人")
+@sv.ui_command("联系主人")
 async def send_to_master(session: CommandSession) -> None:
     """联系主人,发送给superuser
 
@@ -135,5 +112,5 @@ async def _(session: CommandSession):
     if not msg:
         session.pause("你确定什么都不发吗?\n发送 done 结束")
     if msg == "done":
-        session.finish("会话已结束")
+        session.send("会话已结束")
     session.state["msg"] = msg

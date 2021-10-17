@@ -2,15 +2,15 @@ import hashlib
 import random
 import httpx
 import asyncio
-from retrying import retry
 
 import config
+from soraha_utils import retry
 
 api_id = config.baidu_translate_api_id
 secret_key = config.baidu_translate_secret_key
 
 
-@retry(stop_max_attempt_number=5)
+@retry
 async def baidu_translate(text: str) -> str:
     """调用百度翻译api进行翻译
 

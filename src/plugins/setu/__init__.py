@@ -3,15 +3,13 @@ import os
 import httpx
 import json
 import re
-from retrying import retry
-from loguru import logger
 
-from nonebot import on_command, CommandSession
+from nonebot import CommandSession
 from aiocqhttp import MessageSegment
 
-from src.Services import Service, GROUP_ADMIN, Service_Master, perm
 import config as cfg
-
+from src.Services import uiPlugin, SUPERUSER
+from soraha_utils import retry, logger
 
 sv_help = """搞的很快的插件！ | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
@@ -38,12 +36,13 @@ sv_help = """搞的很快的插件！ | 使用帮助
         开启原图 -> setu功能开启原图
         关闭原图 -> setu功能关闭原图
 """.strip()
-sv = Service(
+sv = uiPlugin(
     ["setu", "获取色图"],
-    sv_help,
-    use_cacha_folder=True,
-    permission_change=GROUP_ADMIN,
-    priv_use=False,
+    True,
+    usage=sv_help,
+    use_cache_folder=True,
+    perm_manager=SUPERUSER,
+    private_use=True,
 )
 
 if os.path.exists(os.path.join(os.getcwd(), "src", "plugins", "setu", "config.json")):
@@ -63,7 +62,7 @@ else:
         json.dump(self_config, f, indent=4, ensure_ascii=False)
 
 
-@on_command("开启原图", patterns=r"^(开启|关闭)原图")
+@sv.ui_command("开启原图", patterns=r"^(开启|关闭)原图")
 async def set_original(session):
     """开关原图
 
@@ -74,14 +73,6 @@ async def set_original(session):
     Args:
         session: bot封装的信息
     """
-    stat = await Service_Master().check_permission("setu", session.event)
-    if not stat[0]:
-        if stat[3]:
-            await session.finish(stat[3])
-        else:
-            await session.finish(
-                f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}"
-            )
     if session.event.detail_type == "group":
         gid = str(session.event["group_id"])
     else:
@@ -106,17 +97,13 @@ async def set_original(session):
     await session.send(session.event["raw_message"][:2] + "成功")
 
 
-@on_command("色图", patterns=r"^[色|涩]图([1-9][0-9]{0,1}|100)([份|张])", privileged=True)
+@sv.ui_command("色图", patterns=r"^[色|涩]图([1-9][0-9]{0,1}|100)([份|张])", privileged=True)
 async def get_setu(session):
     """获取色图
 
     Args:
         session: bot封装的信息
     """
-    stat = await Service_Master().check_permission("setu", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     num = session.get("num")
     keyword = session.get("keyword")
     r18 = session.get("r18")
@@ -166,7 +153,7 @@ async def process(result: dict, to_me: bool, gid: int) -> str:
     return msg
 
 
-@retry(stop_max_attempt_number=3)
+@retry()
 async def get_image(url: str, to_me: bool, gid: int) -> str:
     """处理涩图
 
@@ -221,7 +208,7 @@ async def get_image(url: str, to_me: bool, gid: int) -> str:
     return seq
 
 
-@retry(stop_max_attempt_number=5)
+@retry()
 async def get_api(session: CommandSession, keyword: str, r18: int, num: int) -> dict:
     """请求api页面
 

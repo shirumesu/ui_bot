@@ -1,11 +1,10 @@
 import os
-from loguru import logger
 
-from nonebot import on_command, MessageSegment, CommandSession
+from nonebot import MessageSegment, CommandSession
 
 import config
 from src.plugins.mkmeme import gosen_choen, luxun_say, jupai
-from src.Services import Service, Service_Master, GROUP_ADMIN
+from src.Services import uiPlugin
 
 
 meme_path = os.path.join(config.res, "source", "mkmeme")
@@ -25,7 +24,13 @@ sv_help = f"""表情制作 | 使用帮助
 {MessageSegment.image(r'file:///' + os.path.join(meme_path,'jupai','sample.png'))}
 """.strip()
 
-sv = Service(["mkmeme", "表情制作"], sv_help, True, True, GROUP_ADMIN)
+sv = uiPlugin(
+    ["mkmeme", "表情制作"],
+    False,
+    usage=sv_help,
+    use_cache_folder=True,
+    use_source_folder=True,
+)
 
 
 meme_list = {"1": "我想要5000兆日元", "2": "鲁迅说", "3": "举牌"}
@@ -41,16 +46,13 @@ meme_help = f"""要制作的表情是？(回复数字或后面的文字即可)(�
 """.strip()
 
 
-@on_command("表情制作", aliases=("制作表情",))
+@sv.ui_command("表情制作", aliases=("制作表情",))
 async def mkmeme(session: CommandSession):
     """制作表情的主函数
 
     Args:
         session(CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("mkmeme", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
 
     await session.apause(meme_help)
     meme_number = session.current_arg_text.strip()
