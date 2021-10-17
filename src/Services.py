@@ -4,12 +4,9 @@ import json
 import os
 from typing import Union, Optional, Iterable
 from nonebot import on_command, CommandSession, get_bot
-from nonebot.typing import Message_T
 
 import config
 from soraha_utils import logger
-from src.ui_exception import Finish_Error
-
 
 bot = get_bot()
 

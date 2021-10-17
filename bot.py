@@ -14,10 +14,7 @@ import uvicorn
 
 import nonebot
 import config
-import soraha_utils
-from nonebot.log import logger as nblog
-from soraha_utils import logger
-
+from soraha_utils import set_logger
 
 version = "1.0.5.3"
 
@@ -50,6 +47,13 @@ def switch_modules(modules_list):
 
 
 def start() -> None:
+    set_logger(
+        use_file=True,
+        level=config.DEBUG,
+        file_path="./log/uilog.log",
+        file_level=config.DEBUG,
+    )
+
     nonebot.init(config)
     name_list = [x for x in config.plugins]
     for i in name_list:
@@ -59,13 +63,12 @@ def start() -> None:
 
 
 if __name__ == "__main__":
-    logger = soraha_utils.set_logger(
-        level=config.DEBUG,
+    logger = set_logger(
         use_file=True,
+        level=config.DEBUG,
         file_path="./log/uilog.log",
         file_level=config.DEBUG,
     )
-    nblog = logger
 
     if config.checkupdate:
         try:
