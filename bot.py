@@ -15,6 +15,7 @@ import uvicorn
 import nonebot
 import config
 import soraha_utils
+from nonebot.log import logger as nblog
 from soraha_utils import logger
 
 
@@ -64,6 +65,7 @@ if __name__ == "__main__":
         file_path="./log/uilog.log",
         file_level=config.DEBUG,
     )
+    nblog = logger
 
     if config.checkupdate:
         try:
