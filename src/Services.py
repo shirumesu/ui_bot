@@ -55,14 +55,13 @@ class uiPlugin_Master:
         Returns:
             list[bool,str]: [是否通过,对应理由]
         """
-        if not ignore_superuser:
-            if session.event.user_id in config.SUPERUSERS:
-                return [True, "用户为超级用户"]
+        if not ignore_superuser and session.event.user_id in config.SUPERUSERS:
+            return [True, "用户为超级用户"]
         else:
             gid = session.event.group_id
             uid = session.event.user_id
             perm = self.__change_role(session)
-            group_type = plugin.enable_group[gid]
+            group_type = plugin.enable_group[str(gid)]
             if plugin_manager:
                 if perm == PRIVATE_USER:
                     return [False, "插件管理器禁止私聊使用"]
@@ -80,9 +79,9 @@ class uiPlugin_Master:
                 else:
                     return [False, "禁止私聊使用"]
 
-            if gid not in plugin.enable_group.keys():
+            if str(gid) not in plugin.enable_group.keys():
                 return [False, f"本群{gid}不在白名单中"]
-            if uid in plugin.block_priv:
+            if str(uid) in plugin.block_priv:
                 return [False, f"用户{uid}在黑名单中"]
 
             if group_type == "亲友群":
@@ -118,7 +117,7 @@ class uiPlugin_Master:
             plugin.dump_config()
         return enable_plugins
 
-    def __change_role(session: CommandSession) -> int:
+    def __change_role(self, session: CommandSession) -> int:
         """从session中获取用户的权限
 
         Args:
