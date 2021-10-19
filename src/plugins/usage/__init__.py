@@ -60,7 +60,7 @@ async def usage(session: CommandSession):
         if not plugin:
             msg = "没有找到该插件,可以发送使用帮助获取使用帮助"
         else:
-            msg = plugin.usage
+            msg = plugin[0].usage
     await session.send(msg)
 
 

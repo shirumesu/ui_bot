@@ -60,9 +60,9 @@ async def plugin_list(session: CommandSession):
     enable_plugins = []
     disable_plugins = []
     for plugin in plugins:
-        enable_plugins.append(
-            f"{plugin.name_cn}({plugin.name_en})"
-        ) if gid in plugin.enable_group else disable_plugins.append(
+        enable_plugins.append(f"{plugin.name_cn}({plugin.name_en})") if str(
+            gid
+        ) in plugin.enable_group else disable_plugins.append(
             f"{plugin.name_cn}({plugin.name_en})"
         )
     msg = "=====可以发送使用帮助获取使用帮助=====\n=====正在使用的插件！=====\n"

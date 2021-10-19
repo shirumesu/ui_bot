@@ -61,6 +61,12 @@ class uiPlugin_Master:
             gid = session.event.group_id
             uid = session.event.user_id
             perm = self.__change_role(session)
+            if not plugin.enable:
+                return [False, "插件没有开启！"]
+            if str(gid) not in plugin.enable_group.keys():
+                return [False, f"本群{gid}不在白名单中"]
+            if str(uid) in plugin.block_priv:
+                return [False, f"用户{uid}在黑名单中"]
             group_type = plugin.enable_group[str(gid)]
             if plugin_manager:
                 if perm == PRIVATE_USER:
@@ -78,11 +84,6 @@ class uiPlugin_Master:
                         return [True, "允许私聊使用"]
                 else:
                     return [False, "禁止私聊使用"]
-
-            if str(gid) not in plugin.enable_group.keys():
-                return [False, f"本群{gid}不在白名单中"]
-            if str(uid) in plugin.block_priv:
-                return [False, f"用户{uid}在黑名单中"]
 
             if group_type == "亲友群":
                 perm = GROUP_OWNER
@@ -103,14 +104,14 @@ class uiPlugin_Master:
         """
         enable_plugins = []
         for plugin in self.all_uiplugin.values():
-            if gid in plugin.enable_group:
+            if str(gid) in plugin.enable_group:
                 pass
             elif g_type == "亲友群":
-                plugin.enable_group[gid] = g_type
+                plugin.enable_group[str(gid)] = g_type
                 enable_plugins.append(plugin.name_cn)
             elif g_type == "普通群":
                 if not plugin.r18:
-                    plugin.enable_group[gid] = g_type
+                    plugin.enable_group[str(gid)] = g_type
                     enable_plugins.append(plugin.name_cn)
             else:
                 raise ValueError
@@ -229,11 +230,11 @@ class uiPlugin_Master:
                     changed_plugins[plugin.name_cn] = f"成功"
             elif type == "group":
                 if state:
-                    if gid in plugin.enable_group:
+                    if str(gid) in plugin.enable_group:
                         changed_plugins[plugin.name_cn] = f"失败,群({uid})已经在白名单中了！"
                         continue
                     else:
-                        plugin.enable_group.append(gid)
+                        plugin.enable_group[str(gid)] = "普通群"
                         changed_plugins[plugin.name_cn] = "成功"
                 else:
                     self.__remove_item(plugin.enable_group, gid)
@@ -419,7 +420,7 @@ class uiPlugin(uiPlugin_Master):
                 privileged=privileged,
                 shell_like=shell_like,
             )
-            def wrap_command(session: CommandSession):
+            async def wrap_command(session: CommandSession):
                 checker = self.check_perm(
                     session, self, plugin_manager, ignore_superuser
                 )
@@ -427,12 +428,12 @@ class uiPlugin(uiPlugin_Master):
                     logger.debug(
                         f"用户{session.event.user_id}使用插件{self.name_cn}(cmd:{name})通过: {checker[1]}"
                     )
-                    return func(session)
+                    return await func(session)
                 else:
                     logger.info(
                         f"用户{session.event.user_id}使用插件{self.name_cn}(cmd:{name})不通过: {checker[1]}"
                     )
-                    session.send("啊咧咧,哦卡西那~权限不够哦")
+                    await session.send("啊咧咧,哦卡西那~权限不够哦")
 
             return wrap_command
 

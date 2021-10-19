@@ -14,13 +14,13 @@ import uvicorn
 
 import nonebot
 import config
-from soraha_utils import set_logger
+from soraha_utils import set_logger, sync_uiclient
 
 version = "1.0.5.3"
 
 
 def check_update():
-    with soraha_utils.sync_uiclient(proxy=config.proxies.copy()) as uicl:
+    with sync_uiclient(proxy=config.proxies.copy()) as uicl:
         res = uicl.get("https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py")
 
     version_git = re.findall("@Version    : (.+)", res.text)[0]
