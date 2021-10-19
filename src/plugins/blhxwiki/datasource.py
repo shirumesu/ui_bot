@@ -18,6 +18,7 @@ async def get_result(session: CommandSession, name: str) -> Union[str, dict]:
         res = await get_page(name)
         if not res:
             raise IndexError
+        return res
     except:
         res = await fuzzy_search(name)
         if not res:
