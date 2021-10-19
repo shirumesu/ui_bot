@@ -1,10 +1,8 @@
-from concurrent.futures.thread import ThreadPoolExecutor
+from nonebot import CommandSession
+from .datasource import get_page, get_result
 
-from nonebot import on_command, CommandSession, get_bot
-
-from src.plugins.blhxwiki.datasource import driver
-from src.Services import Service, Service_Master, GROUP_ADMIN
-
+import config
+from src.Services import uiPlugin
 
 sv_help = """碧蓝航线wiki | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
@@ -29,59 +27,52 @@ blhxwiki常用网页:
 8.重樱船名反和谐对照: 重樱船名称对照表
 使用方法: blhxwiki 然后带上冒号后的字即可
 """
-sv = Service(
-    ["blhxwiki", "碧蓝航线wiki"], sv_help, True, True, permission_change=GROUP_ADMIN
+sv = uiPlugin(["blhxwiki", "碧蓝航线wiki"], False, usage=sv_help, private_use=True)
+
+
+@sv.ui_command(
+    "blhxwiki",
+    aliases=["碧蓝航线wiki", "碧蓝wiki", "blhx维基", "blhx百科"],
+    ignore_superuser=True,
 )
-
-web = driver()
-bot = get_bot()
-executor = ThreadPoolExecutor(15)
-
-
-@on_command("blhxwiki搜索", aliases=["碧蓝航线wiki搜索", "碧蓝wiki搜索", "blhx维基搜索", "blhx百科搜索"])
-async def blhxwiki_search(session: CommandSession):
-    """blhxwiki搜索的主函数
-
-    Args:
-        session (CommandSession): bot封装的消息
-    """
-    stat = await Service_Master().check_permission("blhxwiki", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
-    if not session.current_arg_text:
-        await session.finish("你要搜索的东西都没有怎么搜啊!")
-
-    await session.send("正在尝试获取……")
-
-    url = f"https://searchwiki.biligame.com/blhx/index.php?search={session.current_arg_text.strip()}&go=前往"
-    res = await bot.loop.run_in_executor(executor, web.get_pac, url)
-    if isinstance(res, str):
-        await session.finish(f"发生错误:{res}\nwiki网页:{url}")
-    else:
-        await session.send(res)
-        await session.finish(f"防止图片太长风控发不出,额外将网页发出来: {url}")
-
-
-@on_command("blhxwiki", aliases=["碧蓝航线wiki", "碧蓝wiki", "blhx维基", "blhx百科"])
 async def blhxwiki(session: CommandSession):
     """blhxwiki的主函数
 
     Args:
         session (CommandSession): bot封装的消息
     """
-    stat = await Service_Master().check_permission("blhxwiki", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     await session.send("正在尝试获取……")
-    url = "https://wiki.biligame.com/blhx/"
-    if not session.current_arg_text:
-        await session.finish(f"wiki首页: {url}")
-    url = url + session.current_arg_text.strip()
-    res = await bot.loop.run_in_executor(executor, web.get_pac, url)
-    if isinstance(res, str):
-        await session.finish(f"发生错误:{res}\nwiki网页:{url}")
-    else:
-        await session.send(res)
-        await session.finish(f"防止图片太长风控发不出,额外将网页发出来: {url}")
+    name = session.current_arg_text.strip()
+    info = await get_result(session, name)
+    text = (
+        f"{info['name']}\n"
+        f"======角色基本信息======\n"
+        f"稀有度: {info['rarity']}\n"
+        f"{info['build_time']}\n"
+        f"======舰队科技======\n"
+        f"获得: {info['fleet_get']}({info['fleet_get_extra']})\n"
+        f"满星: {info['fleet_full']}({info['fleet_full_extra']})\n"
+        f"lv120: {info['fleet_lv120']}({info['fleet_lv120_extra']})\n"
+        f"======属性======\n"
+        f"耐久: {info['naijiu']}\n"
+        f"装甲: {info['zhuangjia']}\n"
+        f"装填: {info['zhuangtian']}\n"
+        f"炮击: {info['paoji']}\n"
+        f"雷击: {info['leiji']}\n"
+        f"机动: {info['jidong']}\n"
+        f"防空: {info['fangkong']}\n"
+        f"航空: {info['hangkong']}\n"
+        f"消耗: {info['xiaohao']}\n"
+        f"反潜: {info['fanqian']}\n"
+        f"幸运: {info['xinyun']}\n"
+        f"航速: {info['hangsu']}\n"
+        f"======武器效率======\n"
+        f"{info['arm1_type']}: {info['arm1_effi']}\n"
+        f"{info['arm2_type']}: {info['arm2_effi']}\n"
+        f"{info['arm3_type']}: {info['arm3_effi']}\n"
+        f"======技能======\n"
+    )
+    for skill_name, descript in info["skills"].items():
+        text += f"{skill_name}: {descript}\n"
+    url = "https://wiki.biligame.com/blhx/" + name
+    await session.finish(text + url)

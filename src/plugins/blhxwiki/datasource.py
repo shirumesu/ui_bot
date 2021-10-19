@@ -1,205 +1,111 @@
-import os
-import string
-import random
-import platform
-import time
-import traceback
-
 from typing import Union
-from aiocqhttp.message import MessageSegment
-from loguru import logger
-
-try:
-    from selenium import webdriver
-    from selenium.webdriver.support.ui import WebDriverWait
-    from selenium.webdriver.chrome.options import Options
-
-    NOT_SELENIUM = False
-except:
-    logger.info("没有找到模块:selenium或导入错误 已自动禁用")
-    NOT_SELENIUM = True
-
-try:
-    from playwright.sync_api import Playwright, sync_playwright
-
-    NOT_PLAYWRIGHT = False
-except:
-    logger.info("没有找到模块:playwright或导入错误 已自动禁用")
-    NOT_PLAYWRIGHT = True
-
+import lxml
+from bs4 import BeautifulSoup
+from nonebot.command import CommandSession
 import config
+from soraha_utils import async_uiclient, logger, retry
 
 
-class driver:
-    def __init__(self) -> None:
-        self.sys = platform.system()
+async def get_page(name: str):
+    page_url = "https://wiki.biligame.com/blhx/" + name
+    async with async_uiclient(proxy=config.proxies_for_all) as client:
+        res = await client.uiget(page_url)
+    return await parser_charater_page(res.text)
 
-    def get_pac(self, url: str) -> Union[str, MessageSegment]:
-        """判断使用哪一种方式去获取截图
 
-        Args:
-            url (str): 需要截图的页面
+async def get_result(session: CommandSession, name: str) -> Union[str, dict]:
+    try:
+        res = await get_page(name)
+        if not res:
+            raise IndexError
+    except:
+        res = await fuzzy_search(name)
+        if not res:
+            await session.finish("没有找到你想要的！")
+        else:
+            await session.finish(f"你是不是在找:{res}\n暂时只支持查询角色")
 
-        Returns:
-            Union[str,MessageSegment]: 返回错误信息,或是成功保存的图片CQ码
-        """
-        try:
-            logger.debug(f"判断系统为:{self.sys},使用对应方法处理")
-            if self.sys == "Windows":
-                return self.win_driver(url)
-            elif self.sys == "Linux":
-                return self.linux_driver(url)
-        except Exception as e:
-            logger.debug(e)
-            logger.error(f"暂不支持{self.sys}系统,尝试使用playwright进行截图")
-            try:
-                with sync_playwright() as playwright:
-                    return self.play_wright(url, playwright)
-            except:
-                logger.info("截图失败,该功能无法使用")
-                logger.debug(traceback.format_exc())
-            return "该插件目前处于不可用状态"
 
-    def win_driver(self, url: str) -> Union[str, MessageSegment]:
-        """windows下获取页面截图的主要函数
+@retry(logger=logger)
+async def parser_charater_page(res: str) -> dict:
+    soup = BeautifulSoup(res, "lxml")
+    try:
+        chara_info = soup.find_all("table", {"class": "wikitable sv-general"})[
+            0
+        ].contents[1]
+    except IndexError:
+        raise
+    jianduikeji = soup.find_all("table", {"class": "wikitable sv-category"})[
+        0
+    ].contents[1]
+    chara_attr = soup.find_all("table", {"class": "wikitable sv-performance"})[
+        0
+    ].contents[1]
+    arms_info = soup.find_all("table", {"class": "wikitable sv-equipment"})[0].contents[
+        1
+    ]
+    skills_info = soup.find_all("table", {"class": "wikitable sv-skill"})[0].contents[1]
+    charas_info = {
+        "name": chara_info.contents[0].text.strip(),
+        "rarity": chara_info.contents[4].contents[3].text.strip(),
+        "build_time": chara_info.contents[6]
+        .text.replace("\n", "")
+        .replace("建造时间", "建造时间: "),
+        "normal_drop": chara_info.contents[8].text.strip(),
+        "special_drop": chara_info.contents[10].text.strip(),
+        "fleet_get": jianduikeji.contents[4].contents[3].text.strip().replace("\n", ""),
+        "fleet_get_extra": jianduikeji.contents[4].contents[7].text.strip(),
+        "fleet_full": jianduikeji.contents[6]
+        .contents[3]
+        .text.strip()
+        .replace("\n", ""),
+        "fleet_full_extra": jianduikeji.contents[6].contents[5].text.strip(),
+        "fleet_lv120": jianduikeji.contents[8]
+        .contents[3]
+        .text.strip()
+        .replace("\n", ""),
+        "fleet_lv120_extra": jianduikeji.contents[8].contents[5].text.strip(),
+        "naijiu": chara_attr.contents[6].contents[3].text.strip(),
+        "zhuangjia": chara_attr.contents[6].contents[7].text.strip(),
+        "zhuangtian": chara_attr.contents[6].contents[11].text.strip(),
+        "paoji": chara_attr.contents[8].contents[3].text.strip(),
+        "leiji": chara_attr.contents[8].contents[7].text.strip(),
+        "jidong": chara_attr.contents[8].contents[11].text.strip(),
+        "fangkong": chara_attr.contents[10].contents[3].text.strip(),
+        "hangkong": chara_attr.contents[10].contents[7].text.strip(),
+        "xiaohao": chara_attr.contents[10].contents[11].text.strip(),
+        "fanqian": chara_attr.contents[12].contents[3].text.strip(),
+        "xinyun": chara_attr.contents[14].contents[3].text.strip(),
+        "hangsu": chara_attr.contents[16].contents[3].text.strip(),
+        "arm1_type": arms_info.contents[4].contents[3].text.strip(),
+        "arm1_effi": arms_info.contents[4].contents[5].text.strip(),
+        "arm2_type": arms_info.contents[6].contents[3].text.strip(),
+        "arm2_effi": arms_info.contents[6].contents[5].text.strip(),
+        "arm3_type": arms_info.contents[8].contents[3].text.strip(),
+        "arm3_effi": arms_info.contents[8].contents[5].text.strip(),
+        "skills": {},
+    }
+    for index, value in enumerate(skills_info.contents):
+        if value == "\n" or index == 0 or not value.text.strip():
+            continue
+        charas_info["skills"][value.contents[1].text.strip()] = value.contents[
+            3
+        ].text.strip()
+    return charas_info
 
-        Args:
-            url (str): 需要被截图的页面
 
-        Returns:
-            Union[str,MessageSegment]: 返回错误信息,或是成功保存的图片CQ码
-        """
-        chrome_options = Options()
-        chrome_options.add_argument("headless")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-
-        try:
-            driver = webdriver.Chrome(chrome_options=chrome_options)
-        except:
-            try:
-                chromedriver = os.path.join(
-                    config.res, "source", "blhxwiki", "chromedriver.exe"
-                )
-                os.environ["webdriver.chrome.driver"] = chromedriver
-                if not os.path.exists(chromedriver):
-                    logger.warning("没有检测到对应的chrome-driver,无法进行截图")
-                    return "该插件目前处于不可用状态"
-                driver = webdriver.Chrome(chromedriver, chrome_options=chrome_options)
-            except Exception as e:
-                logger.debug(e)
-                logger.warning("检测到chromedriver存在但发生了错误,selenium无法使用")
-                return "该插件目前处于不可用状态"
-
-        logger.info(f"尝试用driver获取页面:{url}")
-        driver.get(url)
-        try:
-            WebDriverWait(driver, 15)
-
-            height = driver.execute_script(
-                "return document.documentElement.scrollHeight"
-            )
-
-            driver.set_window_size(1400, height)  # blhxwiki的宽度为1400 可以设置其他
-            WebDriverWait(driver, 15)
-            driver.execute_script(f"window.scrollTo(0,{height})")
-
-            # 应对懒加载问题
-            s = 1
-            height = driver.execute_script("return document.body.clientHeight")
-            while True:
-                if s * 500 < height:
-                    js_move = f"window.scrollTo(0,{s*500})"
-                    driver.execute_script(js_move)
-                    time.sleep(0.2)
-                    WebDriverWait(driver, 15)
-                    height = driver.execute_script("return document.body.clientHeight")
-                    s += 1
-                else:
-                    break
-        except:
-            logger.error("等待页面加载元素超时!")
-            return "等待页面加载元素超时！"
-        pac_name = (
-            "".join(random.sample(string.digits + string.ascii_letters, 8)) + ".png"
+@retry()
+async def fuzzy_search(name):
+    async with async_uiclient(proxy=config.proxies_for_all) as client:
+        res = await client.uiget(
+            f"https://searchwiki.biligame.com/blhx/index.php?search={name}&fulltext=1"
         )
-        pac_path = os.path.join(config.res, "cacha", "blhxwiki", pac_name)
-        driver.save_screenshot(pac_path)
-        driver.quit()
 
-        return MessageSegment.image(r"file:///" + pac_path)
-
-    def linux_driver(
-        self,
-        url: str,
-        pac_path=os.path.join(
-            config.res,
-            "cacha",
-            "blhxwiki",
-            ("".join(random.sample(string.digits + string.ascii_letters, 8)) + ".png"),
-        ),
-    ) -> Union[str, MessageSegment]:
-        """windows下获取页面截图的主要函数
-
-        Args:
-            url (str): 需要被截图的页面
-
-        Returns:
-            Union[str,MessageSegment]: 返回错误信息,或是成功保存的图片CQ码
-        """
-        chrome_options = Options()
-        chrome_options.add_argument("headless")
-        driver = webdriver.Chrome(
-            executable_path="/usr/bin/chromedriver", chrome_options=chrome_options
+    soup = BeautifulSoup(res.text, "lxml")
+    if "找不到和查询相匹配的结果。" in soup.text:
+        return
+    else:
+        fuzzy = soup.select(
+            "#mw-content-text > div.searchresults > ul > li:nth-child(1) > div.mw-search-result-heading > a"
         )
-        logger.info(f"尝试用driver获取页面:{url}")
-        driver.get(url)
-        time.sleep(1)
-        try:
-            height = driver.execute_script(
-                """return document.querySelector("#mw-content-text > div > div:nth-child(11) > div").getBoundingClientRect().top"""
-            )
-        except:
-            height = driver.execute_script(
-                "return document.documentElement.scrollHeight"
-            )
-
-        driver.set_window_size(1566, height)
-        logger.debug(f"获取页面高度为:{height},将浏览器设置为(1566,{height})")
-        time.sleep(1)
-
-        driver.save_screenshot(pac_path)
-        driver.close()
-        return MessageSegment.image(r"file:///" + pac_path)
-
-    def play_wright(self, url: str, playwright: Playwright) -> MessageSegment:
-        """当selenium无法使用的时候,使用`playwright`进行截图
-
-        已知问题: 截图可能重复,并且存在懒加载导致部分图片未能加载的情况
-
-        Args:
-            url (str): 需要截图的连接地址
-            playwright (Playwright): Playwright
-
-        Returns:
-            MessageSegment: 保存的CQ码
-        """
-        browser = playwright.chromium.launch(headless=False)
-        context = browser.new_context()
-
-        # Open new page
-        page = context.new_page()
-
-        page.goto(url)
-
-        pac_name = (
-            "".join(random.sample(string.digits + string.ascii_letters, 8)) + ".png"
-        )
-        pac_path = os.path.join(config.res, "cacha", "blhxwiki", pac_name)
-
-        page.screenshot(path=pac_path)
-
-        context.close()
-        browser.close()
-
-        return MessageSegment.image(r"file:///" + pac_path)
+        return fuzzy[0].text.strip()
