@@ -133,7 +133,7 @@ async def subcribe_twitter(session: CommandSession):
         gid = None
         uid = session.event["user_id"]
     try:
-        user_info = get_user(tw_id)
+        user_info = await get_user(tw_id)
     except Exception:
         logger.error(f"请求推特用户id{tw_id}失败")
         await session.finish("获取该用户失败,请检查是否存在该id")
@@ -268,9 +268,7 @@ async def set_subcribe_states(session: CommandSession):
                     break
 
     if not user_info:
-        await session.finish(
-            "没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id"
-        )
+        await session.finish("没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id")
 
     await session.apause(
         "目前的订阅状态是:\n"
@@ -386,9 +384,7 @@ async def delect_subcribe(session: CommandSession):
                     break
 
     if not found:
-        await session.finish(
-            "没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id"
-        )
+        await session.finish("没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id")
     elif not subcribe[x]["subcribe_group"] and not subcribe[x]["subcribe_user"]:
         del subcribe[x]
     else:
