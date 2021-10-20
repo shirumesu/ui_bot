@@ -1,16 +1,15 @@
 import hashlib
 import random
-import httpx
 import asyncio
 
 import config
-from soraha_utils import retry
+from soraha_utils import retry, logger, async_uiclient
 
 api_id = config.baidu_translate_api_id
 secret_key = config.baidu_translate_secret_key
 
 
-@retry
+@retry(logger=logger)
 async def baidu_translate(text: str) -> str:
     """调用百度翻译api进行翻译
 
@@ -20,6 +19,8 @@ async def baidu_translate(text: str) -> str:
     Returns:
         str: 翻译后的文本
     """
+    if not text:
+        return
     url = "https://fanyi-api.baidu.com/api/trans/vip/translate"
     data = {
         "appid": api_id,
@@ -30,17 +31,12 @@ async def baidu_translate(text: str) -> str:
         "from": "auto",
         "to": "zh",
     }
-    if not text:
-        return
     sign = data["appid"] + data["q"] + str(data["salt"]) + data["secretKey"]
-    sign.encode()
     data["sign"] = hashlib.md5(sign.encode()).hexdigest()
-    async with httpx.AsyncClient(
-        params=data, proxies=config.proxies_for_all, timeout=15
-    ) as s:
-        res = await s.get(url)
-        if res.status_code != 200:
-            raise RuntimeError
+    async with async_uiclient(
+        request_params=data, proxy=config.proxies_for_all
+    ) as client:
+        res = await client.uiget(url)
         js = res.json()
         if "error_code" in js:
             await asyncio.sleep(1)

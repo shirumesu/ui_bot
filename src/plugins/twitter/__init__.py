@@ -804,7 +804,7 @@ async def sendmsg(msg: dict) -> dict:
                 pass
     if data["quotelang"] != "zh" and data["isquote"] == True and data["text"] != "":
         data["quote_in_not_china"] = True
-        quote_tr_result = translate(data["quotetext"])
+        quote_tr_result = await translate(data["quotetext"])
         data["quote_translate_result"] = quote_tr_result
 
     if data["isreply"] != True and data["isRT"] != True and data["isquote"] != True:
