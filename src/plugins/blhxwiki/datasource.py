@@ -16,26 +16,23 @@ async def get_page(name: str):
 async def get_result(session: CommandSession, name: str) -> Union[str, dict]:
     try:
         res = await get_page(name)
-        if not res:
-            raise IndexError
-        return res
-    except:
+    except Exception as e:
+        logger.debug(f"获取页面发生错误: {e}")
         res = await fuzzy_search(name)
         if not res:
             await session.finish("没有找到你想要的！")
         else:
             await session.finish(f"你是不是在找:{res}\n暂时只支持查询角色")
+    else:
+        return res
 
 
-@retry(logger=logger)
+# @retry(logger=logger)
 async def parser_charater_page(res: str) -> dict:
     soup = BeautifulSoup(res, "lxml")
-    try:
-        chara_info = soup.find_all("table", {"class": "wikitable sv-general"})[
-            0
-        ].contents[1]
-    except IndexError:
-        raise
+    chara_info = soup.find_all("table", {"class": "wikitable sv-general"})[0].contents[
+        1
+    ]
     jianduikeji = soup.find_all("table", {"class": "wikitable sv-category"})[
         0
     ].contents[1]
@@ -95,7 +92,7 @@ async def parser_charater_page(res: str) -> dict:
     return charas_info
 
 
-@retry()
+# @retry()
 async def fuzzy_search(name):
     async with async_uiclient(proxy=config.proxies_for_all) as client:
         res = await client.uiget(
