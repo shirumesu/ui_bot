@@ -21,7 +21,9 @@ version = "1.0.5.3"
 
 def check_update():
     with sync_uiclient(proxy=config.proxies.copy()) as uicl:
-        res = uicl.get("https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py")
+        res = uicl.uiget(
+            "https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py"
+        )
 
     version_git = re.findall("@Version    : (.+)", res.text)[0]
     version_desc = re.findall("@Desc       : (.+)", res.text)[0]
