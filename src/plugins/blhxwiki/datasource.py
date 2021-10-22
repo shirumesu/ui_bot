@@ -4,22 +4,26 @@ from typing import Union
 from os import path
 from bs4 import BeautifulSoup
 
-from nonebot import CommandSession,MessageSegment
+from nonebot import CommandSession, MessageSegment
 
 import config
-from soraha_utils import async_uiclient,logger
+from soraha_utils import async_uiclient, logger
+
 
 async def get_text(name: str):
     page_url = "https://wiki.biligame.com/blhx/" + name
     try:
         return await jianniang(page_url)
-    except:
+    except Exception as e:
+        logger.debug(f"请求blhxwiki发生错误: {e}")
         try:
             return name + "\n" + await zhuangbei(page_url)
-        except:
+        except Exception as e:
+            logger.debug(f"请求blhxwiki发生错误: {e}")
             try:
                 return await fuzzy_search(name)
-            except:
+            except Exception as e:
+                logger.debug(f"请求blhxwiki发生错误: {e}")
                 return "没有找到你想要的"
 
 

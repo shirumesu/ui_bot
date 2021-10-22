@@ -9,36 +9,36 @@ import config
 
 
 async def process_photo(
-    words: dict, size: tuple, image_path: str, vertical: bool
+    words: dict,image_path: str, vertical: bool
 ) -> str:
     """单张图片的处理函数,会将ocr结果进一步解析,并且翻译,最后传回进行图片编辑
 
     Args:
         words (dict): ocr结果
-        size (tuple): 图片的大小
         image_path (str): 图片下载保存的路径
         vertical (bool): 图片是否为竖版,竖版横版处理有一点不一样
 
     Returns:
         str: 保存的路径
     """
-    data_list = []
-    for word in words:
-        word_data = {
-            "top": int(word["location"]["top"]),
-            "left": int(word["location"]["left"]),
-            "width": int(word["location"]["width"]),
-            "height": int(word["location"]["height"]),
-            "words": word["words"],
+    size = Image.open(image_path).size
+    data_list = [
+        {
+            "top": int(x["location"]["top"]),
+            "left": int(x["location"]["left"]),
+            "width": int(x["location"]["width"]),
+            "height": int(x["location"]["height"]),
+            "words": x["words"],
         }
-        data_list.append(word_data)
-    trans_text = []
-
+        for x in words
+    ]
     data_list = data_list[::-1] if vertical else data_list
 
+    trans_text = []
     sente_result = []
     cacha_word = []
     pos_data_for_word = []
+
     for word in data_list:
         if not cacha_word:
             cacha_word.append(word)
@@ -63,7 +63,6 @@ async def process_photo(
             cacha_word = []
             sente_result = []
             cacha_word.append(word)
-            continue
 
     pos_data_for_word.append(cacha_word)
     sentense = sentense.replace(",", "") if word["left"] <= word["height"] else sentense
