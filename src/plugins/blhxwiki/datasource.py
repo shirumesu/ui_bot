@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from nonebot import CommandSession, MessageSegment
 
 import config
-from soraha_utils import async_uiclient, logger
+from soraha_utils import async_uiclient, logger, async_uio
 
 
 async def get_text(name: str):
@@ -269,3 +269,45 @@ async def send_qiangdubang(session: CommandSession):
             await session.finish("没有找到图片缓存！请使用`blhxwiki 更新图片`来更新各种图片")
         msg.append(str(MessageSegment.image(f"file:///{image_path}")))
     await session.finish("".join(msg))
+
+
+class updater:
+    def __init__(self) -> None:
+        pass
+
+    async def upload_allinfo(self) -> None:
+        texts = {
+            "强度榜": "更新失败",
+            "一图榜": "更新失败",
+            "舰炮榜": "更新失败",
+            "飞机榜": "更新失败",
+            "防空炮榜": "更新失败",
+            "制空榜": "更新失败",
+        }
+
+    async def get_page(self, url: str) -> BeautifulSoup:
+        async with async_uiclient(proxy=config.proxies_for_all) as client:
+            res = await client.uiget(
+                f"https://wiki.biligame.com/blhx/PVE%E7%94%A8%E8%88%B0%E8%88%B9%E7%BB%BC%E5%90%88%E6%80%A7%E8%83%BD%E5%BC%BA%E5%BA%A6%E6%A6%9C"
+            )
+            soup = BeautifulSoup(res.text, "lxml")
+        return soup
+
+    async def update_photo(self, session: CommandSession):
+        """更新强度榜的函数
+
+        Args:
+            session (CommandSession): 发消息！
+        """
+        soup = await self.get_page(
+            "https://wiki.biligame.com/blhx/PVE%E7%94%A8%E8%88%B0%E8%88%B9%E7%BB%BC%E5%90%88%E6%80%A7%E8%83%BD%E5%BC%BA%E5%BA%A6%E6%A6%9C"
+        )
+        js = soup.find_all("div", {"class": "floatnone"})
+        image_list = [x.contents[0].contents[0].attrs["src"] for x in js]
+        for index, i in enumerate(image_list):
+            await async_uio.save_file(
+                type="url_image",
+                save_path=f"./res/source/blhxwiki/强度榜_{index}.png",
+                proxy=config.proxies_for_all,
+            )
+        await session.finish("更新成功！")

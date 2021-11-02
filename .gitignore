@@ -118,3 +118,4 @@ subcribe.json
 config.py
 res/cacha/*
 /res/source/blhxwiki/*
+src/plugins/blhxwiki/image_list.json
