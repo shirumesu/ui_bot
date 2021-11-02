@@ -183,13 +183,20 @@ async def zhuangbei(url: str):
         text = ""
         for i in info:
             text += await zhuangbei_info(i)
-        texts = soup.select(
-            "#mw-content-text > div > div.row > div:nth-child(2) > div > div > p:nth-child(2)"
-        )
-        if texts[0].text == "备注\n":
+        try:
+            texts = soup.select(
+                "#mw-content-text > div > div.row > div:nth-child(2) > div > div > p:nth-child(2)"
+            )
+            if not texts:
+                texts = soup.select(
+                    "#mw-content-text > div > div.row > div:nth-child(2) > div > div > div"
+                )
+            if texts[0].text.strip() == "备注":
+                pass
+            else:
+                text += texts[0].text.replace("备注", "备注: ").strip()
+        except:
             pass
-        else:
-            text += texts[0].text.replace("备注", "备注: ").strip()
         text = text.strip() + "\n" + url
         return text
 
