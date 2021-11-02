@@ -206,7 +206,7 @@ async def fuzzy_search(name: str) -> Union[str, dict]:
         fuzzy = soup.select(
             "#mw-content-text > div.searchresults > ul > li:nth-child(1) > div.mw-search-result-heading > a"
         )
-        return f"你是不是在找:{fuzzy[0].text.strip()}\n暂时只支持查询角色"
+        return f"你是不是在找:{fuzzy[0].text.strip()}\n暂时只支持查询角色与装备"
 
 
 async def update_info() -> dict:

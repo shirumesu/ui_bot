@@ -1,15 +1,16 @@
 import asyncio
 import os
-import httpx
 import json
 import re
 
 from nonebot import CommandSession
 from aiocqhttp import MessageSegment
+import soraha_utils
+from soraha_utils.uiclient import async_uiclient
 
 import config as cfg
 from src.Services import uiPlugin, SUPERUSER
-from soraha_utils import retry, logger
+from soraha_utils import retry, logger, async_uiclient
 
 sv_help = """搞的很快的插件！ | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
@@ -112,8 +113,12 @@ async def get_setu(session):
     try:
         result = await get_api(session, keyword, r18, num)
     except RuntimeError:
-        session.finish("涩图获取失败惹……")
+        await session.finish("涩图获取失败惹……")
         logger.info("获取色图失败")
+    finally:
+        if not result:
+            await session.finish("涩图获取失败惹……")
+            logger.error("result请求成功但返回值为空")
 
     coro = []
     for i in range(result["count"]):
@@ -187,10 +192,10 @@ async def get_image(url: str, to_me: bool, gid: int) -> str:
         url = url.replace("i.pixiv.cat", "i.pximg.net")
 
     header = {"referer": "https://www.pixiv.net/"}
-    async with httpx.AsyncClient(
-        timeout=30, proxies=cfg.proxies_for_all, headers=header, verify=False
-    ) as s:
-        res = await s.get(url)
+    async with async_uiclient(
+        proxy=cfg.proxies_for_all, other_headers=header
+    ) as client:
+        res = await client.uiget(url)
     content = res.content
     if "_master1200.jpg" in url:
         url = url.replace("_master1200.jpg", "")
@@ -225,16 +230,14 @@ async def get_api(session: CommandSession, keyword: str, r18: int, num: int) -> 
     """
     urls = "https://api.lolicon.app/setu/v1"
     data = {"keyword": keyword, "r18": r18, "num": int(num)}
-    async with httpx.AsyncClient(
-        params=data, timeout=15, proxies=cfg.proxies_for_all, verify=False
-    ) as s:
-        res = await s.get(urls)
-        if res.status_code != 200:
-            raise RuntimeError("请求结果不正确")
-        result = res.json()
-        if result["msg"] == "没有符合条件的色图":
-            await session.finish("没有符合条件的涩图", at_sender=True)
-        return result
+    async with async_uiclient(request_params=data, proxy=cfg.proxies_for_all) as client:
+        res = await client.uiget(urls)
+    js = res.json()
+    return (
+        js
+        if js["msg"] != "没有符合条件的色图"
+        else await session.finish("没有符合条件的涩图", at_sender=True)
+    )
 
 
 @get_setu.args_parser
