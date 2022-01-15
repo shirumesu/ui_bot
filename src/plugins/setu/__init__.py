@@ -120,6 +120,9 @@ async def get_setu(session):
             await session.finish("涩图获取失败惹……")
             logger.error("result请求成功但返回值为空")
 
+    if "count" not in result:
+        return
+
     coro = []
     for i in range(result["count"]):
         gid = (
@@ -236,7 +239,7 @@ async def get_api(session: CommandSession, keyword: str, r18: int, num: int) -> 
     return (
         js
         if js["msg"] != "没有符合条件的色图"
-        else await session.finish("没有符合条件的涩图", at_sender=True)
+        else await session.send("没有符合条件的涩图", at_sender=True)
     )
 
 

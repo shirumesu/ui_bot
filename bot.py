@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.5.3
-@EditTime   : 2021/9/30 15:35pm(Editor: shiying)
-@Desc       : 修复: selenium跟playwright有一个不存在会导致整个插件无法使用的情况
+@Version    : 1.0.5.4
+@EditTime   : 2022/1/16 2:15am(Editor: shiying)
+@Desc       : 修复: 由于一点小问题导致setu在找不到色图后会连发三次消息并且其后所有色图指令无法使用
 """
 import os
 import re
@@ -16,7 +16,7 @@ import nonebot
 import config
 from soraha_utils import set_logger, sync_uiclient
 
-version = "1.0.5.3"
+version = "1.0.5.4"
 
 
 def check_update():
