@@ -1,22 +1,24 @@
 import os
 import time
 from pathlib import Path
-from loguru import logger
 
 import nonebot
 
 import config as cfg
-from src.Services import SUPERUSER, Service, GROUP_ADMIN
+from src.Services import uiPlugin, SUPERUSER
+from soraha_utils import logger
 
 
 sv_help = """文件清理 | 使用帮助
 啊这…森林里的精灵们会自动打扫的 还要什么使用帮助吗？
 """.strip()
-sv = Service(
+sv = uiPlugin(
     ["file_manager", "文件清理"],
-    sv_help,
-    permission_use=SUPERUSER,
-    priv_use=False,
+    False,
+    usage=sv_help,
+    perm_use=SUPERUSER,
+    perm_manager=SUPERUSER,
+    private_use=False,
     visible=False,
 )
 

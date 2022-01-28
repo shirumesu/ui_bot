@@ -1,12 +1,12 @@
 import os
 import httpx
-from loguru import logger
 from retrying import retry
 
 from nonebot import MessageSegment
 
 import config
 from src.plugins.search_image import saucenao_config as sauce
+from soraha_utils import logger
 
 
 async def text(image_data: dict) -> str:

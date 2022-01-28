@@ -1,10 +1,10 @@
 import httpx
 import requests
 from typing import Union
-from loguru import logger
 from base64 import b64encode
 
 import config
+from soraha_utils import logger
 
 
 class pic_score:

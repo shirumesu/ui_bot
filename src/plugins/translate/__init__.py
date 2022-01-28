@@ -1,9 +1,12 @@
-from nonebot import on_command, CommandSession, MessageSegment
-
+from nonebot import CommandSession, MessageSegment
+import os
 from src.plugins.translate import baidu, embed
-from src.Services import Service, Service_Master, GROUP_ADMIN
 from src.ui_exception import baidu_ocr_get_Error
+from uuid import uuid4
+from src.Services import uiPlugin
 
+import config
+from soraha_utils import async_uio
 
 sv_help = """翻译漫画 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
@@ -26,51 +29,44 @@ sv_help = """翻译漫画 | 使用帮助
 [翻译图片 (图片)] -> 翻译图片/漫画,可以为竖排的
     同上,但横版图片ocr结果一般优良一些=翻译质量更高
 """.strip()
-
-sv = Service(
+sv = uiPlugin(
     ["translate", "翻译漫画"],
-    sv_help,
-    use_folder=True,
-    use_cacha_folder=True,
-    permission_change=GROUP_ADMIN,
+    False,
+    usage=sv_help,
+    use_source_folder=True,
+    use_cache_folder=True,
 )
 
 
-@on_command("翻译漫画", patterns=r"^翻译漫画")
+@sv.ui_command("翻译漫画", patterns=r"^翻译漫画")
 async def translate_manga(session: CommandSession):
     """翻译漫画的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("translate", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     urls = session.get("image")
 
     seq = []
     for i in urls:
-        url = i
-        try:
-            words_data, path = await baidu.process(url, vertical=True)
-        except baidu_ocr_get_Error:
-            await session.finish("请求翻译api时发生错误,翻译失败")
-        path = await embed.process_manga(words_data, path)
+        save_path = os.path.join(
+            config.res, "cacha", "translate", str(uuid4())[-12:] + ".png"
+        )
+        await async_uio.save_file(
+            type="url_image", url=i, proxy=config.proxies_for_all, save_path=save_path
+        )
+        path = await baidu.process_manga(save_path)
         seq = MessageSegment.image("file:///" + path)
         await session.send(seq)
 
 
-@on_command("翻译图片", patterns=r"^翻译图片")
+@sv.ui_command("翻译图片", patterns=r"^翻译图片")
 async def translate_photo(session: CommandSession):
     """翻译图片的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("translate", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
 
     urls = session.get("image")
 
@@ -81,7 +77,7 @@ async def translate_photo(session: CommandSession):
             words_data, path = await baidu.process(url, vertical=False)
         except baidu_ocr_get_Error:
             await session.finish("请求翻译api时发生错误,翻译失败")
-        path = await embed.process_manga(words_data, path)
+
         seq = MessageSegment.image("file:///" + path)
         await session.send(seq)
 

@@ -1,7 +1,7 @@
-from nonebot import on_command, CommandSession
+from nonebot import CommandSession
 
 from . import monika
-from src.Services import GROUP_ADMIN, Service, Service_Master
+from src.Services import uiPlugin
 
 
 sv_help = """莫妮卡翻译 | 使用帮助
@@ -14,33 +14,24 @@ sv_help = """莫妮卡翻译 | 使用帮助
 题外话:
 jÙṦᵵ𝕄𝓞𝕹ᴉᴋ𝕒jÙṦẗ𝕸ᴔℕᴉᴋẚjÙṦᵵ𝕞ᴔ𝔫ᴉʞᶐjÙṦᵵ𝕄𝔒𝔑ᵼⱩẚjÙṦᵵ𝕞œ𝔫ᴉⱪ𝕒
 """
-
-sv = Service(["justmonika", "莫妮卡翻译"], sv_help, permission_change=GROUP_ADMIN)
+sv = uiPlugin(["justmonika", "莫妮卡翻译"], False, usage=sv_help)
 
 
 _monika = monika.JustMonika()
 
 
-@on_command("莫妮卡乱码")
+@sv.ui_command("莫妮卡乱码")
 async def monika_tran(session: CommandSession):
-    stat = await Service_Master().check_permission("cheru", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     text = session.current_arg_text.strip()
     if len(text) % 2:
         text = text + "<OOV>"
-    await session.finish(_monika.encode(text))
+    await session.send(_monika.encode(text))
 
 
-@on_command("莫妮卡翻译")
+@sv.ui_command("莫妮卡翻译")
 async def monika_tran_2_word(session: CommandSession):
-    stat = await Service_Master().check_permission("cheru", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     text = session.current_arg_text.strip()
     fin_text = _monika.decode(text)
     if "<OOV>" in fin_text:
         fin_text = fin_text.replace("<OOV>", "")
-    await session.finish(fin_text)
+    await session.send(fin_text)

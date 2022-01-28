@@ -1,205 +1,313 @@
-import os
-import string
-import random
-import platform
-import time
-import traceback
-
+import ujson
+from pathlib import Path
 from typing import Union
-from aiocqhttp.message import MessageSegment
-from loguru import logger
+from os import path
+from bs4 import BeautifulSoup
 
-try:
-    from selenium import webdriver
-    from selenium.webdriver.support.ui import WebDriverWait
-    from selenium.webdriver.chrome.options import Options
-
-    NOT_SELENIUM = False
-except:
-    logger.info("没有找到模块:selenium或导入错误 已自动禁用")
-    NOT_SELENIUM = True
-
-try:
-    from playwright.sync_api import Playwright, sync_playwright
-
-    NOT_PLAYWRIGHT = False
-except:
-    logger.info("没有找到模块:playwright或导入错误 已自动禁用")
-    NOT_PLAYWRIGHT = True
+from nonebot import CommandSession, MessageSegment
 
 import config
+from soraha_utils import async_uiclient, logger, async_uio
 
 
-class driver:
-    def __init__(self) -> None:
-        self.sys = platform.system()
-
-    def get_pac(self, url: str) -> Union[str, MessageSegment]:
-        """判断使用哪一种方式去获取截图
-
-        Args:
-            url (str): 需要截图的页面
-
-        Returns:
-            Union[str,MessageSegment]: 返回错误信息,或是成功保存的图片CQ码
-        """
+async def get_text(name: str):
+    page_url = "https://wiki.biligame.com/blhx/" + name
+    try:
+        return await jianniang(page_url)
+    except Exception as e:
+        logger.debug(f"请求blhxwiki发生错误: {e}")
         try:
-            logger.debug(f"判断系统为:{self.sys},使用对应方法处理")
-            if self.sys == "Windows":
-                return self.win_driver(url)
-            elif self.sys == "Linux":
-                return self.linux_driver(url)
+            return name + "\n" + await zhuangbei(page_url)
         except Exception as e:
-            logger.debug(e)
-            logger.error(f"暂不支持{self.sys}系统,尝试使用playwright进行截图")
+            logger.debug(f"请求blhxwiki发生错误: {e}")
             try:
-                with sync_playwright() as playwright:
-                    return self.play_wright(url, playwright)
-            except:
-                logger.info("截图失败,该功能无法使用")
-                logger.debug(traceback.format_exc())
-            return "该插件目前处于不可用状态"
-
-    def win_driver(self, url: str) -> Union[str, MessageSegment]:
-        """windows下获取页面截图的主要函数
-
-        Args:
-            url (str): 需要被截图的页面
-
-        Returns:
-            Union[str,MessageSegment]: 返回错误信息,或是成功保存的图片CQ码
-        """
-        chrome_options = Options()
-        chrome_options.add_argument("headless")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-
-        try:
-            driver = webdriver.Chrome(chrome_options=chrome_options)
-        except:
-            try:
-                chromedriver = os.path.join(
-                    config.res, "source", "blhxwiki", "chromedriver.exe"
-                )
-                os.environ["webdriver.chrome.driver"] = chromedriver
-                if not os.path.exists(chromedriver):
-                    logger.warning("没有检测到对应的chrome-driver,无法进行截图")
-                    return "该插件目前处于不可用状态"
-                driver = webdriver.Chrome(chromedriver, chrome_options=chrome_options)
+                return await fuzzy_search(name)
             except Exception as e:
-                logger.debug(e)
-                logger.warning("检测到chromedriver存在但发生了错误,selenium无法使用")
-                return "该插件目前处于不可用状态"
+                logger.debug(f"请求blhxwiki发生错误: {e}")
+                return "没有找到你想要的"
 
-        logger.info(f"尝试用driver获取页面:{url}")
-        driver.get(url)
+
+async def jianniang(url: str):
+    async with async_uiclient(proxy=config.proxies_for_all) as client:
+        res = await client.uiget(url)
+    soup = BeautifulSoup(res.text, "lxml")
+    chara_info = soup.find_all("table", {"class": "wikitable sv-general"})[0].contents[
+        1
+    ]
+    jianduikeji = soup.find_all("table", {"class": "wikitable sv-category"})[
+        0
+    ].contents[1]
+    chara_attr = soup.find_all("table", {"class": "wikitable sv-performance"})[
+        0
+    ].contents[1]
+    arms_info = soup.find_all("table", {"class": "wikitable sv-equipment"})[0].contents[
+        1
+    ]
+    skills_info = soup.find_all("table", {"class": "wikitable sv-skill"})[0].contents[1]
+    info = {
+        "name": chara_info.contents[0].text.strip(),
+        "rarity": chara_info.contents[4].contents[3].text.strip(),
+        "build_time": chara_info.contents[6]
+        .text.replace("\n", "")
+        .replace("建造时间", "建造时间: "),
+        "normal_drop": chara_info.contents[8].text.strip(),
+        "special_drop": chara_info.contents[10].text.strip(),
+        "fleet_get": jianduikeji.contents[4].contents[3].text.strip().replace("\n", ""),
+        "fleet_get_extra": jianduikeji.contents[4].contents[7].text.strip(),
+        "fleet_full": jianduikeji.contents[6]
+        .contents[3]
+        .text.strip()
+        .replace("\n", ""),
+        "fleet_full_extra": jianduikeji.contents[6].contents[5].text.strip(),
+        "fleet_lv120": jianduikeji.contents[8]
+        .contents[3]
+        .text.strip()
+        .replace("\n", ""),
+        "fleet_lv120_extra": jianduikeji.contents[8].contents[5].text.strip(),
+        "naijiu": chara_attr.contents[6].contents[3].text.strip(),
+        "zhuangjia": chara_attr.contents[6].contents[7].text.strip(),
+        "zhuangtian": chara_attr.contents[6].contents[11].text.strip(),
+        "paoji": chara_attr.contents[8].contents[3].text.strip(),
+        "leiji": chara_attr.contents[8].contents[7].text.strip(),
+        "jidong": chara_attr.contents[8].contents[11].text.strip(),
+        "fangkong": chara_attr.contents[10].contents[3].text.strip(),
+        "hangkong": chara_attr.contents[10].contents[7].text.strip(),
+        "xiaohao": chara_attr.contents[10].contents[11].text.strip(),
+        "fanqian": chara_attr.contents[12].contents[3].text.strip(),
+        "xinyun": chara_attr.contents[14].contents[3].text.strip(),
+        "hangsu": chara_attr.contents[16].contents[3].text.strip(),
+        "arm1_type": arms_info.contents[4].contents[3].text.strip(),
+        "arm1_effi": arms_info.contents[4].contents[5].text.strip(),
+        "arm2_type": arms_info.contents[6].contents[3].text.strip(),
+        "arm2_effi": arms_info.contents[6].contents[5].text.strip(),
+        "arm3_type": arms_info.contents[8].contents[3].text.strip(),
+        "arm3_effi": arms_info.contents[8].contents[5].text.strip(),
+        "skills": {},
+    }
+    for index, value in enumerate(skills_info.contents):
+        if value == "\n" or index == 0 or not value.text.strip():
+            continue
+        info["skills"][value.contents[1].text.strip()] = value.contents[3].text.strip()
+    text = (
+        f"{info['name']}\n"
+        f"======角色基本信息======\n"
+        f"稀有度: {info['rarity']}\n"
+        f"{info['build_time']}\n"
+        f"======舰队科技======\n"
+        f"获得: {info['fleet_get']}({info['fleet_get_extra']})\n"
+        f"满星: {info['fleet_full']}({info['fleet_full_extra']})\n"
+        f"lv120: {info['fleet_lv120']}({info['fleet_lv120_extra']})\n"
+        f"======属性======\n"
+        f"耐久: {info['naijiu']}\n"
+        f"装甲: {info['zhuangjia']}\n"
+        f"装填: {info['zhuangtian']}\n"
+        f"炮击: {info['paoji']}\n"
+        f"雷击: {info['leiji']}\n"
+        f"机动: {info['jidong']}\n"
+        f"防空: {info['fangkong']}\n"
+        f"航空: {info['hangkong']}\n"
+        f"消耗: {info['xiaohao']}\n"
+        f"反潜: {info['fanqian']}\n"
+        f"幸运: {info['xinyun']}\n"
+        f"航速: {info['hangsu']}\n"
+        f"======武器效率======\n"
+        f"{info['arm1_type']}: {info['arm1_effi']}\n"
+        f"{info['arm2_type']}: {info['arm2_effi']}\n"
+        f"{info['arm3_type']}: {info['arm3_effi']}\n"
+        f"======技能======\n"
+    )
+    for skill_name, descript in info["skills"].items():
+        text += f"{skill_name}: {descript}\n"
+    text += url
+    return text.strip()
+
+
+async def zhuangbei(url: str):
+    async def zhuangbei_info(items, times=0) -> str:
+        """狗一样的递归,为了防止以后自己看不懂下面说一下这函数在干嘛
+        1. 判断是否为bs4独有的迷惑'\n',是则返回空字符串
+        2.判断是否为wikitable class
+            2.0:
+                2.0.1: try是否为原来的equip数据,
+                2.0.2: 如果是已经迭代过的equip,那么直接就是items.attrs['class'][0]
+            2.1 是,迭代元素
+                2.1.1: 判断是否为bs4独有的迷惑'\n',是则continue
+                2.1.2: 判断是否为首次,是则加个冒号在后面等后续数据
+                2.1.3: 不是首次的话那么就在原来的text中加入后续数据
+            2.2 否,为equip
+                2.2.1 迭代
+        好 我写了一轮还是啥都不懂。
+        干巴爹！未来的我一定能看懂的吧,捏~
+        Args:
+            items: items,wiki页面的ul(class:equip)
+            times (int, optional): 递归次数,用于调整缩进. Defaults to 0.
+        Returns:
+            str: wikitable的text或是equip的text
+        """
+        if items == "\n":
+            return ""
+        if "适用舰种" in items.text:
+            return ""
+        tab = "  "
+        point = "·"
         try:
-            WebDriverWait(driver, 15)
-
-            height = driver.execute_script(
-                "return document.documentElement.scrollHeight"
-            )
-
-            driver.set_window_size(1400, height)  # blhxwiki的宽度为1400 可以设置其他
-            WebDriverWait(driver, 15)
-            driver.execute_script(f"window.scrollTo(0,{height})")
-
-            # 应对懒加载问题
-            s = 1
-            height = driver.execute_script("return document.body.clientHeight")
-            while True:
-                if s * 500 < height:
-                    js_move = f"window.scrollTo(0,{s*500})"
-                    driver.execute_script(js_move)
-                    time.sleep(0.2)
-                    WebDriverWait(driver, 15)
-                    height = driver.execute_script("return document.body.clientHeight")
-                    s += 1
+            i_type = items.contents[1].attrs["class"][0]
+        except:
+            i_type = items.attrs["class"][0]
+        if i_type == "wikitable":
+            first_times = True
+            info_text = ""
+            for item in items.contents[1].contents[1].contents:
+                if item == "\n":
+                    continue
+                if first_times:
+                    info_text += item.text.strip().replace("\n", ": ")
+                    first_times = False
                 else:
-                    break
-        except:
-            logger.error("等待页面加载元素超时!")
-            return "等待页面加载元素超时！"
-        pac_name = (
-            "".join(random.sample(string.digits + string.ascii_letters, 8)) + ".png"
-        )
-        pac_path = os.path.join(config.res, "cacha", "blhxwiki", pac_name)
-        driver.save_screenshot(pac_path)
-        driver.quit()
+                    info_text += f": {item.text.strip()}\n"
+            if times != 0:
+                return tab * times + point + info_text + "\n"
+            else:
+                return info_text + "\n"
+        if i_type == "equip":
+            text = ""
+            for item in items.contents:
+                text += await zhuangbei_info(item, times + 1)
+            return text
 
-        return MessageSegment.image(r"file:///" + pac_path)
-
-    def linux_driver(
-        self,
-        url: str,
-        pac_path=os.path.join(
-            config.res,
-            "cacha",
-            "blhxwiki",
-            ("".join(random.sample(string.digits + string.ascii_letters, 8)) + ".png"),
-        ),
-    ) -> Union[str, MessageSegment]:
-        """windows下获取页面截图的主要函数
-
-        Args:
-            url (str): 需要被截图的页面
-
-        Returns:
-            Union[str,MessageSegment]: 返回错误信息,或是成功保存的图片CQ码
-        """
-        chrome_options = Options()
-        chrome_options.add_argument("headless")
-        driver = webdriver.Chrome(
-            executable_path="/usr/bin/chromedriver", chrome_options=chrome_options
-        )
-        logger.info(f"尝试用driver获取页面:{url}")
-        driver.get(url)
-        time.sleep(1)
+    async with async_uiclient(proxy=config.proxies_for_all) as client:
+        res = await client.uiget(url)
+        soup = BeautifulSoup(res.text, "lxml")
+        info = soup.find_all("ul", {"class": "equip"})
+        info = info[0].contents[4:]
+        text = ""
+        for i in info:
+            text += await zhuangbei_info(i)
         try:
-            height = driver.execute_script(
-                """return document.querySelector("#mw-content-text > div > div:nth-child(11) > div").getBoundingClientRect().top"""
+            texts = soup.select(
+                "#mw-content-text > div > div.row > div:nth-child(2) > div > div > p:nth-child(2)"
             )
+            if not texts:
+                texts = soup.select(
+                    "#mw-content-text > div > div.row > div:nth-child(2) > div > div > div"
+                )
+            if texts[0].text.strip() == "备注":
+                pass
+            else:
+                text += texts[0].text.replace("备注", "备注: ").strip()
         except:
-            height = driver.execute_script(
-                "return document.documentElement.scrollHeight"
+            pass
+        text = text.strip() + "\n" + url
+        return text
+
+
+async def fuzzy_search(name: str) -> Union[str, dict]:
+    async with async_uiclient(proxy=config.proxies_for_all) as client:
+        res = await client.uiget(
+            f"https://searchwiki.biligame.com/blhx/index.php?search={name}&fulltext=1"
+        )
+    soup = BeautifulSoup(res.text, "lxml")
+    if "找不到和查询相匹配的结果。" in soup.text:
+        return "没有找到你想要的！"
+    else:
+        fuzzy = soup.select(
+            "#mw-content-text > div.searchresults > ul > li:nth-child(1) > div.mw-search-result-heading > a"
+        )
+        return f"你是不是在找:{fuzzy[0].text.strip()}\n暂时只支持查询角色与装备"
+
+
+async def update_info() -> dict:
+    async with async_uiclient(proxy=config.proxies_for_all) as clent:
+        res = await clent.uiget(
+            "https://wiki.biligame.com/blhx/%E8%88%B0%E5%A8%98%E5%AE%9A%E4%BD%8D%E7%AD%9B%E9%80%89"
+        )
+        soup = BeautifulSoup(res.text, "lxml")
+        try:
+            p = Path("./info.json").open("r", encoding="utf-8")
+            info = ujson.load(p)
+        except:
+            info = {}
+        change = 0
+        js = soup.find_all("div", {"class": "cpr_btn1"})
+        for i in js:
+            name = i.attrs["data-card"]
+            if "改" in name:
+                logger.debug(f"发现改造舰娘: {name},跳过")
+                continue
+            if name in info:
+                continue
+            info[name] = []
+            change += 1
+        logger.info(f"成功更新{len(info)}个舰娘信息,其中新增{change}个舰娘")
+        p = Path("./info.json").open("w", encoding="utf-8")
+        ujson.dump(info, p, ensure_ascii=False, indent=4)
+    return info
+
+
+async def update_photo(session: CommandSession):
+    async with async_uiclient(proxy=config.proxies_for_all) as client:
+        res = await client.uiget(
+            f"https://wiki.biligame.com/blhx/PVE%E7%94%A8%E8%88%B0%E8%88%B9%E7%BB%BC%E5%90%88%E6%80%A7%E8%83%BD%E5%BC%BA%E5%BA%A6%E6%A6%9C"
+        )
+        soup = BeautifulSoup(res.text, "lxml")
+        js = soup.find_all("div", {"class": "floatnone"})
+        image_list = [x.contents[0].contents[0].attrs["src"] for x in js]
+        name_list = []
+        for index, i in enumerate(image_list):
+            res = await client.uiget(i)
+            name_list.append(f"./强度榜_{index}.png")
+            with open(f"./res/source/blhxwiki/强度榜_{index}.png", "wb") as f:
+                f.write(res.content)
+    await session.finish("更新成功！")
+
+
+async def send_qiangdubang(session: CommandSession):
+    msg = []
+    for i in range(0, 5):
+        image_path = path.join(config.res, "source", "blhxwiki", f"强度榜_{i}.png")
+        if not path.exists(image_path):
+            await session.finish("没有找到图片缓存！请使用`blhxwiki 更新图片`来更新各种图片")
+        msg.append(str(MessageSegment.image(f"file:///{image_path}")))
+    await session.finish("".join(msg))
+
+
+class updater:
+    def __init__(self) -> None:
+        pass
+
+    async def upload_allinfo(self) -> None:
+        texts = {
+            "强度榜": "更新失败",
+            "一图榜": "更新失败",
+            "舰炮榜": "更新失败",
+            "飞机榜": "更新失败",
+            "防空炮榜": "更新失败",
+            "制空榜": "更新失败",
+        }
+
+    async def get_page(self, url: str) -> BeautifulSoup:
+        async with async_uiclient(proxy=config.proxies_for_all) as client:
+            res = await client.uiget(
+                f"https://wiki.biligame.com/blhx/PVE%E7%94%A8%E8%88%B0%E8%88%B9%E7%BB%BC%E5%90%88%E6%80%A7%E8%83%BD%E5%BC%BA%E5%BA%A6%E6%A6%9C"
             )
+            soup = BeautifulSoup(res.text, "lxml")
+        return soup
 
-        driver.set_window_size(1566, height)
-        logger.debug(f"获取页面高度为:{height},将浏览器设置为(1566,{height})")
-        time.sleep(1)
-
-        driver.save_screenshot(pac_path)
-        driver.close()
-        return MessageSegment.image(r"file:///" + pac_path)
-
-    def play_wright(self, url: str, playwright: Playwright) -> MessageSegment:
-        """当selenium无法使用的时候,使用`playwright`进行截图
-
-        已知问题: 截图可能重复,并且存在懒加载导致部分图片未能加载的情况
+    async def update_photo(self, session: CommandSession):
+        """更新强度榜的函数
 
         Args:
-            url (str): 需要截图的连接地址
-            playwright (Playwright): Playwright
-
-        Returns:
-            MessageSegment: 保存的CQ码
+            session (CommandSession): 发消息！
         """
-        browser = playwright.chromium.launch(headless=False)
-        context = browser.new_context()
-
-        # Open new page
-        page = context.new_page()
-
-        page.goto(url)
-
-        pac_name = (
-            "".join(random.sample(string.digits + string.ascii_letters, 8)) + ".png"
+        soup = await self.get_page(
+            "https://wiki.biligame.com/blhx/PVE%E7%94%A8%E8%88%B0%E8%88%B9%E7%BB%BC%E5%90%88%E6%80%A7%E8%83%BD%E5%BC%BA%E5%BA%A6%E6%A6%9C"
         )
-        pac_path = os.path.join(config.res, "cacha", "blhxwiki", pac_name)
-
-        page.screenshot(path=pac_path)
-
-        context.close()
-        browser.close()
-
-        return MessageSegment.image(r"file:///" + pac_path)
+        js = soup.find_all("div", {"class": "floatnone"})
+        image_list = [x.contents[0].contents[0].attrs["src"] for x in js]
+        for index, i in enumerate(image_list):
+            await async_uio.save_file(
+                type="url_image",
+                save_path=f"./res/source/blhxwiki/强度榜_{index}.png",
+                proxy=config.proxies_for_all,
+            )
+        await session.finish("更新成功！")

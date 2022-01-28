@@ -112,13 +112,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-config.py
-src/plugins/yobot/
-res/cacha
-sv_config.json
+.vscode/*
+*config.json
 subcribe.json
-src/plugins/setu/config.json
-.vscode/launch.json
-.vscode/settings.json
-res/source/blhxwiki/chromedriver.exe
-src/plugins/reply_msg/config.json
+config.py
+res/cacha/*
+/res/source/blhxwiki/*
+src/plugins/blhxwiki/image_list.json

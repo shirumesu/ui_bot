@@ -19,3 +19,7 @@ class baidu_ocr_get_Error(Exception):
 
 class Shut_Up_Error(Exception):
     pass
+
+
+class Finish_Error(Exception):
+    pass

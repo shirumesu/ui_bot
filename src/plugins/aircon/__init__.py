@@ -7,7 +7,7 @@ from .airconutils import (
     new_aircon,
     print_aircon,
 )
-from src.Services import Service, Service_Master, GROUP_ADMIN, perm
+from src.Services import uiPlugin
 
 
 sv_help = """群空调 | 使用帮助
@@ -29,8 +29,7 @@ sv_help = """群空调 | 使用帮助
         升级空调
         降级空调
 """.strip()
-sv = Service(["aircon", "群空调"], sv_help, permission_change=GROUP_ADMIN, priv_use=False)
-
+sv = uiPlugin(["aircon", "群空调"], False, usage=sv_help)
 bot = get_bot()
 
 ac_type_text = ["家用空调", "中央空调"]
@@ -105,24 +104,18 @@ async def check_range(
     return val
 
 
-@on_command("开空调")
+@sv.ui_command("开空调")
 async def aircon_on(event: CommandSession):
     """开空调指令
 
     Args:
         event (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("aircon", event.event)
-    if not stat[0]:
-        if stat[3]:
-            await event.finish(stat[3])
-        else:
-            await event.finish(f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}")
 
     if event.event.detail_type == "group":
         gid = str(event.event["group_id"])
     else:
-        await event.finish("群空调怎么私聊用啊(半恼)")
+        await event.send("群空调怎么私聊用啊(半恼)")
 
     if gid not in aircons:
         ginfo = await bot.get_group_info(group_id=gid)
@@ -143,24 +136,18 @@ async def aircon_on(event: CommandSession):
     await event.send("❄哔~空调已开\n" + msg)
 
 
-@on_command("关空调")
+@sv.ui_command("关空调")
 async def aircon_off(event: CommandSession):
     """关空调指令
 
     Args:
         event (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("aircon", event.event)
-    if not stat[0]:
-        if stat[3]:
-            await event.finish(stat[3])
-        else:
-            await event.finish(f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}")
 
     if event.event.detail_type == "group":
         gid = str(event.event["group_id"])
     else:
-        await event.finish("群空调怎么私聊用啊(半恼)")
+        await event.send("群空调怎么私聊用啊(半恼)")
 
     aircon = await check_status(gid, bot, event)
     if aircon is None:
@@ -173,24 +160,18 @@ async def aircon_off(event: CommandSession):
     await event.send("💤哔~空调已关\n" + msg)
 
 
-@on_command("当前温度")
+@sv.ui_command("当前温度")
 async def aircon_now(event: CommandSession):
     """查看当前温度
 
     Args:
         event (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("aircon", event.event)
-    if not stat[0]:
-        if stat[3]:
-            await event.finish(stat[3])
-        else:
-            await event.finish(f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}")
 
     if event.event.detail_type == "group":
         gid = str(event.event["group_id"])
     else:
-        await event.finish("群空调怎么私聊用啊(半恼)")
+        await event.send("群空调怎么私聊用啊(半恼)")
 
     aircon = await check_status(gid, bot, event, need_on=False)
     if aircon is None:
@@ -209,24 +190,18 @@ async def aircon_now(event: CommandSession):
     await event.send(msg)
 
 
-@on_command("设置温度", aliases=("设定温度",))
+@sv.ui_command("设置温度", aliases=("设定温度",))
 async def set_temp(event: CommandSession):
     """设置温度
 
     Args:
         event (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("aircon", event.event)
-    if not stat[0]:
-        if stat[3]:
-            await event.finish(stat[3])
-        else:
-            await event.finish(f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}")
 
     if event.event.detail_type == "group":
         gid = str(event.event["group_id"])
     else:
-        await event.finish("群空调怎么私聊用啊(半恼)")
+        await event.send("群空调怎么私聊用啊(半恼)")
 
     aircon = await check_status(gid, bot, event)
     if aircon is None:
@@ -247,24 +222,18 @@ async def set_temp(event: CommandSession):
     await event.send("❄" + msg)
 
 
-@on_command("设置风速", aliases=("设定风速", "设置风量", "设定风量"))
+@sv.ui_command("设置风速", aliases=("设定风速", "设置风量", "设定风量"))
 async def set_wind_rate(event: CommandSession):
     """设置空调风速
 
     Args:
         event (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("aircon", event.event)
-    if not stat[0]:
-        if stat[3]:
-            await event.finish(stat[3])
-        else:
-            await event.finish(f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}")
 
     if event.event.detail_type == "group":
         gid = str(event.event["group_id"])
     else:
-        await event.finish("群空调怎么私聊用啊(半恼)")
+        await event.send("群空调怎么私聊用啊(半恼)")
 
     aircon = await check_status(gid, bot, event)
     if aircon is None:
@@ -287,24 +256,18 @@ async def set_wind_rate(event: CommandSession):
     await event.send("❄" + msg)
 
 
-@on_command("设置环境温度", aliases=("设定环境温度"))
+@sv.ui_command("设置环境温度", aliases=("设定环境温度",))
 async def set_env_temp(event: CommandSession):
     """设置环境温度的指令
 
     Args:
         event (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("aircon", event.event)
-    if not stat[0]:
-        if stat[3]:
-            await event.finish(stat[3])
-        else:
-            await event.finish(f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}")
 
     if event.event.detail_type == "group":
         gid = str(event.event["group_id"])
     else:
-        await event.finish("群空调怎么私聊用啊(半恼)")
+        await event.send("群空调怎么私聊用啊(半恼)")
 
     aircon = await check_status(gid, bot, event, need_on=False)
     if aircon is None:
@@ -332,24 +295,18 @@ async def set_env_temp(event: CommandSession):
     await event.send(msg)
 
 
-@on_command("空调类型")
+@sv.ui_command("空调类型")
 async def show_aircon_type(event: CommandSession):
     """查看空调类型
 
     Args:
         event (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("aircon", event.event)
-    if not stat[0]:
-        if stat[3]:
-            await event.finish(stat[3])
-        else:
-            await event.finish(f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}")
 
     if event.event.detail_type == "group":
         gid = str(event.event["group_id"])
     else:
-        await event.finish("群空调怎么私聊用啊(半恼)")
+        await event.send("群空调怎么私聊用啊(半恼)")
 
     aircon = await check_status(gid, bot, event, need_on=False)
     if aircon is None:
@@ -362,24 +319,18 @@ async def show_aircon_type(event: CommandSession):
     await event.send(msg)
 
 
-@on_command("升级空调", aliases=("空调升级",))
+@sv.ui_command("升级空调", aliases=("空调升级",))
 async def upgrade_aircon(event: CommandSession):
     """升级空调
 
     Args:
         event (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("aircon", event.event)
-    if not stat[0]:
-        if stat[3]:
-            await event.finish(stat[3])
-        else:
-            await event.finish(f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}")
 
     if event.event.detail_type == "group":
         gid = str(event.event["group_id"])
     else:
-        await event.finish("群空调怎么私聊用啊(半恼)")
+        await event.send("群空调怎么私聊用啊(半恼)")
 
     aircon = await check_status(gid, bot, event, need_on=False)
     if aircon is None:
@@ -400,24 +351,18 @@ async def upgrade_aircon(event: CommandSession):
     await event.send(msg)
 
 
-@on_command("降级空调", aliases=("空调降级",))
+@sv.ui_command("降级空调", aliases=("空调降级",))
 async def downgrade_aircon(event: CommandSession):
     """降级空调
 
     Args:
         event (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("aircon", event.event)
-    if not stat[0]:
-        if stat[3]:
-            await event.finish(stat[3])
-        else:
-            await event.finish(f"你没有足够权限使用此插件,要求权限{perm[stat[2]]},你的权限:{perm[stat[1]]}")
 
     if event.event.detail_type == "group":
         gid = str(event.event["group_id"])
     else:
-        await event.finish("群空调怎么私聊用啊(半恼)")
+        await event.send("群空调怎么私聊用啊(半恼)")
 
     aircon = await check_status(gid, bot, event, need_on=False)
     if aircon is None:

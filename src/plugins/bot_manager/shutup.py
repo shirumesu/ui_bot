@@ -1,10 +1,13 @@
 import ujson
 import os
-from loguru import logger
-from nonebot import message_preprocessor, get_bot, on_command, CommandSession
+from nonebot import message_preprocessor, get_bot, CommandSession
 
-from src.Services import Service_Master
 from src.ui_exception import Shut_Up_Error
+from src.Services import uiPlugin_Master
+from soraha_utils import logger, async_uio
+
+
+sv = uiPlugin_Master.get_plugins("bot_manager")
 
 bot = get_bot()
 st_path = os.path.join(os.getcwd(), "src", "plugins", "bot_manager", "shutup.json")
@@ -17,30 +20,33 @@ except FileNotFoundError:
         ujson.dump(SHUTUP, f, ensure_ascii=False, indent=4)
 
 
-@on_command("闭嘴")
+@sv.ui_command("闭嘴")
 async def shut_up(session: CommandSession) -> None:
-    stat = await Service_Master().check_permission("bot_manager", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
 
     gid = str(session.event.group_id)
 
     SHUTUP[gid] = [True, 0]
-    with open(st_path, "w", encoding="utf-8") as f:
-        ujson.dump(SHUTUP, f, indent=4, ensure_ascii=False)
+    async_uio.save_file(
+        "json",
+        obj=SHUTUP,
+        save_path=os.path.join(os.getcwd(), "src", "plugins", "bot_manager"),
+        save_name="shutup",
+    )
+
     logger.debug(SHUTUP)
-    await session.finish("……那我走了哦…呜呜")
+    await session.send("……那我走了哦…呜呜")
 
 
-@on_command("说话")
+@sv.ui_command("说话")
 async def speak(session: CommandSession, gid) -> None:
-    stat = await Service_Master().check_permission("bot_manager", session)
-    if not stat[0]:
-        await bot.send(session, stat[3])
 
     SHUTUP[gid] = [False, 0]
-    with open(st_path, "w", encoding="utf-8") as f:
-        ujson.dump(SHUTUP, f, indent=4, ensure_ascii=False)
+    async_uio.save_file(
+        "json",
+        obj=SHUTUP,
+        save_path=os.path.join(os.getcwd(), "src", "plugins", "bot_manager"),
+        save_name="shutup",
+    )
     logger.debug(SHUTUP)
     await bot.send(session, "好耶！")
 

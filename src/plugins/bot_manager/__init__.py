@@ -2,25 +2,19 @@ import psutil
 import random
 import time
 
-from nonebot import on_command, CommandSession
+from nonebot import CommandSession
 
-from src.Services import Service, Service_Master
-
-import src.plugins.bot_manager.shutup
+from src.Services import uiPlugin
 
 sv_help = """bot相关 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
 [bot相关] -> 查看目前bot状态
 """
-sv = Service(["bot_manager", "bot相关"], sv_help, priv_use=False)
+sv = uiPlugin(["bot_manager", "bot相关"], False, usage=sv_help)
 
 
-@on_command("bot状态")
+@sv.ui_command("bot状态")
 async def bot_status(session: CommandSession):
-    stat = await Service_Master().check_permission("bot_manager", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     cpu = psutil.cpu_percent(1)
     memory = psutil.virtual_memory().percent
     disk = psutil.disk_usage("/").percent
@@ -42,4 +36,4 @@ async def bot_status(session: CommandSession):
         f"硬盘使用:{disk}%\n"
         f"好累哦,要不然休息会吧~"
     )
-    await session.finish(msg)
+    await session.send(msg)

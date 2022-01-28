@@ -1,13 +1,11 @@
 import asyncio
-from os import link
 import httpx
 
-from nonebot import on_command, CommandSession
-from nonebot.command import CommandManager
+from nonebot import CommandSession
 
 import config
 from src.plugins.search_image import saucenao, ascii2d, ehentai
-from src.Services import Service, Service_Master, GROUP_ADMIN
+from src.Services import uiPlugin
 
 
 sv_help = """以图搜图 | 使用帮助
@@ -37,25 +35,16 @@ sv_help = """以图搜图 | 使用帮助
             -> 如果羽衣不幸被qq封了一次,那么可能会开启此插件私聊白名单
             -> 获取白名单的方法同上
 """.strip()
-sv = Service(
-    ["search_image", "以图搜图"],
-    sv_help,
-    use_cacha_folder=True,
-    permission_change=GROUP_ADMIN,
-)
+sv = uiPlugin(["search_image", "以图搜图"], True, usage=sv_help, use_cache_folder=True)
 
 
-@on_command("搜图", patterns=r"^搜图")
+@sv.ui_command("搜图", patterns=r"^搜图")
 async def search_image(session: CommandSession):
     """搜图功能的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("search_image", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     image = session.get("image")
     for i in image:
         coro = [saucenao.get_sauce(i), ascii2d.search_color(i)]
@@ -82,17 +71,13 @@ async def search_image(session: CommandSession):
         await session.send(msg, at_sender=True)
 
 
-@on_command("搜本")
+@sv.ui_command("搜本")
 async def search_eh(session: CommandSession):
     """搜本的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("search_image", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     image = session.get("image")
     for url in image:
         content = await ehentai.dl_src(url)

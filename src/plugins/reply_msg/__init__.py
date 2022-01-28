@@ -2,12 +2,10 @@ import os
 import re
 import ujson
 import random
-from loguru import logger
 
-from nonebot import on_command, CommandSession, message_preprocessor, get_bot
+from nonebot import CommandSession, message_preprocessor, get_bot
 
-import config
-from src.Services import Service, Service_Master, GROUP_ADMIN
+from src.Services import uiPlugin
 
 
 sv_help = """自定义回复 | 使用帮助
@@ -35,11 +33,7 @@ sv_help = """自定义回复 | 使用帮助
 [删除定义 (需要被回复的信息)] -> 本群/私聊删除某个定义
 [禁用定义 (需要被回复的信息)] -> 某个定义整个删除(群管理员或以上限定)(会在所有群清理该定义,用于清理有问题的定义)
 """.strip()
-
-sv = Service(
-    ["reply_msg", "自定义回复"], sv_help, permission_change=GROUP_ADMIN, priv_use=False
-)
-
+sv = uiPlugin(["reply_msg", "自定义回复"], False, usage=sv_help)
 
 bot = get_bot()
 
@@ -53,16 +47,13 @@ else:
         ujson.dump(self_config, f, indent=4, ensure_ascii=False)
 
 
-@on_command("定义")
+@sv.ui_command("定义")
 async def reply_msg(session: CommandSession):
     """定义功能的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("reply_msg", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
     reply_msg = session.current_arg.strip()
     if re.match(r"\[CQ:xml,data=<\?xml[\s\S]*]", reply_msg):
         await session.finish("定义分享会有bug,禁止定义(而且为什么要定义分享啊)")
@@ -99,16 +90,13 @@ async def reply_msg(session: CommandSession):
     await session.finish("定义成功!")
 
 
-@on_command("查看所有定义")
+@sv.ui_command("查看所有定义")
 async def show_reply(session: CommandSession):
     """查看所有定义功能的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("reply_msg", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
     gid = str(session.event.group_id)
     if gid not in self_config:
         await session.finish("本群还没有任何自定义回复")
@@ -116,16 +104,13 @@ async def show_reply(session: CommandSession):
     await session.finish(f"本群有以下订阅:\n" + reply_msg)
 
 
-@on_command("删除定义")
+@sv.ui_command("删除定义")
 async def del_reply(session: CommandSession):
     """删除定义的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("reply_msg", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
     gid = str(session.event.group_id)
     msg = session.current_arg.strip()
     if not msg:
@@ -146,13 +131,8 @@ async def del_reply(session: CommandSession):
     await session.finish("删除成功！")
 
 
-@on_command("禁用定义")
+@sv.ui_command("禁用定义")
 async def del_all_reply(session: CommandSession):
-    stat = await Service_Master().check_permission(
-        "reply_msg", session.event, GROUP_ADMIN
-    )
-    if not stat[0]:
-        await session.finish(stat[3])
     msg = session.current_arg.strip()
     del_list = [str(gid) for gid in self_config if msg in self_config[str(gid)]]
     if del_list:
@@ -167,9 +147,6 @@ async def del_all_reply(session: CommandSession):
 
 @message_preprocessor
 async def search(Bot, event, plutin_manager):
-    stat = await Service_Master().check_permission("reply_msg", event)
-    if not stat[0]:
-        return
     msg = event["raw_message"].strip()
     gid = event.group_id
     if str(gid) not in self_config or msg not in self_config[str(gid)]:

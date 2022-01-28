@@ -1,6 +1,6 @@
-from nonebot import on_command, CommandSession
+from nonebot import CommandSession
 
-from src.Services import Service, Service_Master, GROUP_ADMIN
+from src.Services import uiPlugin
 from src.plugins.setu_score.data_source import pic_score
 
 sv_help = """表情制作 | 使用帮助
@@ -8,7 +8,8 @@ sv_help = """表情制作 | 使用帮助
 [色图评分 (图片)] -> 给色图打分！
     特别注意 -> 多张图片仅支持第一张
 """.strip()
-sv = Service(["setu_score", "给色图打分"], sv_help, permission_change=GROUP_ADMIN)
+sv = uiPlugin(["setu_score", "给色图打分"], False, usage=sv_help)
+
 scorer = pic_score()
 assess_base = {
     500: "您完全不打算让弟弟休息会是吗?",
@@ -20,12 +21,8 @@ assess_base = {
 }
 
 
-@on_command("色图评分", aliases=("色图打分",))
+@sv.ui_command("色图评分", aliases=("色图打分",))
 async def setu_score(session: CommandSession):
-    stat = await Service_Master().check_permission("search_image", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     image = session.get("image")
     res = await scorer.get_score(image[0])
     if res["status"]:

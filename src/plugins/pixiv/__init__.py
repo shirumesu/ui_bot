@@ -3,14 +3,14 @@ import os
 import re
 import httpx
 import ujson
-from loguru import logger
 
-from nonebot import on_command, CommandSession, get_bot, scheduler
+from nonebot import CommandSession, get_bot, scheduler
 
-from src.Services import Service, Service_Master, GROUP_ADMIN, SUPERUSER
+from src.Services import uiPlugin, SUPERUSER, GROUP_ADMIN
 from src.plugins.pixiv import pixiv, pixivison
 from src.ui_exception import Pixiv_api_Connect_Error, Pixiv_not_found_Error
-from src.util import shutup
+from src.shared import shutup
+from soraha_utils import async_uiclient, logger, async_uio
 
 sv_help = """pixiv相关 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
@@ -76,12 +76,13 @@ Q. Pixivison是什么?
 A.官方解释:pixivision是将以漫画，小说，音乐为主的由创意而生的作品以及御宅文化向全世界推广的,每天都不会无聊的创作系媒体。
 个人通俗解释:有人整理各种专题(例如打伞美少女,吸血鬼帅哥,穿雨衣,蛋糕甜食)等主题的推荐分享,以及一些采访等,几乎可等同于每天都能刷到的‘xxx插画推荐,快点进来看看吧’ 
 """
-sv = Service(
+sv = uiPlugin(
     ["pixiv", "pixiv相关"],
-    sv_help,
-    use_cacha_folder=True,
-    permission_use=GROUP_ADMIN,
-    permission_change=GROUP_ADMIN,
+    True,
+    usage=sv_help,
+    use_cache_folder=True,
+    perm_manager=SUPERUSER,
+    perm_use=GROUP_ADMIN,
 )
 
 bot = get_bot()
@@ -99,17 +100,13 @@ check_subscribe = True
 using_pixiv = False
 
 
-@on_command("p站日榜", patterns=r"^pixiv[日周月]榜 ([0-9]|[1-4]\d?|50)$")
+@sv.ui_command("p站日榜", patterns=r"^pixiv[日周月]榜 ([0-9]|[1-4]\d?|50)$")
 async def pixiv_rank(session: CommandSession):
     """获取pixiv日榜的主函数,同时处理日月周榜
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("pixiv", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     if "日" in session.current_arg_text.strip():
         mode = "daily"
     elif "周" in session.current_arg_text.strip():
@@ -139,17 +136,13 @@ async def pixiv_rank(session: CommandSession):
     await session.finish(msg.strip())
 
 
-@on_command("pixivison")
+@sv.ui_command("pixivison")
 async def pixivison_page(session: CommandSession):
     """获取pixivison单页的函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("pixiv", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     vision_id = session.current_arg_text.strip()
     if not re.match(r"\d+", vision_id):
         await session.finish("你的输入看上去有问题！请重新输入id,不知道pixivison的id是什么的话请查看使用帮助")
@@ -175,17 +168,13 @@ async def pixivison_page(session: CommandSession):
     await session.send(msg)
 
 
-@on_command("订阅pixivison")
+@sv.ui_command("订阅pixivison")
 async def subc_pixivison(session: CommandSession):
     """订阅pixivison的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("pixiv", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     if session.event.detail_type == "group":
         gid = str(session.event.group_id)
         if gid in subcribe["pixivison"]["group"]:
@@ -202,17 +191,13 @@ async def subc_pixivison(session: CommandSession):
     await session.finish("订阅成功！")
 
 
-@on_command("取消pixivison订阅")
+@sv.ui_command("取消pixivison订阅")
 async def remove_pixivison(session: CommandSession):
     """取消pixivison的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("pixiv", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     if session.event.detail_type == "group":
         gid = str(session.event.group_id)
         if gid not in subcribe["pixivison"]["group"]:
@@ -229,17 +214,13 @@ async def remove_pixivison(session: CommandSession):
     await session.finish("取消成功！")
 
 
-@on_command("pixiv作品")
+@sv.ui_command("pixiv作品")
 async def pixiv_illuster(session: CommandSession):
     """获取pixiv作品的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("pixiv", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     pid = session.current_arg_text.strip()
     if not pid:
         await session.finish("你忘记输入作品id了！")
@@ -267,17 +248,13 @@ async def pixiv_illuster(session: CommandSession):
     await session.finish(msg)
 
 
-@on_command("pixiv画师")
+@sv.ui_command("pixiv画师")
 async def pixiv_illuster(session: CommandSession):
     """获取pixiv画师的pickup的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("pixiv", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     pid = session.current_arg_text.strip()
     if not pid:
         await session.finish("你忘记输入画师id了！")
@@ -313,17 +290,13 @@ async def pixiv_illuster(session: CommandSession):
     await session.finish(msg)
 
 
-@on_command("订阅pixiv")
+@sv.ui_command("订阅pixiv")
 async def subc_illuster(session: CommandSession):
     """订阅pixiv的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("pixiv", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     pid = session.current_arg_text.strip()
     if not pid:
         await session.finish("你忘记输入画师id了！")
@@ -373,17 +346,13 @@ async def subc_illuster(session: CommandSession):
     await session.finish(f"订阅成功!\n画师名:{res['name']}")
 
 
-@on_command("取消pixiv订阅")
+@sv.ui_command("取消pixiv订阅")
 async def del_illuster(session: CommandSession):
     """取消pixiv订阅的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    stat = await Service_Master().check_permission("pixiv", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     pid = session.current_arg_text.strip()
 
     if session.event.detail_type == "group":
@@ -417,12 +386,8 @@ async def del_illuster(session: CommandSession):
     await session.finish("取消成功！")
 
 
-@on_command("查看pixiv订阅")
+@sv.ui_command("查看pixiv订阅")
 async def check_subcribe_pixiv_list(session: CommandSession):
-    stat = await Service_Master().check_permission("pixiv", session.event)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     if session.event.detail_type == "group":
         gid = str(session.event.group_id)
         illuster_list = [
@@ -447,21 +412,13 @@ async def check_subcribe_pixiv_list(session: CommandSession):
     await session.finish(msg)
 
 
-@on_command("检查pixivison")
+@sv.ui_command("检查pixivison")
 async def _(session: CommandSession):
-    stat = await Service_Master().check_permission("pixiv", session.event, SUPERUSER)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     await sche_check_pixivison()
 
 
-@on_command("检查pixiv")
+@sv.ui_command("检查pixiv")
 async def _check(session: CommandSession):
-    stat = await Service_Master().check_permission("pixiv", session.event, SUPERUSER)
-    if not stat[0]:
-        await session.finish(stat[3])
-
     await sche_check_pixiv()
 
 

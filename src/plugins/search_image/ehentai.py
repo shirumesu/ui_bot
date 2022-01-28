@@ -9,8 +9,9 @@ from bs4 import BeautifulSoup
 from nonebot import MessageSegment
 import httpx
 from aiohttp import FormData
-from retrying import retry
 import config
+
+from soraha_utils import retry
 
 
 @retry
