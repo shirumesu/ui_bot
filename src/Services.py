@@ -320,6 +320,7 @@ class uiPlugin(uiPlugin_Master):
                 "enable_group": self.enable_group,
             }
             self.dump_config()
+        self.create_folder()
         super().__init__()
         self.regis_plugins(self)
 
@@ -370,7 +371,7 @@ class uiPlugin(uiPlugin_Master):
         """创建文件夹"""
         if self.use_cache_folder:
             os.makedirs(
-                os.path.join(os.getcwd(), "res", "source", self.name_en),
+                os.path.join(os.getcwd(), "res", "cacha", self.name_en),
                 exist_ok=True,
             )
         if self.use_source_folder:
@@ -433,7 +434,7 @@ class uiPlugin(uiPlugin_Master):
                     logger.info(
                         f"用户{session.event.user_id}使用插件{self.name_cn}(cmd:{name})不通过: {checker[1]}"
                     )
-                    await session.send("啊咧咧,哦卡西那~权限不够哦")
+                    await session.send("权限不够哦")
 
             return wrap_command
 

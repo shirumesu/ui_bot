@@ -14,7 +14,7 @@ import config
 from soraha_utils import retry
 
 
-@retry
+@retry(retry_times=1)
 async def dl_src(url) -> BytesIO:
     """获取发送的等待被搜索图片
 
@@ -35,7 +35,7 @@ async def dl_src(url) -> BytesIO:
     return BytesIO(res.content)
 
 
-@retry
+@retry(retry_times=1)
 async def get_search(content) -> str:
     """上传图片搜索
 
@@ -49,7 +49,7 @@ async def get_search(content) -> str:
         str: 返回页面的源码(request.text)
     """
     url = "https://upload.e-hentai.org/image_lookup.php"
-    if config.proxies["http"]:
+    if "http" in config.proxies and config.proxies["http"]:
         conn = ProxyConnector(config.proxies["http"])
     else:
         conn = None
@@ -67,7 +67,7 @@ async def get_search(content) -> str:
     return html
 
 
-@retry
+@retry(retry_times=1)
 async def parser(html: str) -> list:
     """解析页面
 
@@ -98,7 +98,7 @@ async def parser(html: str) -> list:
     return all_list
 
 
-@retry
+@retry(retry_times=1)
 async def dl_image(url: str) -> str(MessageSegment):
     """访问作品链接获取封面
 

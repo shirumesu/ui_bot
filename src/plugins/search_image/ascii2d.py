@@ -20,6 +20,7 @@ async def search_color(image_url: str) -> str:
     url = "https://ascii2d.net/search/url/" + image_url
     async with httpx.AsyncClient(proxies=config.proxies, verify=False, timeout=15) as s:
         res = await s.get(url)
+        res = await s.get("https://ascii2d.net/" + res.next_request.url.path)
         if res.status_code != 200:
             raise RuntimeError
     color_res = await parser(res.text)

@@ -47,7 +47,7 @@ async def get_sauce(image_url: str) -> dict:
     Returns:
         dict: 封装好的消息
     """
-    url = "http://saucenao.com/search.php"
+    url = "https://saucenao.com/search.php"
     data = {
         "output_type": "2",
         "numres": "1",

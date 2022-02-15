@@ -133,13 +133,13 @@ async def subcribe_twitter(session: CommandSession):
         gid = None
         uid = session.event["user_id"]
     try:
-        user_info = await get_user(tw_id)
+        user_info = get_user(tw_id)
     except Exception:
         logger.error(f"请求推特用户id{tw_id}失败")
         await session.finish("获取该用户失败,请检查是否存在该id")
 
     try:
-        res = await get_api(user_info["id"], 1000000000000000000)
+        res = get_api(user_info["id"], 1000000000000000000)
         user_info["last_id"] = res[0]["id"]
     except:
         user_info["last_id"] = 1000000000000000000
@@ -188,8 +188,6 @@ async def subcribe_twitter(session: CommandSession):
     )
 
 
-@sync_to_async
-@retry()
 def get_user(tw_id: str) -> dict:
     """获取推特用户的信息
 
@@ -210,8 +208,6 @@ def get_user(tw_id: str) -> dict:
     return data
 
 
-@sync_to_async
-@retry()
 def get_api(user_id: str, tweet_id: int = 1000000000000000000) -> dict:
     """获取用户发送的推特
 
@@ -223,7 +219,10 @@ def get_api(user_id: str, tweet_id: int = 1000000000000000000) -> dict:
          dict: api传回的用户新推特的字典
     """
     tweet = []
-    res = api.user_timeline(user_id, since_id=tweet_id, tweet_mode="extended")
+    # res = api.user_timeline(user_id=user_id, since_id=tweet_id, include_rts=True)
+    res = api.user_timeline(
+        screen_name=user_id, since_id=tweet_id, include_rts=True, tweet_mode="extended"
+    )
     res = [x for x in res if x.id > tweet_id]
     if not res:
         return
@@ -835,9 +834,9 @@ async def check_user_update(data: dict) -> bool:
         ndata["id"] = x
     data = ndata
     try:
-        res = await get_api(data["id"], data["last_id"])
-    except:
-        logger.error(f"检查{data['name']}(id:{data['id']})推特时发生错误")
+        res = get_api(data["id"], data["last_id"])
+    except Exception as e:
+        logger.error(f"检查{data['name']}(id:{data['id']})推特时发生错误: {e}")
         return [data["id"], data["last_id"]]
     if not res:
         return [data["id"], data["last_id"]]
@@ -1191,15 +1190,16 @@ async def check_user_update(data: dict) -> bool:
                                 + not_china_quote_2
                                 + is_video,
                             )
-        except:
+        except Exception as e:
             logger.error(f"{data['id']}的推文(msg-id:{para['lastid']})推送失败, 自动跳过")
+            logger.debug(f"推送失败错误信息: {e}")
     return [data["id"], max(msg_id)]
 
 
 @scheduler.scheduled_job(
     "interval",
-    minutes=1,
-    # seconds=10,
+    # minutes=1,
+    seconds=10,
 )
 async def check_multi_update():
     """定时任务: 检查推特的更新"""
