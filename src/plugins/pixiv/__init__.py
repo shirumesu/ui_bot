@@ -421,6 +421,42 @@ async def _(session: CommandSession):
 async def _check(session: CommandSession):
     await sche_check_pixiv()
 
+@sv.ui_command("跳过pixiv")
+async def __drop(session: CommandSession):
+    await sche_drop_pixiv(session)
+
+async def sche_drop_pixiv(session: CommandSession):
+    logger.info("开始尝试跳过pixiv画师更新")
+    error = 0
+    if not subcribe["pixivison"]["group"] and not subcribe["pixivison"]["user"]:
+        logger.info("没有发现任何订阅信息！")
+        return
+    pid = [pixiv.check_illust_list(x) for x in subcribe["pixiv"].keys()]
+    res = await asyncio.gather(*pid, return_exceptions=True)
+    for illust_list, illuster in zip(res, subcribe["pixiv"].values()):
+        if isinstance(illust_list, Exception):
+            error += 1
+            continue
+        new_illust_list = [
+            int(x)
+            for x in illust_list["illust_id"]
+            if int(x) > illuster["illust_cacha"]
+        ]
+        new_manga_list = [
+            int(x) for x in illust_list["manga_id"] if int(x) > illuster["manga_cacha"]
+        ]
+        if not new_illust_list and not new_manga_list:
+            continue
+        new_list = new_illust_list + new_manga_list
+        logger.info(f"发现未记录的pixiv画师{illuster['name']}的更新{len(new_list)}条")
+        if new_illust_list:
+            illuster["illust_cacha"] = max(new_illust_list)
+        if new_manga_list:
+            illuster["manga_cacha"] = max(new_manga_list)
+    with open(subcribe_path, "w", encoding="utf-8") as f:
+        ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
+    logger.info("检查完毕,失败次数:" + str(error))
+    await session.finish("成功忽略所有画师的更新(注意：不代表取消订阅)")
 
 @scheduler.scheduled_job("cron", hour=13, minute=30)
 async def sche_check_pixivison():

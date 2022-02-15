@@ -81,4 +81,4 @@ if __name__ == "__main__":
     os.makedirs(config.res, exist_ok=True)
     logger.debug("res文件夹创造完毕/已经存在res文件夹")
 
-    uvicorn.run(app="bot:start", reload=True, reload_dirs=["bot.py"])
+    uvicorn.run(app="bot:start", reload=True, reload_dirs=["bot.py"], port = 9233)
