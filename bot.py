@@ -1,22 +1,25 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 1.0.5.4
-@EditTime   : 2022/1/16 2:15am(Editor: shiying)
-@Desc       : 修复: 由于一点小问题导致setu在找不到色图后会连发三次消息并且其后所有色图指令无法使用
+@Version    : 2.0.0
+@EditTime   : 2022/2/16 19:13am(Editor: shiying)
+@Desc       : 新增: 2.0.0正式合并进来, 增加大量功能, 如自动reload等; 修复: 主要是搜图 推特由于版本更新导致无法再用的功能; 优化: 简单增加了blhxwiki的内容, 日志输出, 把nonebot输出丢进来log
 """
 import os
 import re
+import logging
 import asyncio
 import uvicorn
 import nest_asyncio
 import uvicorn
 
 import nonebot
+from nonebot.log import logger as nlog
+
 import config
 from soraha_utils import set_logger, sync_uiclient
 
-version = "1.0.5.4"
+version = "2.0.0"
 
 
 def check_update():
@@ -49,28 +52,8 @@ def switch_modules(modules_list):
 
 
 def start() -> None:
-    set_logger(
-        use_file=True,
-        level=config.DEBUG,
-        file_path="./log/uilog.log",
-        file_level=config.DEBUG,
-    )
-
     nonebot.init(config)
-    name_list = [x for x in config.plugins]
-    for i in name_list:
-        nonebot.load_plugin(f"src.plugins.{i}")
-    nest_asyncio.apply()
-    nonebot.run(loop=asyncio.get_event_loop())
-
-
-if __name__ == "__main__":
-    logger = set_logger(
-        use_file=True,
-        level=config.DEBUG,
-        file_path="./log/uilog.log",
-        file_level=config.DEBUG,
-    )
+    _log("DEBUG") if config.DEBUG else _log()
 
     if config.checkupdate:
         try:
@@ -81,4 +64,45 @@ if __name__ == "__main__":
     os.makedirs(config.res, exist_ok=True)
     logger.debug("res文件夹创造完毕/已经存在res文件夹")
 
-    uvicorn.run(app="bot:start", reload=True, reload_dirs=["bot.py"], port = 9233)
+    name_list = [x for x in config.plugins]
+    for i in name_list:
+        nonebot.load_plugin(f"src.plugins.{i}")
+    nest_asyncio.apply()
+    nonebot.run(loop=asyncio.get_event_loop())
+
+
+def _log(level: str = "INFO") -> None:
+    """设置日志
+
+    Args:
+        level (str, optional): 目前仅支持'INFO'以及'DEBUG'. Defaults to "INFO".
+    """
+    global logger
+    logger = set_logger(
+        use_file=True,
+        level=level,
+        file_path="./log/uilog.log",
+        file_level=level,
+    )
+    
+    # nonebot 提供的 logger
+    handler = logging.FileHandler("./log/uilog.log", encoding="utf-8")
+    # 因为有点烦人 所以去掉了动态更改 我调试的时候只需要看 soraha utils 的 DEBUG 输出 暂时不需要……
+    # 如果你需要 nonebot 的 DEBUG 输出请去掉注释
+    # handler.setLevel(logging.INFO) if level.upper() == "INFO" else handler.setLevel(logging.DEBUG)
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        "%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+    )
+    handler.setFormatter(formatter)
+
+    nlog.addHandler(handler)
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        app="bot:start",
+        reload=True,
+        reload_dirs=["bot.py"],
+        port=9233,
+    )

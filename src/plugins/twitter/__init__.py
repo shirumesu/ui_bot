@@ -1198,8 +1198,8 @@ async def check_user_update(data: dict) -> bool:
 
 @scheduler.scheduled_job(
     "interval",
-    # minutes=1,
-    seconds=10,
+    minutes=1,
+    # seconds=10,
 )
 async def check_multi_update():
     """定时任务: 检查推特的更新"""
