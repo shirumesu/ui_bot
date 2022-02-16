@@ -17,9 +17,8 @@ async def get_text(name: str):
     except Exception as e:
         logger.debug(f"请求blhxwiki发生错误: {e}")
         try:
-            return name + "\n" + await zhuangbei(page_url)
+            return await zhuangbei(page_url)
         except Exception as e:
-            logger.debug(f"请求blhxwiki发生错误: {e}")
             try:
                 return await fuzzy_search(name)
             except Exception as e:
@@ -38,7 +37,7 @@ async def jianniang(url: str):
         0
     ].contents[1]
     chara_attr = soup.find_all("table", {"class": "wikitable sv-performance"})[
-        0
+        1
     ].contents[1]
     arms_info = soup.find_all("table", {"class": "wikitable sv-equipment"})[0].contents[
         1
@@ -50,8 +49,8 @@ async def jianniang(url: str):
         "build_time": chara_info.contents[6]
         .text.replace("\n", "")
         .replace("建造时间", "建造时间: "),
-        "normal_drop": chara_info.contents[8].text.strip(),
-        "special_drop": chara_info.contents[10].text.strip(),
+        "normal_drop": chara_info.contents[8].contents[3].text.strip(),
+        "special_drop": chara_info.contents[10].contents[3].text.strip(),
         "fleet_get": jianduikeji.contents[4].contents[3].text.strip().replace("\n", ""),
         "fleet_get_extra": jianduikeji.contents[4].contents[7].text.strip(),
         "fleet_full": jianduikeji.contents[6]
@@ -64,28 +63,117 @@ async def jianniang(url: str):
         .text.strip()
         .replace("\n", ""),
         "fleet_lv120_extra": jianduikeji.contents[8].contents[5].text.strip(),
-        "naijiu": chara_attr.contents[6].contents[3].text.strip(),
-        "zhuangjia": chara_attr.contents[6].contents[7].text.strip(),
-        "zhuangtian": chara_attr.contents[6].contents[11].text.strip(),
-        "paoji": chara_attr.contents[8].contents[3].text.strip(),
-        "leiji": chara_attr.contents[8].contents[7].text.strip(),
-        "jidong": chara_attr.contents[8].contents[11].text.strip(),
-        "fangkong": chara_attr.contents[10].contents[3].text.strip(),
-        "hangkong": chara_attr.contents[10].contents[7].text.strip(),
-        "xiaohao": chara_attr.contents[10].contents[11].text.strip(),
-        "fanqian": chara_attr.contents[12].contents[3].text.strip(),
-        "xinyun": chara_attr.contents[14].contents[3].text.strip(),
-        "hangsu": chara_attr.contents[16].contents[3].text.strip(),
-        "arm1_type": arms_info.contents[4].contents[3].text.strip(),
-        "arm1_effi": arms_info.contents[4].contents[5].text.strip(),
-        "arm2_type": arms_info.contents[6].contents[3].text.strip(),
-        "arm2_effi": arms_info.contents[6].contents[5].text.strip(),
-        "arm3_type": arms_info.contents[8].contents[3].text.strip(),
-        "arm3_effi": arms_info.contents[8].contents[5].text.strip(),
         "skills": {},
     }
+    try:
+        info["arm1_type"] = (
+            arms_info.contents[6].contents[3].contents[0].text.strip(),
+        )[0]
+        info["arm1_effi"] = (
+            arms_info.contents[6].contents[5].contents[0].text.strip(),
+        )[0]
+        info["arm2_type"] = (
+            arms_info.contents[8].contents[3].contents[0].text.strip(),
+        )[0]
+        info["arm2_effi"] = (
+            arms_info.contents[8].contents[5].contents[0].text.strip(),
+        )[0]
+        info["arm3_type"] = (
+            arms_info.contents[10].contents[3].contents[0].text.strip(),
+        )[0]
+        info["arm3_effi"] = (
+            arms_info.contents[10].contents[5].contents[0].text.strip(),
+        )[0]
+        info["naijiu"] = (
+            chara_attr.contents[4].contents[3].contents[0].text.strip().split("→")[0]
+            + "→"
+            + chara_attr.contents[4].contents[3].contents[1].text.strip()
+        )
+        info["zhuangjia"] = chara_attr.contents[4].contents[7].text.strip()
+        info["zhuangtian"] = (
+            chara_attr.contents[4].contents[11].contents[0].text.strip().split("→")[0]
+            + "→"
+            + chara_attr.contents[4].contents[11].contents[1].text.strip()
+        )
+        info["paoji"] = (
+            chara_attr.contents[6].contents[3].contents[0].text.strip().split("→")[0]
+            + "→"
+            + chara_attr.contents[6].contents[3].contents[1].text.strip()
+        )
+        info["leiji"] = (
+            chara_attr.contents[6].contents[7].contents[0].text.strip().split("→")[0]
+            + "→"
+            + chara_attr.contents[6].contents[7].contents[1].text.strip()
+        )
+        info["jidong"] = (
+            chara_attr.contents[6].contents[11].contents[0].text.strip().split("→")[0]
+            + "→"
+            + chara_attr.contents[6].contents[11].contents[1].text.strip()
+        )
+        info["fangkong"] = (
+            chara_attr.contents[8].contents[3].contents[0].text.strip().split("→")[0]
+            + "→"
+            + chara_attr.contents[8].contents[3].contents[1].text.strip()
+        )
+        info["hangkong"] = (
+            chara_attr.contents[8].contents[7].contents[0].text.strip().split("→")[0]
+            + "→"
+            + chara_attr.contents[8].contents[7].contents[1].text.strip()
+        )
+        info["mingzhong"] = (
+            chara_attr.contents[8].contents[11].contents[0].text.strip().split("→")[0]
+            + "→"
+            + chara_attr.contents[8].contents[11].contents[1].text.strip()
+        )
+        info["fanqian"] = (
+            chara_attr.contents[10].contents[3].contents[0].text.strip().split("→")[0]
+            + "→"
+            + chara_attr.contents[10].contents[3].contents[1].text.strip()
+        )
+        info["xinyun"] = chara_attr.contents[12].contents[3].text.strip()
+        info["hangsu"] = (
+            chara_attr.contents[14].contents[3].contents[0].text.strip()
+            + "→"
+            + chara_attr.contents[14].contents[3].contents[1].text.strip()
+        )
+        info["xiaohao"] = (
+            chara_attr.contents[12].contents[7].contents[0].text.strip().split("→")[0]
+            + "→"
+            + chara_attr.contents[12].contents[7].contents[1].text.strip()
+        )
+    except IndexError as e:
+        info["arm1_type"] = arms_info.contents[4].contents[3].contents[0].text.strip()
+        info["arm1_effi"] = arms_info.contents[4].contents[5].contents[0].text.strip()
+        info["arm2_type"] = arms_info.contents[6].contents[3].contents[0].text.strip()
+        info["arm2_effi"] = arms_info.contents[6].contents[5].contents[0].text.strip()
+        info["arm3_type"] = arms_info.contents[8].contents[3].contents[0].text.strip()
+        info["arm3_effi"] = arms_info.contents[8].contents[5].contents[0].text.strip()
+        info["naijiu"] = chara_attr.contents[2].contents[3].contents[0].text.strip()
+        info["zhuangjia"] = chara_attr.contents[2].contents[7].text.strip()
+        info["zhuangtian"] = (
+            chara_attr.contents[2].contents[11].contents[0].text.strip()
+        )
+        info["paoji"] = chara_attr.contents[4].contents[3].contents[0].text.strip()
+        info["leiji"] = chara_attr.contents[4].contents[7].contents[0].text.strip()
+        info["jidong"] = chara_attr.contents[4].contents[11].contents[0].text.strip()
+        info["fangkong"] = chara_attr.contents[6].contents[3].contents[0].text.strip()
+        info["hangkong"] = chara_attr.contents[6].contents[7].contents[0].text.strip()
+        info["mingzhong"] = chara_attr.contents[6].contents[11].contents[0].text.strip()
+        info["fanqian"] = chara_attr.contents[8].contents[3].contents[0].text.strip()
+        info["xinyun"] = chara_attr.contents[10].contents[3].text.strip()
+        info["hangsu"] = chara_attr.contents[12].contents[3].text.strip()
+        info["xiaohao"] = (
+            chara_attr.contents[10].contents[7].contents[0].text.strip().split("→")[0]
+            + "→"
+            + chara_attr.contents[10].contents[7].contents[1].text.strip()
+        )
     for index, value in enumerate(skills_info.contents):
-        if value == "\n" or index == 0 or not value.text.strip():
+        if (
+            value == "\n"
+            or index == 0
+            or index == 2
+            or ("style" in value.attrs and value["style"] == "display:none")
+        ):
             continue
         info["skills"][value.contents[1].text.strip()] = value.contents[3].text.strip()
     text = (
@@ -93,11 +181,13 @@ async def jianniang(url: str):
         f"======角色基本信息======\n"
         f"稀有度: {info['rarity']}\n"
         f"{info['build_time']}\n"
+        f"普通掉落点: {info['normal_drop']}\n"
+        f"特殊掉落点(活动图): {info['special_drop']}\n"
         f"======舰队科技======\n"
         f"获得: {info['fleet_get']}({info['fleet_get_extra']})\n"
         f"满星: {info['fleet_full']}({info['fleet_full_extra']})\n"
         f"lv120: {info['fleet_lv120']}({info['fleet_lv120_extra']})\n"
-        f"======属性======\n"
+        f"======属性(初始 -> 125(满改-如有))======\n"
         f"耐久: {info['naijiu']}\n"
         f"装甲: {info['zhuangjia']}\n"
         f"装填: {info['zhuangtian']}\n"
@@ -106,14 +196,15 @@ async def jianniang(url: str):
         f"机动: {info['jidong']}\n"
         f"防空: {info['fangkong']}\n"
         f"航空: {info['hangkong']}\n"
-        f"消耗: {info['xiaohao']}\n"
+        f"命中: {info['mingzhong']}\n"
         f"反潜: {info['fanqian']}\n"
         f"幸运: {info['xinyun']}\n"
+        f"消耗: {info['xiaohao']}\n"
         f"航速: {info['hangsu']}\n"
         f"======武器效率======\n"
-        f"{info['arm1_type']}: {info['arm1_effi']}\n"
-        f"{info['arm2_type']}: {info['arm2_effi']}\n"
-        f"{info['arm3_type']}: {info['arm3_effi']}\n"
+        f"{str(info['arm1_type'])}: {str(info['arm1_effi'])}\n"
+        f"{str(info['arm2_type'])}: {str(info['arm2_effi'])}\n"
+        f"{str(info['arm3_type'])}: {str(info['arm3_effi'])}\n"
         f"======技能======\n"
     )
     for skill_name, descript in info["skills"].items():
