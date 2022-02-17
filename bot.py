@@ -84,12 +84,13 @@ def _log(level: str = "INFO") -> None:
         file_path="./log/uilog.log",
         file_level=level,
     )
-    
+
     # nonebot 提供的 logger
     handler = logging.FileHandler("./log/uilog.log", encoding="utf-8")
     # 因为有点烦人 所以去掉了动态更改 我调试的时候只需要看 soraha utils 的 DEBUG 输出 暂时不需要……
     # 如果你需要 nonebot 的 DEBUG 输出请去掉注释
     # handler.setLevel(logging.INFO) if level.upper() == "INFO" else handler.setLevel(logging.DEBUG)
+    nlog.setLevel(logging.INFO)
     handler.setLevel(logging.INFO)
     formatter = logging.Formatter(
         "%(asctime)s | %(name)s | %(levelname)s | %(message)s"
@@ -100,9 +101,11 @@ def _log(level: str = "INFO") -> None:
 
 
 if __name__ == "__main__":
-    uvicorn.run(
-        app="bot:start",
-        reload=True,
-        reload_dirs=["bot.py"],
-        port=9233,
-    )
+    # 似乎是 APS scheduler 的问题, 导致重启并没有完全退出, 所以先不用了
+    # uvicorn.run(
+    #     app="bot:start",
+    #     reload=True,
+    #     reload_dirs=["bot.py"],
+    #     port=9233,
+    # )
+    start()

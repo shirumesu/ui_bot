@@ -12,7 +12,7 @@ SESSION_RUNNING_EXPRESSION = ""
 # 如果网络较差请尽量长一点,涉及到拿图的请求如果时间到了会直接断掉
 SESSION_RUN_TIMEOUT = datetime.timedelta(minutes=5)
 # 等待用户回复的最长时间
-SESSION_EXPIRE_TIMEOUT = datetime.timedelta(seconds=30)
+SESSION_EXPIRE_TIMEOUT = datetime.timedelta(minutes=180)
 # 机器人昵称,替代@xxx,否则使用指令必须@
 # 空('')=匹配所有指令
 NICKNAME = {""}
@@ -44,26 +44,29 @@ res = r""
 # 启用的模块,不用的用"#"注释掉
 # 可以修改sv_config(插件文件夹下的,没有请加载一次插件,可以更加详细的修改配置,各属性含义可以参照src.Service中Service类的注解)或是使用插件管理器进行管理
 plugins = {
-    "setu": "获取色图",
-    "cheru": "切噜语翻译",
-    "russian": "俄罗斯轮盘",
-    "marionette": "人偶",
-    "aircon": "群空调",
-    "reply_msg": "自定义回复",
-    "setu_score": "给色图打分",
-    "mkmeme": "表情制作",
-    "rsshub": "订阅RssHub",
-    "justmonika": "莫妮卡翻译",
-    "blhxwiki": "碧蓝航线wiki",
-    "bot_manager": "机器人管理",
-    "twitter": "推特订阅",  # 没有梯子(下面proxies没有填)的请不要开启,会无法获取
-    "pixiv": "pixiv相关",  # 同上
-    "translate": "翻译漫画",  # 需要百度翻译以及百度ocr API 否则无法使用
-    "search_image": "以图搜图",  # 需要sauceNao API
+    "60sec",
+    "setu",
+    "cheru",
+    "caiyun",
+    "russian",
+    "marionette",
+    "aircon",
+    "reply_msg",
+    "setu_score",
+    "mkmeme",
+    # "rsshub",
+    "zijiang",
+    "justmonika",
+    "blhxwiki",
+    "bot_manager",
+    "twitter",
+    "pixiv",
+    # "translate",  # 需要百度翻译以及百度ocr API 否则无法使用
+    "search_image",  # 需要sauceNao API
     #! **请绝对不要关闭这几个插件！**
-    "file_manager": "文件清理",  # 可选关闭,所有获取的图片都会保存下来,不开启的话res文件夹大小会飞涨,想获取色图的话可以选择注释关一段时间,然后去res/cacha/setu查看
-    "usage": "使用帮助",
-    "plugin_manager": "插件管理器",
+    "file_manager",  # 可选关闭,所有获取的图片都会保存下来,不开启的话res文件夹大小会飞涨,想获取色图的话可以选择注释关一段时间,然后去res/cacha/setu查看
+    "usage",
+    "plugin_manager",
 }
 
 # 所有插件请求外网时统一使用的代理
@@ -114,6 +117,12 @@ sim_to_ascii2d = 70  # **注意: 不要带% 否则会报错**
 # 获取方法,进入pixiv任意一个网站然后按f12随便点一个,查看request header中的cookie,然后copy value
 # 具体可以百度如何获取cookie 一样的
 pixiv_cookie = ""
+
+# 彩云续写的api key
+# 请访问 https://if.caiyunai.com/#/
+# 按下 F12 打开控制台 输入`localStorage.cy_dream_user`复制 uid 后的那一串
+# 示例: '{"uid":"xxxxxx"}' -> caiyun_token = "xxxxxx"
+caiyun_token = ""
 
 # 短链用到的apikey
 # 目前仅适配了Polr的api,也就是我自建的api,欢迎使用,也可以自己自建,并不难,都是跟着教程一步步走(前提是有个服务器)
