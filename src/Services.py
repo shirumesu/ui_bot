@@ -396,8 +396,8 @@ class uiPlugin(uiPlugin_Master):
         pl = uiPlugin(xxxx)
 
         @pl.ui_command(xxx)
-        async def abc():
-            session.send("end")
+        async def abc(session: CommandSession):
+            await session.send("end")
         ```
 
         Args:
