@@ -1,8 +1,8 @@
+import re
 import asyncio
 import httpx
 
 from nonebot import CommandSession
-
 import config
 from src.plugins.search_image import saucenao, ascii2d, ehentai
 from src.Services import uiPlugin
@@ -40,14 +40,17 @@ sv_help = f"""以图搜图 | 使用帮助
 sv = uiPlugin(["search_image", "以图搜图"], True, usage=sv_help, use_cache_folder=True)
 
 
-@sv.ui_command("搜图", patterns=r"^搜图")
+@sv.ui_command("搜图", patterns=r"^搜图", privileged=False)
 async def search_image(session: CommandSession):
     """搜图功能的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    image = session.get("image")
+    image = session.current_arg_images
+    if not image:
+        s = await session.aget(prompt="请发送图片")
+        image = [re.search(r"url=(https?.+)]", s).group(1)]
     for i in image:
         coro = [saucenao.get_sauce(i), ascii2d.search_color(i)]
         res = await asyncio.gather(*coro, return_exceptions=True)
@@ -73,14 +76,17 @@ async def search_image(session: CommandSession):
         await session.send(msg, at_sender=True)
 
 
-@sv.ui_command("搜本")
+@sv.ui_command("搜本", privileged=False)
 async def search_eh(session: CommandSession):
     """搜本的主函数
 
     Args:
         session (CommandSession): bot封装的信息
     """
-    image = session.get("image")
+    image = session.current_arg_images
+    if not image:
+        s = await session.aget(prompt="请发送图片")
+        image = [re.search(r"url=(https?.+)]", s).group(1)]
     for url in image:
         content = await ehentai.dl_src(url)
         data = await ehentai.get_search(content)
@@ -123,43 +129,3 @@ async def short_url(url_list: list) -> list:
                 return url_list
             urls.append(s.text)
     return urls
-
-
-@search_image.args_parser
-async def _(session: CommandSession):
-    """指令解析器
-
-    Args:
-        session (CommandSession): bot封装的消息
-    """
-
-    if session.current_arg_images:
-        session.state["image"] = session.current_arg_images
-        return
-
-    if session.current_arg_text:
-        if session.current_arg_text.strip() == "done":
-            await session.finish("会话已结束")
-
-    if not session.current_arg_images:
-        await session.pause(f"{bot_name}不会读心哦,要把图片发出来才行！")
-
-
-@search_eh.args_parser
-async def _(session: CommandSession):
-    """指令解析器
-
-    Args:
-        session (CommandSession): bot封装的消息
-    """
-
-    if session.current_arg_images:
-        session.state["image"] = session.current_arg_images
-        return
-
-    if session.current_arg_text:
-        if session.current_arg_text.strip() == "done":
-            await session.finish("会话已结束")
-
-    if not session.current_arg_images:
-        await session.pause(f"{bot_name}不会读心哦,要把图片发出来才行！")

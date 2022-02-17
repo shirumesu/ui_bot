@@ -10,7 +10,7 @@ from soraha_utils import async_uiclient, async_uio, logger
 class updater:
     def __init__(self) -> None:
         try:
-            with open("./src/plugins/blhxwiki/image_list.json", "w") as f:
+            with open("./src/plugins/blhxwiki/image_list.json", "r") as f:
                 self.dicts = json.load(f)
         except:
             self.dicts = {"强度榜": [], "一图榜": [], "秒伤榜": []}

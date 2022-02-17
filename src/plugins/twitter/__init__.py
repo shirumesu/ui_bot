@@ -219,7 +219,6 @@ def get_api(user_id: str, tweet_id: int = 1000000000000000000) -> dict:
          dict: api传回的用户新推特的字典
     """
     tweet = []
-    # res = api.user_timeline(user_id=user_id, since_id=tweet_id, include_rts=True)
     res = api.user_timeline(
         screen_name=user_id, since_id=tweet_id, include_rts=True, tweet_mode="extended"
     )
@@ -231,7 +230,7 @@ def get_api(user_id: str, tweet_id: int = 1000000000000000000) -> dict:
     return tweet
 
 
-@sv.ui_command("设置订阅")
+@sv.ui_command("设置订阅", privileged=False)
 async def set_subcribe_states(session: CommandSession):
     """设置订阅的主函数
 
@@ -269,15 +268,19 @@ async def set_subcribe_states(session: CommandSession):
     if not user_info:
         await session.finish("没有找到该用户!可能原因:\n还没有订阅过该用户！请先订阅\n输入有误,请使用[查看推特订阅]查看目标用户id")
 
-    await session.apause(
-        "目前的订阅状态是:\n"
-        f"1.发推 {'√' if user_info['send'] else '×'}\n"
-        f"2.回复 {'√' if user_info['reply'] else '×'}\n"
-        f"3.转发 {'√' if user_info['retweet'] else '×'}\n"
-        f"4.引用 {'√' if user_info['quote'] else '×'}\n"
-        "请回复数字, 将会反转设置, 多个数字请用空格隔开"
-    )
-    states = session.current_arg_text.split(" ")
+    states = (
+        await session.aget(
+            prompt=(
+                "目前的订阅状态是:\n"
+                f"1.发推 {'√' if user_info['send'] else '×'}\n"
+                f"2.回复 {'√' if user_info['reply'] else '×'}\n"
+                f"3.转发 {'√' if user_info['retweet'] else '×'}\n"
+                f"4.引用 {'√' if user_info['quote'] else '×'}\n"
+                "请回复数字, 将会反转设置, 多个数字请用空格隔开"
+            ),
+            arg_filters=[str.strip],
+        )
+    ).split(" ")
     for i in states:
         if i == "1":
             user_info["send"] = not user_info["send"]
@@ -297,10 +300,12 @@ async def set_subcribe_states(session: CommandSession):
         or user_info["retweet"]
         or user_info["quote"]
     ):
-        await session.apause("将会关闭所有推送,是要取消订阅吗?(y/n)")
-        if session.current_arg_text == "y":
+        ans = await session.aget(
+            prompt="将会关闭所有推送,是要取消订阅吗?(y/n)", arg_filters=[str.strip]
+        )
+        if ans == "y":
             await delect_subcribe(session)
-        elif session.current_arg_text == "n":
+        elif ans == "n":
             if gid:
                 subcribe[user_id]["subcribe_group"][str(gid)] = user_info
             else:

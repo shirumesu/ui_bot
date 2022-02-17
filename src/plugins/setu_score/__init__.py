@@ -1,6 +1,5 @@
+import re
 from nonebot import CommandSession
-
-from config import bot_name
 
 from src.Services import uiPlugin
 from src.plugins.setu_score.data_source import pic_score
@@ -23,7 +22,7 @@ assess_base = {
 }
 
 
-@sv.ui_command("色图评分", aliases=("色图打分",))
+@sv.ui_command("色图评分", aliases=("色图打分",), privileged=False)
 async def setu_score(session: CommandSession):
     image = session.get("image")
     res = await scorer.get_score(image[0])
@@ -44,10 +43,6 @@ async def _(session: CommandSession):
     if session.current_arg_images:
         session.state["image"] = session.current_arg_images
         return
-
-    if session.current_arg_text:
-        if session.current_arg_text.strip() == "done":
-            await session.finish("会话已结束")
-
-    if not session.current_arg_images:
-        await session.pause(f"{bot_name}不会读心哦,要把图片发出来才行！")
+    else:
+        s = await session.aget(prompt="请发送图片")
+        session.state["image"] = [re.search(r"url=(https?.+)]", s).group(1)]
