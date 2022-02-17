@@ -27,6 +27,13 @@ PORT = 19198
 # 是否启用调试模式(更详细的输出)
 DEBUG = False
 
+# bot的名字, 部分插件回复会带上自己名字, 无则默认为 `羽衣`
+# 注意 这跟上面的 机器人昵称是不一样的, 仅用于回复时的自称
+bot_name = ""
+
+# 不用管这一行
+bot_name = bot_name if bot_name else "羽衣"
+
 # 是否检查更新(由于需要直连到github,没有梯子可能异常久甚至无法连接,会导致错误令程序退出)
 checkupdate = False
 
@@ -57,12 +64,6 @@ plugins = {
     "file_manager": "文件清理",  # 可选关闭,所有获取的图片都会保存下来,不开启的话res文件夹大小会飞涨,想获取色图的话可以选择注释关一段时间,然后去res/cacha/setu查看
     "usage": "使用帮助",
     "plugin_manager": "插件管理器",
-    # TODO(shiying): 待制作插件
-    # 鬼知道为什么我要放进github里···
-    # "priconne": "pcr相关",
-    # TODO(shiying): 写好这几个插件 deadline: this life
-    # 'web_ui': '网页界面',
-    # "uma_musume": "赛马娘",
 }
 
 # 所有插件请求外网时统一使用的代理
@@ -117,6 +118,7 @@ pixiv_cookie = ""
 # 短链用到的apikey
 # 目前仅适配了Polr的api,也就是我自建的api,欢迎使用,也可以自己自建,并不难,都是跟着教程一步步走(前提是有个服务器)
 # https://short.uisbox.com
+# **目前已荒废……因为我自己服务器已经关了**
 short_url_apikey = ""
 
 # 自建Rss

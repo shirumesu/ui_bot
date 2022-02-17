@@ -8,31 +8,33 @@ from src.plugins.search_image import saucenao, ascii2d, ehentai
 from src.Services import uiPlugin
 
 
-sv_help = """以图搜图 | 使用帮助
+bot_name = config.bot_name
+
+sv_help = f"""以图搜图 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
 [搜图(图片)] -> 搜图
     特别注意:
-        屎山qq -> qq在文件过大的时候会用文件的方式发出来,此时羽衣无法获取到图片
+        屎山qq -> qq在文件过大的时候会用文件的方式发出来,此时{bot_name}无法获取到图片
         多张图片 -> 支持,但请在一个消息内发送所有图片,搜索结果会分多个消息发送
     使用示例:
         搜图 (某张图片):
             -> (结果)
         搜图:
-            -> 羽衣不会读心哦,要把图片发出来才行！(这里是羽衣的回复)
+            -> {bot_name}不会读心哦,要把图片发出来才行！(这里是{bot_name}的回复)
             (图片) -> 你的发送(此时发送一张图片):
             -> (结果)
         搜图:
-            -> 羽衣不会读心哦,要把图片发出来才行！
+            -> {bot_name}不会读心哦,要把图片发出来才行！
             (非图片):
-            -> 羽衣不会读心哦,要把图片发出来才行！ 
+            -> {bot_name}不会读心哦,要把图片发出来才行！ 
             (非图片):
             -> (结束搜图)
 [搜本(图片)] -> 同上
 额外PS：
     由于搜图结果存在R18,并且无法识别去除,如果群里禁用了请:
-        使用'联系主人'功能或是直接联系羽衣的维护组 -> 要求开启该插件
+        使用'联系主人'功能或是直接联系{bot_name}的维护组 -> 要求开启该插件
         私聊使用:
-            -> 如果羽衣不幸被qq封了一次,那么可能会开启此插件私聊白名单
+            -> 如果{bot_name}不幸被qq封了一次,那么可能会开启此插件私聊白名单
             -> 获取白名单的方法同上
 """.strip()
 sv = uiPlugin(["search_image", "以图搜图"], True, usage=sv_help, use_cache_folder=True)
@@ -140,7 +142,7 @@ async def _(session: CommandSession):
             await session.finish("会话已结束")
 
     if not session.current_arg_images:
-        await session.pause("羽衣不会读心哦,要把图片发出来才行！")
+        await session.pause(f"{bot_name}不会读心哦,要把图片发出来才行！")
 
 
 @search_eh.args_parser
@@ -160,4 +162,4 @@ async def _(session: CommandSession):
             await session.finish("会话已结束")
 
     if not session.current_arg_images:
-        await session.pause("羽衣不会读心哦,要把图片发出来才行！")
+        await session.pause(f"{bot_name}不会读心哦,要把图片发出来才行！")

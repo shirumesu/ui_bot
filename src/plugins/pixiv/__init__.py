@@ -6,11 +6,12 @@ import ujson
 
 from nonebot import CommandSession, get_bot, scheduler
 
+from config import bot_name
 from src.Services import uiPlugin, SUPERUSER, GROUP_ADMIN
 from src.plugins.pixiv import pixiv, pixivison
 from src.ui_exception import Pixiv_api_Connect_Error, Pixiv_not_found_Error
 from src.shared import shutup
-from soraha_utils import async_uiclient, logger, async_uio
+from soraha_utils import logger
 
 sv_help = """pixiv相关 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
@@ -315,7 +316,7 @@ async def subc_illuster(session: CommandSession):
     except:
         await session.finish("请求失败,可能是网太差了！")
     if isinstance(res, str):
-        await session.finish("发生错误！请检查你的输入是否正确(或是羽衣的问题？)\napi返回错误信息:" + res)
+        await session.finish(f"发生错误！请检查你的输入是否正确(或是{bot_name}的问题？)\napi返回错误信息:" + res)
 
     if session.event.detail_type == "group":
         if pid in subcribe["pixiv"]:
@@ -421,9 +422,11 @@ async def _(session: CommandSession):
 async def _check(session: CommandSession):
     await sche_check_pixiv()
 
+
 @sv.ui_command("跳过pixiv")
 async def __drop(session: CommandSession):
     await sche_drop_pixiv(session)
+
 
 async def sche_drop_pixiv(session: CommandSession):
     logger.info("开始尝试跳过pixiv画师更新")
@@ -457,6 +460,7 @@ async def sche_drop_pixiv(session: CommandSession):
         ujson.dump(subcribe, f, ensure_ascii=False, indent=4)
     logger.info("检查完毕,失败次数:" + str(error))
     await session.finish("成功忽略所有画师的更新(注意：不代表取消订阅)")
+
 
 @scheduler.scheduled_job("cron", hour=13, minute=30)
 async def sche_check_pixivison():

@@ -21,14 +21,14 @@ import config
 from src.Services import uiPlugin, GROUP_ADMIN, SUPERUSER
 from src.shared import shutup
 
-
-sv_help = """RssHub订阅 | 使用帮助
+bot_name = config.bot_name
+sv_help = f"""RssHub订阅 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
 [订阅rss (rss链接)] -> 订阅Rss
     参数详解:
         rss链接:
             -> 请参照官方指南https://docs.rsshub.app/
-            -> 然后回复羽衣示例链接 例如:https://rsshub.app/bilibili/bangumi/media/9192
+            -> 然后回复{bot_name}示例链接 例如:https://rsshub.app/bilibili/bangumi/media/9192
             -> 请注意示例链接旁边的图标status是否为up,如果为down代表失效,无法获取
             -> 会5/30分钟更新一次(与使用自建rss或是官方demo有关,官方demo30分钟更新一次,直接回复官方demo示例即可,如果有使用自建会自动替换链接)
     特别注意:

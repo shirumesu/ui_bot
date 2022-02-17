@@ -4,14 +4,14 @@ import config
 from src.Services import uiPlugin, SUPERUSER
 
 
-sv_help = """人偶功能 | 使用帮助
+sv_help = f"""人偶功能 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
 [发送私聊消息 (要发送的qq号) (要发送的消息)] -> 发送私聊消息给人
 [发送群消息 (要发送的群号) (要发送的消息)] -> 发送群消息
 [联系主人 (消息)] -> 字面意思
 特别注意:
     主人问题 -> 如果有多个超级用户,将会发送配置文件中的第一个
-    权限问题 -> 请确保羽衣酱有办法发送到该人/群！
+    权限问题 -> 请确保{config.bot_name}有办法发送到该人/群！
     图片问题 -> 是可以发送图片过去的！请连带在**一个消息**里
 """
 sv = uiPlugin(["marionette", "人偶"], False, usage=sv_help, perm_manager=SUPERUSER)

@@ -1,5 +1,7 @@
 from nonebot import CommandSession
 
+from config import bot_name
+
 from src.Services import uiPlugin
 from src.plugins.setu_score.data_source import pic_score
 
@@ -48,4 +50,4 @@ async def _(session: CommandSession):
             await session.finish("会话已结束")
 
     if not session.current_arg_images:
-        await session.pause("羽衣不会读心哦,要把图片发出来才行！")
+        await session.pause(f"{bot_name}不会读心哦,要把图片发出来才行！")

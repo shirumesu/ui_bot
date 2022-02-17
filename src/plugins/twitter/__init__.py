@@ -15,7 +15,7 @@ from src.Services import uiPlugin, GROUP_ADMIN, SUPERUSER
 from src.shared import shutup
 from soraha_utils import logger, sync_to_async
 
-sv_help = """推特订阅 | 使用帮助
+sv_help = f"""推特订阅 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
 插件的权限问题:
     -> 由于推特上各种乱七八糟的加上存在r18内容
@@ -41,7 +41,7 @@ sv_help = """推特订阅 | 使用帮助
         设置订阅后会要求你回复,请参照使用示例
         如果全关闭,将会询问你是否要取消订阅。
     使用示例:
-        (箭头的信息为羽衣的回复)
+        (箭头的信息为{config.bot_name}的回复)
         设置订阅 ywwuyi
         -> 目前的订阅状态是:
            1.发推 √
@@ -56,7 +56,7 @@ sv_help = """推特订阅 | 使用帮助
            3.转发 √
            4.引用 √
     使用示例(其二):
-        (箭头的信息为羽衣的回复)
+        (箭头的信息为bot的回复)
         设置订阅 ywwuyi
         -> 目前的订阅状态是:
            1.发推 √
@@ -124,7 +124,7 @@ async def subcribe_twitter(session: CommandSession):
     """
     tw_id = session.current_arg_text.strip()
     if not tw_id:
-        await session.finish("羽衣不知道你要订阅谁哦")
+        await session.finish("你要订阅谁?")
 
     if session.event.detail_type == "group":
         gid = session.event.group_id
@@ -240,7 +240,7 @@ async def set_subcribe_states(session: CommandSession):
     """
     tw_id = session.current_arg_text.strip()
     if not tw_id:
-        await session.finish("羽衣不知道你要设置谁的推送设定哦")
+        await session.finish("要设置谁的订阅")
 
     if session.event.detail_type == "group":
         gid = session.event.group_id
@@ -353,7 +353,7 @@ async def delect_subcribe(session: CommandSession):
     """
     tw_id = session.current_arg_text.strip()
     if not tw_id:
-        await session.finish("羽衣不知道你要设置谁的推送设定哦")
+        await session.finish("你要取消谁捏?")
 
     if session.event.detail_type == "group":
         gid = session.event.group_id

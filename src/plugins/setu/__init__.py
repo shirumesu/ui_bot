@@ -5,14 +5,16 @@ import re
 
 from nonebot import CommandSession
 from aiocqhttp import MessageSegment
-import soraha_utils
 from soraha_utils.uiclient import async_uiclient
 
 import config as cfg
 from src.Services import uiPlugin, SUPERUSER
 from soraha_utils import retry, logger, async_uiclient
 
-sv_help = """搞的很快的插件！ | 使用帮助
+
+bot_name = cfg.bot_name
+
+sv_help = f"""搞的很快的插件！ | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
 [色图(1~100)份 (关键字) (r18)] -> 获取色图，默认一份，输入小括号内可选的文字获取色图
     参数详解:
@@ -28,7 +30,7 @@ sv_help = """搞的很快的插件！ | 使用帮助
     使用示例:
         色图 -> 获取一份色图
         色图十份 碧蓝航线 -> 获取十份碧蓝航线的色图！
-        色图30份 羽衣 r18 -> 获得3份羽衣酱的r18色图！(当然这是禁止的！禁止获取羽衣酱的任何色图！)
+        色图30份 {bot_name} r18 -> 获得3份{bot_name}酱的r18色图！(当然这是禁止的！禁止获取{bot_name}酱的任何色图！)(其实可能也没有啦！)
 [(开启|关闭)原图] -> 顾名思义：开启后会发送原图,各个群/私聊独立设置
     特别注意:
         原图问题 -> 由于有些图片可能超过10MB 20MB 下载速度会非常慢 可能很久才发的出来

@@ -5,10 +5,11 @@ import random
 
 from nonebot import CommandSession, message_preprocessor, get_bot
 
+from config import bot_name
 from src.Services import uiPlugin
 
 
-sv_help = """自定义回复 | 使用帮助
+sv_help = f"""自定义回复 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
 特别注意:
     -> 请不要使用此功能做任何奇怪的事情,被发现将会立即加入黑名单
@@ -20,7 +21,7 @@ sv_help = """自定义回复 | 使用帮助
         多个回复 -> 支持添加多个回复(请一个个来),具体请参照使用示例
         风控问题 -> 为了防止刷屏以及可能的风控问题,回复将会是50%概率回复而非遇到即回复
     使用示例:
-        (箭头后的为羽衣的回复)
+        (箭头后的为{bot_name}的回复)
         定义 喂 三点几嚟
         -> 需要回复的信息是？(目前对于该消息会回复1.xxx 2.yyy)(如果有)
         饮茶先啦 做条毛啊做
@@ -58,7 +59,7 @@ async def reply_msg(session: CommandSession):
     if re.match(r"\[CQ:xml,data=<\?xml[\s\S]*]", reply_msg):
         await session.finish("定义分享会有bug,禁止定义(而且为什么要定义分享啊)")
     if len(reply_msg) >= 1000:
-        await session.finish("这也太长了…羽衣记不住了切噜噜……")
+        await session.finish(f"这也太长了…{bot_name}记不住了切噜噜……")
     elif not reply_msg:
         await session.finish("不可以空输入哦")
 
@@ -75,7 +76,7 @@ async def reply_msg(session: CommandSession):
     if re.match(r"\[CQ:xml,data=<\?xml[\s\S]*]", reply_msg):
         await session.finish("定义分享会有bug,禁止定义(而且为什么要定义分享啊)")
     if len(msg) >= 1000:
-        await session.finish("这也太长了…羽衣记不住了切噜噜……")
+        await session.finish(f"这也太长了…{bot_name}记不住了切噜噜……")
     elif not msg:
         await session.finish("不可以空输入哦")
     if gid not in self_config:

@@ -1,18 +1,18 @@
 from nonebot import get_bot
 from nonebot.command import CommandSession
 
-import config
+from config import bot_name
 from src.Services import uiPlugin, uiPlugin_Master, SUPERUSER, GROUP_ADMIN
 
 
 bot = get_bot()
-sv_help = """插件管理器 | 使用帮助
+sv_help = f"""插件管理器 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
 **请不要关闭此插件或是将插件放入黑名单 否则需要改配置文件解除黑名单**
 [查看插件列表] -> 获取所有插件,包括未启用的
     特别注意:
         由于存在介乎于功能与插件之间的插件,并非所有插件都会显示
-        羽衣的管理员可以透过私聊使用此功能获取完整的插件列表
+        {bot_name}的管理员可以透过私聊使用此功能获取完整的插件列表
 [插件管理 (管理类型) (插件名)] -> 对某插件操控
     管理类型:
         1.全局开启
