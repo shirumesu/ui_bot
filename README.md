@@ -10,6 +10,8 @@
 基于[Nonebot 1](https://github.com/nonebot/nonebot)可以在qq上配合[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)运行，目前已经支持:
   - 获取色图
   - 订阅推特
+  - 今日新闻(基于[60秒看世界api](https://api.iyk0.com/doc/60s))
+  - 彩云小梦ai续写
   - 枝江查重, 精准打击复读烂梗人!
   - 碧蓝航线wiki相关支持
   - 订阅pixiv画师,pixivison,查看榜单以及画师精选图等(使用pixiv官方api,稳定性大大提高了！)

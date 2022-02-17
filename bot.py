@@ -1,15 +1,14 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 2.0.0
+@Version    : 2.0.1
 @EditTime   : 2022/2/16 19:13am(Editor: shiying)
-@Desc       : 新增: 2.0.0正式合并进来, 增加大量功能, 如自动reload等; 修复: 主要是搜图 推特由于版本更新导致无法再用的功能; 优化: 简单增加了blhxwiki的内容, 日志输出, 把nonebot输出丢进来log
+@Desc       : 新增: 彩云小梦续写, 今日新闻; 修复: 搜图 推特 色图打分等无法等待回复的问题; 优化: 因为APS scheduler的问题, uvicorn无法完整重载, 暂时弃用
 """
 import os
 import re
 import logging
 import asyncio
-import uvicorn
 import nest_asyncio
 import uvicorn
 
@@ -19,7 +18,7 @@ from nonebot.log import logger as nlog
 import config
 from soraha_utils import set_logger, sync_uiclient
 
-version = "2.0.0"
+version = "2.0.1"
 
 
 def check_update():
