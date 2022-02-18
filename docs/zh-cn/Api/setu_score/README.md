@@ -23,6 +23,7 @@
    3. 勾上`百度官方违禁图库`、`色情识别`、`暴恐识别`(其实应该是无法取消)、`政治敏感识别`(其实应该是无法取消)
    4. 点击`色情识别`的`展开`,配置如下:
 ![](../../../_media/setu_score.png)
+
 ## 填入config.py
 1. 回到[应用列表](https://console.bce.baidu.com/ai/#/ai/antiporn/app/list)
 2. 将`API Key`和`Secret Key`分别填入`config.py `中的`baidu_setu_score_api_key`以及`baidu_setu_score_secret_key`
