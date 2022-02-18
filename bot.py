@@ -1,9 +1,9 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 2.0.1
-@EditTime   : 2022/2/16 19:13am(Editor: shiying)
-@Desc       : 新增: 彩云小梦续写, 今日新闻; 修复: 搜图 推特 色图打分等无法等待回复的问题; 优化: 因为APS scheduler的问题, uvicorn无法完整重载, 暂时弃用
+@Version    : 2.0.2
+@EditTime   : 2022/2/18 16:22am(Editor: shiying)
+@Desc       : 由于文档更新, 不再使用头文件写注释
 """
 import os
 import re
@@ -18,21 +18,19 @@ from nonebot.log import logger as nlog
 import config
 from soraha_utils import set_logger, sync_uiclient
 
-version = "2.0.1"
+version = "2.0.2"
 
 
 def check_update():
     with sync_uiclient(proxy=config.proxies.copy()) as uicl:
-        res = uicl.uiget(
-            "https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py"
-        )
+        res = uicl.uiget("https://uibot.uisbox.com/#/zh-cn/update-log/")
 
     version_git = re.findall("@Version    : (.+)", res.text)[0]
     version_desc = re.findall("@Desc       : (.+)", res.text)[0]
 
     new_msg = (
         f"发现新版本更新: {version_git}\n"
-        f"更新描述: {version_desc}\n"
+        f"更新描述: 请查阅: https://uibot.uisbox.com/#/zh-cn/update-log/\n"
         f"请在根目录shift+右键打开终端PowerShell,使用git pull进行更新"
     )
     msg = (
