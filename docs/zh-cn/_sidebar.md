@@ -1,0 +1,4 @@
+- [开始](/zh-cn/intro/)
+- [安装](/zh-cn/install/)
+- [使用bot](/zh-cn/usage/)
+- [鸣谢](/zh-cn/thx/)
