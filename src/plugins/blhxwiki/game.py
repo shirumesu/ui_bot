@@ -130,7 +130,7 @@ class Game(Game_Master):
         if self.char["info"]["status"]:
             self.char_info.append(f"她的身份为: {self.char['info']['status']}")
         if self.char["info"]["temp"]:
-            self.char_info.append(f"她的阵营为: {self.char['info']['temp']}")
+            self.char_info.append(f"她的性格为: {self.char['info']['temp']}")
         if self.char["info"]["keyword"]:
             self.char_info.append(f"她的关键词为: {self.char['info']['keyword']}")
         if self.char["info"]["hold"]:
