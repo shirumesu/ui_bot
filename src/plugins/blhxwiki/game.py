@@ -87,6 +87,7 @@ class Game(Game_Master):
         )
         await sleep(20)
         if not self.winner:
+            self.GM.end_game(session.event.group_id)
             await session.finish(
                 f"真可惜！没人猜对！答案是{self.char['name'][0]}\n{self.message_image}"
             )
