@@ -47,6 +47,7 @@ class Game(Game_Master):
     def __init__(self, config, Game_Master) -> None:
         self.config = config
         self.GM = Game_Master
+        self.ansing = False
 
     async def guess_avatar(self, session: CommandSession):
         self.char = random.choice(list(self.config.values()))
@@ -83,17 +84,24 @@ class Game(Game_Master):
         await session.send(
             "请猜猜图片中的舰娘是谁!(头像可能截的地方有点阴间导致辨识度低,如果是这样那 那我也没辙)\n"
             + self.cropped_img
-            + "\n20秒后揭晓答案"
+            + "\n30秒后揭晓答案"
         )
-        await sleep(20)
+        await sleep(30)
         if not self.winner:
             self.GM.end_game(session.event.group_id)
             await session.finish(
                 f"真可惜！没人猜对！答案是{self.char['name'][0]}\n{self.message_image}"
             )
 
-    async def bingo(self, text):
-        return True if text.strip() in self.ans else False
+    async def bingo(self, text: str):
+        text = text.strip()
+        u_text = text.upper()
+        d_text = text.lower()
+        return (
+            True
+            if (text.strip() in self.ans or u_text in self.ans or d_text in self.ans)
+            else False
+        )
 
     async def guess_info(self, session: CommandSession):
         self.char = random.choice(list(self.config.values()))
