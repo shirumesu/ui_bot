@@ -74,7 +74,7 @@ async def blhxwiki(session: CommandSession):
     await session.finish(info)
 
 
-@sv.ui_command("猜头像", patterns=r"猜(头像|舰娘)")
+@sv.ui_command("猜头像", patterns=r"^猜(舰娘|头像)$")
 async def guess_game(session: CommandSession):
     """猜头像/猜舰娘的游戏！
 
@@ -115,12 +115,14 @@ async def _(bot: NoneBot, event: Event, plugin_manager: PluginManager):
     if not game:
         return
     try:
+        game.ansing = True
         if await game.bingo(event.raw_message):
             game.winner = event.sender
             await bot.send_group_msg(
                 message=f"恭喜你答对了!\n正确答案: {game.ans[0]}\n{game.message_image}",
                 group_id=event.group_id,
             )
+            game.ansing = False
             GM.end_game(event.group_id)
     except:
         pass
