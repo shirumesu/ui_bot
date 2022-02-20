@@ -13,7 +13,6 @@ Pillow==9.0.1
 psutil==5.9.0
 requests==2.27.1
 retrying==1.3.3
-selenium==4.1.0
 soraha_utils==0.0.17
 tweepy==4.5.0
 ujson==5.1.0

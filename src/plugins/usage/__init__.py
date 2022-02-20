@@ -1,9 +1,9 @@
 from nonebot import CommandSession
 
 from src.Services import uiPlugin, uiPlugin_Master
+from config import bot_name
 
-
-sv_help = """使用帮助 |使用帮助
+sv_help = f"""使用帮助 |使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
 [查看所有插件] -> 查看所有可用的插件
 [使用帮助 (插件名)] -> 获取插件的使用帮助
@@ -32,7 +32,7 @@ sv_help = """使用帮助 |使用帮助
 题外话:
     诶…真的有人连使用帮助怎么用都要使用帮助吗？这也太好笑了吧
     诶？！先辈？原来需要的人就是你啊…诶……？开玩笑的吧,好好笑
-    噗…别再逗羽衣笑了啦……噗…gu……
+    噗…别再逗{bot_name}笑了啦……噗…gu……
     不过话说回来啊,你真的不会吗？诶？真的？没在开玩笑？诶……噗…(捂嘴)
 """.strip()
 all_help = """详细使用帮助

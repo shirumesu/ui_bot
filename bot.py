@@ -1,7 +1,7 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 2.0.2
+@Version    : 2.0.3
 @EditTime   : 2022/2/18 16:22am(Editor: shiying)
 @Desc       : 由于文档更新, 不再使用头文件写注释
 """
@@ -18,12 +18,14 @@ from nonebot.log import logger as nlog
 import config
 from soraha_utils import set_logger, sync_uiclient
 
-version = "2.0.2"
+version = "2.0.3"
 
 
 def check_update():
     with sync_uiclient(proxy=config.proxies.copy()) as uicl:
-        res = uicl.uiget("https://uibot.uisbox.com/#/zh-cn/update-log/")
+        res = uicl.uiget(
+            "https://raw.githubusercontent.com/LYshiying/ui_bot/main/bot.py"
+        )
 
     version_git = re.findall("@Version    : (.+)", res.text)[0]
     version_desc = re.findall("@Desc       : (.+)", res.text)[0]
