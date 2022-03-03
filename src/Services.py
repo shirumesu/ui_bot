@@ -4,6 +4,7 @@ import json
 import os
 from typing import Union, Optional, Iterable
 from nonebot import on_command, CommandSession, get_bot
+from aiocqhttp import Event
 
 import config
 from soraha_utils import logger
@@ -55,11 +56,18 @@ class uiPlugin_Master:
         Returns:
             list[bool,str]: [是否通过,对应理由]
         """
-        if not ignore_superuser and session.event.user_id in config.SUPERUSERS:
-            return [True, "用户为超级用户"]
-        else:
+        if isinstance(session, CommandSession):
             gid = session.event.group_id
             uid = session.event.user_id
+        elif isinstance(session, Event):
+            gid = session.group_id
+            uid = session.user_id
+        else:
+            logger.warning("出现未知错误")
+            return [False, "未知错误"]
+        if not ignore_superuser and uid in config.SUPERUSERS:
+            return [True, "用户为超级用户"]
+        else:
             perm = self.__change_role(session)
             if not plugin.enable:
                 return [False, "插件没有开启！"]
@@ -421,18 +429,22 @@ class uiPlugin(uiPlugin_Master):
                 privileged=privileged,
                 shell_like=shell_like,
             )
-            async def wrap_command(session: CommandSession):
+            async def wrap_command(session: CommandSession, *args, **kw):
+                if isinstance(session, Event):
+                    uid = session.user_id
+                else:
+                    uid = session.event.user_id
                 checker = self.check_perm(
                     session, self, plugin_manager, ignore_superuser
                 )
                 if checker[0]:
                     logger.debug(
-                        f"用户{session.event.user_id}使用插件{self.name_cn}(cmd:{name})通过: {checker[1]}"
+                        f"用户{uid}使用插件{self.name_cn}(cmd:{name})通过: {checker[1]}"
                     )
-                    return await func(session)
+                    return await func(session, *args, **kw)
                 else:
                     logger.info(
-                        f"用户{session.event.user_id}使用插件{self.name_cn}(cmd:{name})不通过: {checker[1]}"
+                        f"用户{uid}使用插件{self.name_cn}(cmd:{name})不通过: {checker[1]}"
                     )
                     await session.send("权限不够哦")
 

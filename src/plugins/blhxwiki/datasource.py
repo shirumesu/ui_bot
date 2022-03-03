@@ -171,7 +171,6 @@ async def jianniang(url: str):
         if (
             value == "\n"
             or index == 0
-            or index == 2
             or ("style" in value.attrs and value["style"] == "display:none")
         ):
             continue

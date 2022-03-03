@@ -16,12 +16,12 @@
 
 ## 优化
 - :bell: [ bell ] 功能优化
+- :scissors: [ scissors ] 弃用功能
 
 ## 其余
 - :flags: [ flags ] TODO
 - :bulb: [ bulb ] 不一定会做的想法(仅做记录)
 - :memo: [ memo ] 文档类
-- :scissors: [ scissors ] 弃用功能
 - :pushpin: [ pushpin ] 未完善
 - :question: [ question ] 尝试性的更新(可能含有bug)
 

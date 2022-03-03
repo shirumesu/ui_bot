@@ -26,11 +26,12 @@ async def shut_up(session: CommandSession) -> None:
     gid = str(session.event.group_id)
 
     SHUTUP[gid] = [True, 0]
-    async_uio.save_file(
+    await async_uio.save_file(
         "json",
         obj=SHUTUP,
-        save_path=os.path.join(os.getcwd(), "src", "plugins", "bot_manager"),
-        save_name="shutup",
+        save_path=os.path.join(
+            os.getcwd(), "src", "plugins", "bot_manager", "shutup.json"
+        ),
     )
 
     logger.debug(SHUTUP)
@@ -38,23 +39,24 @@ async def shut_up(session: CommandSession) -> None:
 
 
 @sv.ui_command("说话")
-async def speak(session: CommandSession, gid) -> None:
-
+async def speak(session: CommandSession) -> None:
+    gid = str(session.event.group_id)
     SHUTUP[gid] = [False, 0]
-    async_uio.save_file(
+    await async_uio.save_file(
         "json",
         obj=SHUTUP,
-        save_path=os.path.join(os.getcwd(), "src", "plugins", "bot_manager"),
-        save_name="shutup",
+        save_path=os.path.join(
+            os.getcwd(), "src", "plugins", "bot_manager", "shutup.json"
+        ),
     )
     logger.debug(SHUTUP)
-    await bot.send(session, "好耶！")
+    await session.finish("好耶！")
 
 
 @message_preprocessor
 async def Shut_Up(Bot, Event, Plutin_manager):
     if Event.raw_message == "说话":
-        await speak(Event, str(Event.group_id))
+        return
     elif str(Event.group_id) in SHUTUP and SHUTUP[str(Event.group_id)][0]:
         SHUTUP[str(Event.group_id)][1] += 1
         raise Shut_Up_Error(f"bot在群({Event.group_id})被禁止说话了！可以使用`说话`来让bot开启响应！")

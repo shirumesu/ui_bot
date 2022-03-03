@@ -19,6 +19,8 @@ class Config:
         self.load()
 
     def dump(self) -> None:
+        for i in self.config.values():
+            i["name"] = list(set(i["name"]))
         with open(self.config_path, "w", encoding="utf_8") as f:
             json.dump(self.config, f, ensure_ascii=False, indent=4)
 
