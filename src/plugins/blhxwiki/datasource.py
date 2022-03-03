@@ -161,7 +161,12 @@ async def jianniang(url: str):
         info["mingzhong"] = chara_attr.contents[6].contents[11].contents[0].text.strip()
         info["fanqian"] = chara_attr.contents[8].contents[3].contents[0].text.strip()
         info["xinyun"] = chara_attr.contents[10].contents[3].text.strip()
-        info["hangsu"] = chara_attr.contents[12].contents[3].text.strip()
+        try:
+            info["hangsu"] = (
+                chara_attr.contents[12].contents[3].contents[0].text.strip()
+            )
+        except Exception as e:
+            info["hangsu"] = chara_attr.contents[12].contents[3].text.strip()
         info["xiaohao"] = (
             chara_attr.contents[10].contents[7].contents[0].text.strip().split("→")[0]
             + "→"
@@ -171,7 +176,8 @@ async def jianniang(url: str):
         if (
             value == "\n"
             or index == 0
-            or ("style" in value.attrs and value["style"] == "display:none")
+            or ("style" in value.attrs and value.attrs["style"] == "display:none")
+            or value.text.strip() == "技能改造技能改造技能"
         ):
             continue
         info["skills"][value.contents[1].text.strip()] = value.contents[3].text.strip()
