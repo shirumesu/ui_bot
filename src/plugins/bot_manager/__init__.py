@@ -4,13 +4,19 @@ import time
 
 from nonebot import CommandSession
 
-from src.Services import uiPlugin
+from src.Services import uiPlugin, GROUP_ADMIN
 
 sv_help = """bot相关 | 使用帮助
 括号内的文字即为指令,小括号内为可选文字(是否必带请自行参照使用示例)
 [bot相关] -> 查看目前bot状态
 """
-sv = uiPlugin(["bot_manager", "bot相关"], False, usage=sv_help)
+sv = uiPlugin(
+    ["bot_manager", "bot相关"],
+    False,
+    usage=sv_help,
+    perm_use=GROUP_ADMIN,
+    perm_manager=GROUP_ADMIN,
+)
 
 
 @sv.ui_command("bot状态")
