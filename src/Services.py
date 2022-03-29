@@ -112,7 +112,10 @@ class uiPlugin_Master:
         """
         enable_plugins = []
         for plugin in self.all_uiplugin.values():
-            if str(gid) in plugin.enable_group:
+            if (
+                str(gid) in plugin.enable_group
+                and plugin.enable_group[str(gid)] == g_type
+            ):
                 pass
             elif g_type == "亲友群":
                 plugin.enable_group[str(gid)] = g_type
@@ -323,9 +326,6 @@ class uiPlugin(uiPlugin_Master):
         }
         try:
             self.load_config()
-            self.quasi_config["private_use"] = self.config["private_use"]
-            self.quasi_config["block_priv"] = self.config["block_priv"]
-            self.quasi_config["enable_group"] = self.config["enable_group"]
         except:
             self.config = {
                 "name_en": self.name_en,
@@ -343,7 +343,7 @@ class uiPlugin(uiPlugin_Master):
                 "block_priv": self.block_priv,
                 "enable_group": self.enable_group,
             }
-        self.dump_config()
+            self.dump_config()
         self.create_folder()
         super().__init__()
         self.regis_plugins(self)
@@ -354,11 +354,22 @@ class uiPlugin(uiPlugin_Master):
                 os.path.join(self.path, "uiconfig.json"), "r", encoding="utf-8"
             ) as f:
                 self.config = json.load(f)
-                self.config["r18"] = self.r18
-                self.config["usage"] = self.usage
-                self.config["perm_use"] = self.perm_use
-                self.config["perm_manager"] = self.perm_manager
-                self.config["visible"] = self.visible
+
+                self.private_use = self.config["private_use"]
+                self.block_priv = self.config["block_priv"]
+                self.enable_group = self.config["enable_group"]
+
+                self.quasi_config["private_use"] = self.config["private_use"]
+                self.quasi_config["block_priv"] = self.config["block_priv"]
+                self.quasi_config["enable_group"] = self.config["enable_group"]
+                if self.config != self.quasi_config:
+                    logger.info(f"检测到插件 {self.config['name_cn']} 的配置文件发生改变, 正在保存……")
+                    self.config["r18"] = self.r18
+                    self.config["usage"] = self.usage
+                    self.config["perm_use"] = self.perm_use
+                    self.config["perm_manager"] = self.perm_manager
+                    self.config["visible"] = self.visible
+                    self.dump_config()
                 logger.info(f"{self.name_cn}配置文件成功加载！")
         except (JSONDecodeError, FileNotFoundError) as e:
             logger.error(f"{self.name_cn}配置文件加载失败!:{e}")
@@ -366,16 +377,30 @@ class uiPlugin(uiPlugin_Master):
 
     def dump_config(self) -> None:
         """json文件的保存"""
-        if self.quasi_config != self.config:
-            logger.info("检测到配置文件发生改变, 正在保存……")
-            try:
-                with open(
-                    os.path.join(self.path, "uiconfig.json"), "w", encoding="utf-8"
-                ) as f:
-                    json.dump(self.config, f, ensure_ascii=False, indent=4)
-                    logger.info(f"{self.name_cn}配置文件成功保存！")
-            except (JSONDecodeError, FileNotFoundError) as e:
-                logger.error(f"{self.name_cn}配置文件加载失败!:{e}")
+        try:
+            self.config = {
+                "name_en": self.name_en,
+                "name_cn": self.name_cn,
+                "r18": self.r18,
+                "enable": self.enable,
+                "path": self.path,
+                "usage": self.usage,
+                "use_cache_folder": self.use_cache_folder,
+                "use_source_folder": self.use_source_folder,
+                "perm_use": self.perm_use,
+                "perm_manager": self.perm_manager,
+                "visible": self.visible,
+                "private_use": self.private_use,
+                "block_priv": self.block_priv,
+                "enable_group": self.enable_group,
+            }
+            with open(
+                os.path.join(self.path, "uiconfig.json"), "w", encoding="utf-8"
+            ) as f:
+                json.dump(self.config, f, ensure_ascii=False, indent=4)
+                logger.info(f"{self.name_cn}配置文件成功保存！")
+        except (JSONDecodeError, FileNotFoundError) as e:
+            logger.error(f"{self.name_cn}配置文件加载失败!:{e}")
 
     def create_folder(self):
         """创建文件夹"""

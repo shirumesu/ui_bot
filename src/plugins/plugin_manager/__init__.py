@@ -36,7 +36,7 @@ sv = uiPlugin(
     False,
     usage=sv_help,
     perm_use=GROUP_ADMIN,
-    perm_manager=SUPERUSER,
+    perm_manager=GROUP_ADMIN,
 )
 svm = uiPlugin_Master()
 

@@ -1,8 +1,8 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 2.0.5
-@EditTime   : 2022/3/7 11:35(Editor: shiying)
+@Version    : 2.0.6
+@EditTime   : 2022/3/29 13:41(Editor: shiying)
 @Desc       : 由于文档更新, 不再使用头文件写注释
 """
 import os
@@ -18,7 +18,7 @@ from nonebot.log import logger as nlog
 import config
 from soraha_utils import set_logger, sync_uiclient
 
-version = "2.0.5"
+version = "2.0.6"
 
 
 def check_update():
@@ -100,11 +100,9 @@ def _log(level: str = "INFO") -> None:
 
 
 if __name__ == "__main__":
-    # 似乎是 APS scheduler 的问题, 导致重启并没有完全退出, 所以先不用了
-    # uvicorn.run(
-    #     app="bot:start",
-    #     reload=True,
-    #     reload_dirs=["bot.py"],
-    #     port=9233,
-    # )
-    start()
+    uvicorn.run(
+        app="bot:start",
+        reload=True,
+        reload_dirs=["bot.py"],
+        port=9233,
+    )
