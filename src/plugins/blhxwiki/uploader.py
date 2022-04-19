@@ -1,113 +1,90 @@
 import os
-import json
-from typing import Union
+
 from bs4 import BeautifulSoup
+from nonebot import MessageSegment
 
-import config
-from soraha_utils import async_uiclient, async_uio, logger
+from config import proxies_for_all, res
+from soraha_utils import async_uiclient, logger
 
 
-class updater:
+class RANK_IMG:
     def __init__(self) -> None:
+        self.path = os.path.join(res, "source", "blhxwiki")
+        self.RP = {
+            "认知觉醒榜": {
+                "selector": [
+                    "#mw-content-text > div > dl:nth-child(14) > dd:nth-child(1) > a > img",
+                    "#mw-content-text > div > dl:nth-child(14) > dd:nth-child(2) > a > img",
+                ]
+            },
+            "装备一图榜": {
+                "selector": ["#mw-content-text > div > dl:nth-child(17) > dd > a > img"]
+            },
+            "萌新推荐榜": {
+                "selector": [
+                    "#mw-content-text > div > ul:nth-child(20) > li:nth-child(1) > div > div.thumb > div > a > img",
+                    "#mw-content-text > div > ul:nth-child(20) > li:nth-child(2) > div > div.thumb > div > a > img",
+                ]
+            },
+            "兑换推荐榜": {
+                "selector": ["#mw-content-text > div > dl:nth-child(23) > dd > a > img"]
+            },
+            "研发推荐榜": {
+                "selector": ["#mw-content-text > div > dl:nth-child(26) > dd > a > img"]
+            },
+            "改造推荐榜": {
+                "selector": ["#mw-content-text > div > dl:nth-child(29) > dd > a > img"]
+            },
+            "跨队推荐榜": {
+                "selector": ["#mw-content-text > div > dl:nth-child(32) > dd > a > img"]
+            },
+            "打捞表": {
+                "selector": [
+                    "#mw-content-text > div > ul:nth-child(35) > li:nth-child(1) > div > div.thumb > div > a > img",
+                    "#mw-content-text > div > ul:nth-child(35) > li:nth-child(2) > div > div.thumb > div > a > img",
+                ]
+            },
+        }
+
+    async def get_ph(
+        self,
+        url: str = "https://wiki.biligame.com/blhx/%E4%BA%95%E5%8F%B7%E7%A2%A7%E8%93%9D%E6%A6%9C%E5%90%88%E9%9B%86",
+        selector: str = None,
+        p_name: str = None,
+    ):
+        if not selector and p_name:
+            selector = self.RP[p_name]["selector"]
         try:
-            with open("./src/plugins/blhxwiki/image_list.json", "r") as f:
-                self.dicts = json.load(f)
-        except:
-            self.dicts = {"强度榜": [], "一图榜": [], "秒伤榜": []}
+            async with async_uiclient(proxy=proxies_for_all) as cl:
+                res = await cl.uiget(url)
+                soup = BeautifulSoup(res.text, "lxml")
+                im_msg = []
+                for index, sc in enumerate(selector):
+                    ph = soup.select(sc)
+                    ph_res = await cl.uiget(ph[0].attrs["src"])
+                    with open(
+                        os.path.join(self.path, p_name + f"{index}.jpg"), "wb"
+                    ) as f:
+                        f.write(ph_res.content)
+                    im_msg.append(
+                        MessageSegment.image(
+                            r"file:///"
+                            + os.path.join(self.path, p_name + f"{index}.jpg")
+                        )
+                    )
+            return im_msg
 
-    async def get_image(self, name: str) -> Union[bool, int]:
-        if name not in self.dicts:
-            return False
-        else:
-            return self.dicts[name]
+        except Exception as e:
+            logger.warning(f"获取{p_name}失败!错误:{repr(e)}")
+            im_msg = []
+            for index, sc in enumerate(selector):
+                p = os.path.join(self.path, p_name + f"{index}.jpg")
+                if os.path.exists(p):
+                    im_msg.append(MessageSegment.image("file:///" + p))
+            if im_msg:
+                return im_msg
+            else:
+                return "无法获取图片，本地未发现离线图片"
 
-    async def update_allinfo(self) -> None:
-        PVE = await self.update_PVE()
-        ZB = await self.update_zhuangbei()
-        JP = await self.update_xiaosheng()
-        with open("./src/plugins/blhxwiki/image_list.json", "w") as f:
-            json.dump(self.dicts, f, ensure_ascii=False, indent=4)
-        return (
-            f"更新成功！\n"
-            f"强度榜成功更新{PVE}张图\n"
-            f"装备一图榜成功更新{ZB}张图！\n"
-            f"装备秒伤榜成功更新{JP}张图！"
-            f"可以使用blhxwiki (强度榜|一图榜|秒伤榜)查询！"
-        )
-
-    async def update_xiaosheng(self) -> None:
-        soup = await self.get_page(
-            "https://wiki.biligame.com/blhx/%E5%85%A8%E6%AD%A6%E5%99%A8%E5%AF%B9%E6%8A%A4%E7%94%B2%E8%A1%A5%E6%AD%A3%E4%B8%80%E8%A7%88"
-        )
-        js = soup.find_all("a", {"class": "image"})
-        image_list = [x.contents[0].attrs["src"] for x in js]
-        success = 0
-        for index, i in enumerate(image_list):
-            save_path = os.path.join(
-                config.res, "source", "blhxwiki", f"装备秒伤榜_{index}.png"
-            )
-            try:
-                self.dicts["秒伤榜"][index] = save_path
-            except IndexError:
-                self.dicts["秒伤榜"].append(save_path)
-            await async_uio.save_file(
-                type="url_image",
-                save_path=f"./res/source/blhxwiki/装备秒伤榜_{index}.png",
-                url=i,
-                proxy=config.proxies_for_all,
-            )
-            success += 1
-        return success
-
-    async def get_page(self, url: str) -> BeautifulSoup:
-        async with async_uiclient(proxy=config.proxies_for_all) as client:
-            res = await client.uiget(url)
-            soup = BeautifulSoup(res.text, "lxml")
-        return soup
-
-    async def update_zhuangbei(self):
-        soup = await self.get_page(
-            "https://wiki.biligame.com/blhx/%E8%A3%85%E5%A4%87%E4%B8%80%E5%9B%BE%E6%A6%9C"
-        )
-        res = soup.select("#mw-content-text > div > div.noresize > img")
-        save_path = os.path.join(config.res, "source", "blhxwiki", f"一图榜.png")
-        try:
-            self.dicts["一图榜"][0] = save_path
-        except IndexError:
-            self.dicts["一图榜"].append(save_path)
-        await async_uio.save_file(
-            type="url_image",
-            save_path=save_path,
-            url=res[0].attrs["src"],
-            proxy=config.proxies_for_all,
-        )
-        return 1
-
-    async def update_PVE(self):
-        """更新强度榜的函数
-
-        Args:
-            session (CommandSession): 发消息！
-        """
-        soup = await self.get_page(
-            "https://wiki.biligame.com/blhx/PVE%E7%94%A8%E8%88%B0%E8%88%B9%E7%BB%BC%E5%90%88%E6%80%A7%E8%83%BD%E5%BC%BA%E5%BA%A6%E6%A6%9C"
-        )
-        js = soup.find_all("div", {"class": "floatnone"})
-        image_list = [x.contents[0].contents[0].attrs["src"] for x in js]
-        success = 0
-        for index, i in enumerate(image_list):
-            save_path = os.path.join(
-                config.res, "source", "blhxwiki", f"强度榜_{index}.png"
-            )
-            try:
-                self.dicts["强度榜"][index] = save_path
-            except IndexError:
-                self.dicts["强度榜"].append(save_path)
-            await async_uio.save_file(
-                type="url_image",
-                save_path=f"./res/source/blhxwiki/强度榜_{index}.png",
-                url=i,
-                proxy=config.proxies_for_all,
-            )
-            success += 1
-        return success
+    def get_p_name(self, p_name: str):
+        return False if self.RP.get(p_name) is None else True

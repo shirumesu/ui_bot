@@ -114,13 +114,9 @@ async def get_setu(session):
 
     try:
         result = await get_api(session, keyword, r18, num)
-    except RuntimeError:
+    except Exception as e:
         await session.finish("涩图获取失败惹……")
-        logger.info("获取色图失败")
-    finally:
-        if not result:
-            await session.finish("涩图获取失败惹……")
-            logger.error("result请求成功但返回值为空")
+        logger.error(f"色图获取失败: {e}")
 
     if "count" not in result:
         return

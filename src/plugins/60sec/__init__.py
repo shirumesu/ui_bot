@@ -24,6 +24,8 @@ async def daily_news(session: CommandSession):
         res = res.json()
         if res["msg"] != "Success":
             await session.finish(f"有哪里出错了!: {res['msg']}")
+        elif not res["imageUrl"].strip():
+            await session.finish(f"今日新闻未更新链接,无法获取")
         res = await cl.uiget(res["imageUrl"])
         with open(image_path, "wb+") as f:
             f.write(res.content)

@@ -1,7 +1,7 @@
 """
 @Author     : shiying (github: LYshiying)
 @Contact    : Twitter: @shiying_ui | QQ: 839778960
-@Version    : 2.0.6
+@Version    : 2.0.7
 @EditTime   : 2022/3/29 13:41(Editor: shiying)
 @Desc       : 由于文档更新, 不再使用头文件写注释
 """
@@ -18,7 +18,7 @@ from nonebot.log import logger as nlog
 import config
 from soraha_utils import set_logger, sync_uiclient
 
-version = "2.0.6"
+version = "2.0.7"
 
 
 def check_update():

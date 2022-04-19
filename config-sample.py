@@ -1,4 +1,5 @@
 import datetime
+from nonebot.default_config import *
 
 # 超级用户(主人)的qq号
 SUPERUSERS = {}

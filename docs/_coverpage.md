@@ -3,7 +3,7 @@
 ![ ](_media/icon.svg)  
 ↑这里应该有logo 但是我还不会绘画 正在学习 ♱升天♱↑
 
-# 羽衣bot <small>2.0.6</small>
+# 羽衣bot <small>2.0.7</small>
 
 > 在旅行中被注意到而带回来的机器人
 

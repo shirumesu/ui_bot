@@ -3,11 +3,11 @@ import os
 from aiocqhttp import Event
 from nonebot.plugin import PluginManager
 
-from nonebot import CommandSession, MessageSegment, message_preprocessor, NoneBot
+from nonebot import CommandSession, message_preprocessor, NoneBot
 
-from .datasource import get_text, update_photo, send_qiangdubang
+from .datasource import get_text
 from .game import Game_Master
-from .uploader import updater
+from .uploader import RANK_IMG
 from .spider import Spider
 from src.Services import uiPlugin
 
@@ -18,9 +18,14 @@ sv_help = """碧蓝航线wiki | 使用帮助
 [blhxwiki (舰娘/装备/特别页面)] -> 拿数据
     支持装备/舰娘,但要求全名,自定义词典正在咕咕叫
     特别页面支持以下:
-        1. 强度榜(blhxwiki 强度榜)
-        2. 一图榜 (使用方法同上,以下不再提)
-        3. 秒伤榜 (小圣的全装备秒伤榜)
+        1. 认知觉醒榜 (blhxwiki 认知觉醒榜)
+        2. 装备一图榜 (使用方法同上,以下不再提)
+        4. 萌新推荐榜
+        5. 兑换推荐榜 (核心数据兑换推荐)
+        6. 研发推荐榜
+        7. 改造推荐榜
+        8. 跨队推荐榜
+        9. 打捞表
 [blhxwiki 更新图片] -> 更新缓存图片
     特别注意: 请不要不停使用！累的是wiki,坏的是bot！
 [猜头像 / 猜舰娘] -> 类pcr的游戏碧蓝移植版(?), 总之玩玩看?
@@ -38,7 +43,7 @@ sv = uiPlugin(
     use_source_folder=True,
     use_cache_folder=True,
 )
-updater = updater()
+updater = RANK_IMG()
 path = os.path.join(os.getcwd(), "src", "plugins", "blhxwiki", "char_info.json")
 spd = Spider(proxies_for_all, path)
 GM = Game_Master(spd.config)
@@ -56,22 +61,15 @@ async def blhxwiki(session: CommandSession):
         session (CommandSession): bot封装的消息
     """
     cmd = session.current_arg_text.strip()
-    if cmd in updater.dicts.keys():
-        res = await updater.get_image(cmd)
-        if not res:
-            text = "\n".join([x for x, y in updater.dicts.items() if y])
-            await session.finish(
-                f"没有找到对应榜单!目前有的榜单为:\n{text}\nps:如果确实存在该榜单依然发了这条信息请使用`blhxwiki 更新图片`进行更新"
-            )
-        images = [str(MessageSegment.image("file:///" + x)) for x in res]
-        info = "".join(images)
-    elif cmd == "更新图片":
-        await session.send("正在尝试更新……因为要下载10+张图,可能会很久……")
-        info = await updater.update_allinfo()
+    await session.send("正在尝试获取……")
+    if updater.get_p_name(cmd):
+        im = await updater.get_ph(p_name=cmd)
+        if isinstance(im, str):
+            await session.finish(im)
+        else:
+            await session.finish(im)
     else:
-        await session.send("正在尝试获取……")
-        info = await get_text(cmd)
-    await session.finish(info)
+        await session.finish(await get_text(cmd))
 
 
 @sv.ui_command("猜头像", patterns=r"^猜(舰娘|头像)$")

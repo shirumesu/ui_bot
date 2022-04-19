@@ -120,3 +120,4 @@ res/cacha/*
 /res/source/blhxwiki/*
 src/plugins/blhxwiki/image_list.json
 src/plugins/bot_manager/shutup.json
+*.sync-conflict*
