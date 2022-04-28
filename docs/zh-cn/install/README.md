@@ -1,4 +1,4 @@
-## 安装
+# 安装
 
 1. 安装软件
    1. [python](https://www.python.org/)
@@ -8,16 +8,18 @@
 
 2. 下载bot
    1. `按住shift + 右键`,点击`在此处打开 Powershell 窗口` / `Open in Windows Terminal`
-```shell
-git clone https://github.com/LYshiying/ui_bot
-```
+
+   ```shell
+   git clone https://github.com/LYshiying/ui_bot
+   ```
 
 3. 安装依赖
-```shell
-pip3 install -r requirements.txt
-# 或者使用清华大学代理源, 国内会快不少
-pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt 
-```
+
+   ```shell
+   pip3 install -r requirements.txt
+   # 或者使用清华大学代理源, 国内会快不少
+   pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt 
+   ```
 
 4. 将`config-sample.py`改为`config.py`并打开根据注释编辑
    1. 未来新增插件可能会在配置文件新增几个变量, 如果发现新增插件请查看[更新日志](/zh-cn/update-log/)是否需要……
