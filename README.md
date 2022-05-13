@@ -8,7 +8,7 @@
 
 ## 简介
 
-**由于使用`Github Pages`托管文档, 不再使用此README 请转到: <https://uibot.uisbox.com/>**
+**由于使用`Github Pages`托管文档, 不再使用此README 请转到: <https://uibot.uichans.com/>**
 
 ### 简单介绍
 
