@@ -1,5 +1,0 @@
-- [指南](/zh-cn/intro/)
-- [各类Api申请](/zh-cn/Api/)
-- [更新日志](/zh-cn/update-log/)
-- [Emoji含义](/zh-cn/emoji/)
-- [Eng](/eng/)
