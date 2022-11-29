@@ -6,6 +6,10 @@
 
 [![作者qq](https://img.shields.io/badge/作者qq-839778960-orange.svg?style=flat&logo=Tencent-QQ)](https://qm.qq.com/cgi-bin/qm/qr?k=WKBxF1bEZ2ghsbmW2dCx9DWtzOp7Oq94&noverify=0)
 
+# 2022/11/30： 回来了
+不管如何！bot回来了！欢迎回来ui！  
+会在未来的几天内逐渐修复并重启！(当然bug实在太多了，会慢慢处理的…嗯……大概半个月到一个月内完全重启吧)
+
 # 2022/8/5留： 要不还是跑路吧
 总而言之，因为各种各样的原因，加上暑假太摆了，年久失修的bot终于迎来睡眠的一天了！  
 下一次或许会尝试基于新的nonebot2或是koishi又或是别的什么来重启！  
