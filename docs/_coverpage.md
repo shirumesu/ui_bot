@@ -1,6 +1,6 @@
 <!-- _coverpage.md -->
 
-![ ](_media/bot_logo.png)  
+![ ](_media/icon.svg)  
 ↑虽然是描的, 但就当作logo用吧~↑
 
 # 羽衣bot <small>2.0.7</small>
