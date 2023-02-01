@@ -6,6 +6,10 @@
 
 [![作者qq](https://img.shields.io/badge/作者qq-839778960-orange.svg?style=flat&logo=Tencent-QQ)](https://qm.qq.com/cgi-bin/qm/qr?k=WKBxF1bEZ2ghsbmW2dCx9DWtzOp7Oq94&noverify=0)
 
+# 2023/2/1: 咕了
+好吧, 我还是高估了我的动力, 总而言之先咕了！
+一方面在学js, 另一方面考虑转战[koishi](https://github.com/koishijs/koishi), 到时候就直接开发插件送到插件商场去, 也没必要下这样的超级整合包了
+
 # 2022/11/30： 回来了
 不管如何！bot回来了！欢迎回来ui！  
 会在未来的几天内逐渐修复并重启！(当然bug实在太多了，会慢慢处理的…嗯……大概半个月到一个月内完全重启吧)

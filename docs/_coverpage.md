@@ -1,7 +1,7 @@
 <!-- _coverpage.md -->
 
-![ ](_media/icon.svg)  
-↑这里应该有logo 但是我还不会绘画 正在学习 ♱升天♱↑
+![ ](_media/bot_logo.png)  
+↑虽然是描的, 但就当作logo用吧~↑
 
 # 羽衣bot <small>2.0.7</small>
 
